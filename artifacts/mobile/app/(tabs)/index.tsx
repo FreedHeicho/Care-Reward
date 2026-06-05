@@ -2,7 +2,6 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  FlatList,
   Platform,
   ScrollView,
   StyleSheet,
@@ -12,18 +11,49 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ClaimCard } from "@/components/ClaimCard";
-import { OpportunityCard } from "@/components/OpportunityCard";
 import { useAuth } from "@/context/AuthContext";
-import { MOCK_CLAIMS, MOCK_OPPORTUNITIES, MOCK_USER_PLAN } from "@/constants/data";
+import {
+  ActivityEvent,
+  MISSED_OPPORTUNITIES_COUNT,
+  MOCK_ACTIVITY,
+  MOCK_OPPORTUNITIES,
+  NEW_OPPORTUNITIES_COUNT,
+} from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
-const QUICK_ACTIONS = [
-  { icon: "zap" as const, label: "Opportunities", route: "/(tabs)/opportunities" },
-  { icon: "file-text" as const, label: "Claims", route: "/(tabs)/claims" },
-  { icon: "star" as const, label: "Rewards", route: "/(tabs)/rewards" },
-  { icon: "activity" as const, label: "Benefits", route: "/(tabs)/claims" },
-];
+function ActivityRow({ event }: { event: ActivityEvent }) {
+  const colors = useColors();
+  return (
+    <View style={[styles.activityRow, { borderBottomColor: colors.border }]}>
+      <View style={styles.activityLeft}>
+        <Text style={[styles.activityDate, { color: colors.mutedForeground }]}>
+          {event.dateLabel}
+        </Text>
+        <View style={[styles.activityLine, { backgroundColor: colors.border }]} />
+      </View>
+      <View style={[styles.activityCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.activityIconWrap, { backgroundColor: event.iconBg }]}>
+          <Feather
+            name={event.icon === "check-circle" ? "check-circle" : event.icon === "heart" ? "heart" : event.icon === "shield" ? "shield" : event.icon === "mail" ? "mail" : "activity"}
+            size={18}
+            color={colors.primary}
+          />
+        </View>
+        <View style={styles.activityContent}>
+          <Text style={[styles.activityTitle, { color: colors.foreground }]} numberOfLines={2}>
+            {event.title}
+          </Text>
+          <Text style={[styles.activityDesc, { color: colors.mutedForeground }]}>
+            {event.description}
+          </Text>
+        </View>
+        <Text style={[styles.activityPoints, { color: colors.primary }]}>
+          +{event.points} points
+        </Text>
+      </View>
+    </View>
+  );
+}
 
 export default function DashboardScreen() {
   const colors = useColors();
@@ -31,13 +61,8 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const topOpportunities = MOCK_OPPORTUNITIES.filter((o) => o.priority === "high").slice(0, 3);
-  const recentClaims = MOCK_CLAIMS.slice(0, 3);
-
-  const totalSavings = MOCK_OPPORTUNITIES.reduce((s, o) => s + o.savings, 0);
-  const deductiblePct = (MOCK_USER_PLAN.deductibleMet / MOCK_USER_PLAN.deductible) * 100;
-
-  const firstName = user?.name?.split(" ")[0] ?? "Member";
+  const firstName = user?.name?.split(" ")[0] ?? "Sarah";
+  const topOpp = MOCK_OPPORTUNITIES.find((o) => o.id === "opp-1");
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -45,162 +70,189 @@ export default function DashboardScreen() {
         contentContainerStyle={[
           styles.scroll,
           {
-            paddingBottom:
-              insets.bottom + (Platform.OS === "web" ? 34 : 0) + 100,
+            paddingTop: 8,
+            paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0) + 100,
           },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Greeting + Points */}
-        <View style={[styles.heroCard, { backgroundColor: colors.primary }]}>
-          <View style={styles.heroTop}>
-            <View>
-              <Text style={styles.greeting}>Good morning,</Text>
-              <Text style={styles.heroName}>{firstName}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.notificationBtn}
-              onPress={() => router.push("/(tabs)/profile" as never)}
-            >
-              <Feather name="bell" size={20} color="#fff" />
-            </TouchableOpacity>
+        {/* Points Balance Card */}
+        <View style={[styles.pointsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.pointsIconCircle, { backgroundColor: colors.primary }]}>
+            <Feather name="star" size={28} color="#F59E0B" />
           </View>
-
-          <View style={styles.heroStats}>
-            <View style={styles.heroStat}>
-              <Text style={styles.heroStatValue}>
-                {(user?.pointsBalance ?? 2450).toLocaleString()}
-              </Text>
-              <Text style={styles.heroStatLabel}>Points Balance</Text>
-            </View>
-            <View style={[styles.heroStatDivider, { backgroundColor: "#ffffff40" }]} />
-            <View style={styles.heroStat}>
-              <Text style={styles.heroStatValue}>
-                ${user?.savingsThisYear ?? 847}
-              </Text>
-              <Text style={styles.heroStatLabel}>Saved This Year</Text>
-            </View>
-            <View style={[styles.heroStatDivider, { backgroundColor: "#ffffff40" }]} />
-            <View style={styles.heroStat}>
-              <Text style={styles.heroStatValue}>${totalSavings}/mo</Text>
-              <Text style={styles.heroStatLabel}>Available</Text>
-            </View>
-          </View>
-
+          <Text style={[styles.pointsValue, { color: colors.primary }]}>
+            {(user?.pointsBalance ?? 245).toLocaleString()} Points
+          </Text>
+          <Text style={[styles.pointsTagline, { color: colors.mutedForeground }]}>
+            You are your best health advocate. We are here to enable you. Keep up the amazing work!
+          </Text>
           <TouchableOpacity
-            style={styles.redeemPill}
+            style={[styles.redeemBtn, { backgroundColor: colors.primaryDark }]}
             onPress={() => router.push("/redeem" as never)}
+            activeOpacity={0.85}
           >
-            <Feather name="star" size={14} color={colors.rewards} />
-            <Text style={[styles.redeemPillText, { color: colors.rewards }]}>
-              Redeem Points
-            </Text>
-            <Feather name="arrow-right" size={14} color={colors.rewards} />
+            <Text style={styles.redeemBtnText}>Redeem My Points</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          {QUICK_ACTIONS.map((action) => (
-            <TouchableOpacity
-              key={action.label}
-              style={[styles.quickAction, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => router.push(action.route as never)}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: colors.primary + "15" }]}>
-                <Feather name={action.icon} size={20} color={colors.primary} />
-              </View>
-              <Text style={[styles.quickActionLabel, { color: colors.foreground }]}>
-                {action.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Deductible Progress */}
-        <View style={[styles.progressCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.progressHeader}>
-            <Text style={[styles.progressTitle, { color: colors.foreground }]}>
-              Deductible Progress
-            </Text>
-            <Text style={[styles.progressSubtitle, { color: colors.mutedForeground }]}>
-              {MOCK_USER_PLAN.planName}
-            </Text>
-          </View>
-          <View style={styles.progressRow}>
-            <Text style={[styles.progressAmt, { color: colors.primary }]}>
-              ${MOCK_USER_PLAN.deductibleMet.toLocaleString()}
-            </Text>
-            <Text style={[styles.progressOf, { color: colors.mutedForeground }]}>
-              of ${MOCK_USER_PLAN.deductible.toLocaleString()} met
-            </Text>
-          </View>
-          <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  backgroundColor: colors.primary,
-                  width: `${Math.min(deductiblePct, 100)}%` as any,
-                },
-              ]}
-            />
-          </View>
-          <Text style={[styles.progressNote, { color: colors.mutedForeground }]}>
-            ${(MOCK_USER_PLAN.deductible - MOCK_USER_PLAN.deductibleMet).toLocaleString()} left to meet your deductible
+        {/* Welcome Banner */}
+        <View style={[styles.welcomeBanner, { backgroundColor: colors.muted }]}>
+          <Text style={[styles.welcomeTitle, { color: colors.foreground }]}>
+            Welcome to CareReward!
+          </Text>
+          <Text style={[styles.welcomeSubtitle, { color: colors.mutedForeground }]}>
+            We help you navigate your health journey
           </Text>
         </View>
 
-        {/* Top Opportunities */}
+        {/* Notification Alerts */}
+        <TouchableOpacity
+          style={[styles.alertBanner, { backgroundColor: colors.alertBg, borderLeftColor: colors.primary }]}
+          onPress={() => router.push("/(tabs)/opportunities" as never)}
+        >
+          <Feather name="bell" size={18} color={colors.primary} />
+          <Text style={[styles.alertText, { color: colors.foreground }]}>
+            You have {NEW_OPPORTUNITIES_COUNT} new opportunities
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.alertBanner, { backgroundColor: colors.alertBg, borderLeftColor: colors.primary }]}
+          onPress={() => router.push("/(tabs)/opportunities" as never)}
+        >
+          <Feather name="bell" size={18} color={colors.primary} />
+          <Text style={[styles.alertText, { color: colors.foreground }]}>
+            You have {MISSED_OPPORTUNITIES_COUNT} missed opportunities
+          </Text>
+        </TouchableOpacity>
+
+        {/* Find More CTA */}
+        <TouchableOpacity
+          style={[styles.findMoreBtn, { backgroundColor: colors.primaryDark }]}
+          onPress={() => router.push("/(tabs)/opportunities" as never)}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.findMoreText}>Find more opportunities</Text>
+          <Feather name="arrow-right" size={18} color="#fff" />
+        </TouchableOpacity>
+
+        {/* Get Started */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              Top Opportunities
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/opportunities" as never)}>
-              <Text style={[styles.seeAll, { color: colors.primary }]}>See all</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Get Started</Text>
+          <View style={styles.getStartedGrid}>
+            <TouchableOpacity
+              style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => router.push("/how-to-earn" as never)}
+            >
+              <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
+                How to Earn Points
+              </Text>
+              <Text style={[styles.getStartedCardDesc, { color: colors.mutedForeground }]}>
+                Understand how to earn and redeem
+              </Text>
+              <TouchableOpacity
+                style={[styles.getStartedCardBtn, { backgroundColor: colors.primaryDark }]}
+                onPress={() => router.push("/how-to-earn" as never)}
+              >
+                <Text style={styles.getStartedCardBtnText}>Learn More</Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => router.push("/(tabs)/care" as never)}
+            >
+              <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
+                Explanation of Benefits
+              </Text>
+              <Text style={[styles.getStartedCardDesc, { color: colors.mutedForeground }]}>
+                Understand your healthcare coverage
+              </Text>
+              <TouchableOpacity
+                style={[styles.getStartedCardBtn, { backgroundColor: colors.primaryDark }]}
+                onPress={() => router.push("/(tabs)/claims" as never)}
+              >
+                <Text style={styles.getStartedCardBtnText}>Benefits</Text>
+              </TouchableOpacity>
             </TouchableOpacity>
           </View>
-          {topOpportunities.map((opp) => (
-            <OpportunityCard key={opp.id} opportunity={opp} />
+        </View>
+
+        {/* Recommended for You */}
+        <View style={styles.section}>
+          <View style={styles.recommendedHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.primary }]}>
+              Recommended for You
+            </Text>
+            <View style={[styles.oppCountBadge, { backgroundColor: colors.primaryDark }]}>
+              <Text style={styles.oppCountText}>
+                {NEW_OPPORTUNITIES_COUNT} Opportunities
+              </Text>
+            </View>
+          </View>
+
+          {topOpp && (
+            <TouchableOpacity
+              style={[styles.oppCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => router.push(`/opportunity/${topOpp.id}` as never)}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.oppCardLeftBar, { backgroundColor: "#6366F1" }]} />
+              <View style={styles.oppCardContent}>
+                <View style={styles.oppCardHeader}>
+                  <View style={[styles.oppMedIcon, { backgroundColor: "#EDE9FE" }]}>
+                    <Text style={styles.oppMedEmoji}>💊</Text>
+                  </View>
+                  <View style={styles.oppCardTitles}>
+                    <Text style={[styles.oppCardTitle, { color: colors.foreground }]}>
+                      {topOpp.title}
+                    </Text>
+                    <Text style={[styles.oppCardSub, { color: colors.mutedForeground }]}>
+                      {topOpp.description}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={[styles.oppPointsBadge, { backgroundColor: colors.primary }]}>
+                  <Text style={styles.oppPointsBadgeText}>
+                    {topOpp.points} points + {topOpp.pointsMonthly} points monthly
+                  </Text>
+                </View>
+
+                {topOpp.benefits.map((b) => (
+                  <View key={b} style={styles.oppBenefit}>
+                    <Feather name="check-circle" size={15} color={colors.primary} />
+                    <Text style={[styles.oppBenefitText, { color: colors.foreground }]}>{b}</Text>
+                  </View>
+                ))}
+
+                <TouchableOpacity
+                  style={[styles.howToEarnBtn, { backgroundColor: colors.primaryDark }]}
+                  onPress={() => router.push(`/opportunity/${topOpp.id}` as never)}
+                >
+                  <Text style={styles.howToEarnText}>How To Earn</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity onPress={() => router.push("/(tabs)/opportunities" as never)}>
+            <Text style={[styles.seeAllOpps, { color: colors.primary }]}>
+              See all {NEW_OPPORTUNITIES_COUNT} opportunities →
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Recent Activity */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+            Your Recent Activity
+          </Text>
+          {MOCK_ACTIVITY.map((event) => (
+            <ActivityRow key={event.id} event={event} />
           ))}
         </View>
-
-        {/* Recent Claims */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              Recent Claims
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/claims" as never)}>
-              <Text style={[styles.seeAll, { color: colors.primary }]}>See all</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.claimsStack}>
-            {recentClaims.map((claim) => (
-              <ClaimCard key={claim.id} claim={claim} compact />
-            ))}
-          </View>
-        </View>
-
-        {/* Earn More Banner */}
-        <TouchableOpacity
-          style={[styles.earnBanner, { backgroundColor: colors.accent + "15", borderColor: colors.accent + "40" }]}
-          onPress={() => router.push("/(tabs)/rewards" as never)}
-        >
-          <View style={[styles.earnIcon, { backgroundColor: colors.accent }]}>
-            <Feather name="award" size={20} color="#fff" />
-          </View>
-          <View style={styles.earnContent}>
-            <Text style={[styles.earnTitle, { color: colors.foreground }]}>
-              Earn 500 more points this month
-            </Text>
-            <Text style={[styles.earnDesc, { color: colors.mutedForeground }]}>
-              Complete your monthly engagement bonus
-            </Text>
-          </View>
-          <Feather name="chevron-right" size={20} color={colors.accent} />
-        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -208,104 +260,146 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { gap: 16 },
-  heroCard: {
-    margin: 16,
-    borderRadius: 20,
-    padding: 20,
-    gap: 16,
+  scroll: { paddingHorizontal: 16, gap: 14 },
+  pointsCard: {
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    alignItems: "center",
+    gap: 12,
   },
-  heroTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
-  greeting: { color: "#ffffff99", fontSize: 14 },
-  heroName: { color: "#fff", fontSize: 26, fontWeight: "800" },
-  notificationBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ffffff20",
+  pointsIconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
   },
-  heroStats: {
-    flexDirection: "row",
-    backgroundColor: "#00000020",
-    borderRadius: 14,
-    overflow: "hidden",
-  },
-  heroStat: { flex: 1, alignItems: "center", paddingVertical: 14 },
-  heroStatValue: { color: "#fff", fontSize: 18, fontWeight: "800" },
-  heroStatLabel: { color: "#ffffff80", fontSize: 11, marginTop: 2 },
-  heroStatDivider: { width: 1 },
-  redeemPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    alignSelf: "center",
-    backgroundColor: "#ffffff20",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  redeemPillText: { fontSize: 13, fontWeight: "700" },
-  quickActions: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    gap: 10,
-  },
-  quickAction: {
-    flex: 1,
-    alignItems: "center",
+  pointsValue: { fontSize: 30, fontWeight: "900" },
+  pointsTagline: { fontSize: 14, textAlign: "center", lineHeight: 22, paddingHorizontal: 8 },
+  redeemBtn: {
+    width: "100%",
+    borderRadius: 10,
     paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 4,
+  },
+  redeemBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  welcomeBanner: {
     borderRadius: 14,
+    padding: 16,
+    gap: 4,
+  },
+  welcomeTitle: { fontSize: 16, fontWeight: "700" },
+  welcomeSubtitle: { fontSize: 14 },
+  alertBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 12,
+    padding: 14,
+    borderLeftWidth: 4,
+  },
+  alertText: { fontSize: 14, fontWeight: "500", flex: 1 },
+  findMoreBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 10,
+    paddingVertical: 16,
+  },
+  findMoreText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  section: { gap: 12 },
+  sectionTitle: { fontSize: 18, fontWeight: "800" },
+  getStartedGrid: { flexDirection: "row", gap: 12 },
+  getStartedCard: {
+    flex: 1,
+    borderRadius: 14,
+    padding: 16,
     borderWidth: 1,
     gap: 8,
   },
-  quickActionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+  getStartedCardTitle: { fontSize: 14, fontWeight: "800", lineHeight: 20 },
+  getStartedCardDesc: { fontSize: 12, lineHeight: 17, flex: 1 },
+  getStartedCardBtn: {
+    borderRadius: 8,
+    paddingVertical: 10,
     alignItems: "center",
-    justifyContent: "center",
+    marginTop: 4,
   },
-  quickActionLabel: { fontSize: 11, fontWeight: "600", textAlign: "center" },
-  progressCard: {
-    marginHorizontal: 16,
-    borderRadius: 16,
-    padding: 18,
+  getStartedCardBtnText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+  recommendedHeader: { flexDirection: "row", alignItems: "center", gap: 10, flexWrap: "wrap" },
+  oppCountBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  oppCountText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+  oppCard: {
+    borderRadius: 14,
     borderWidth: 1,
-    gap: 10,
-  },
-  progressHeader: { gap: 2 },
-  progressTitle: { fontSize: 17, fontWeight: "700" },
-  progressSubtitle: { fontSize: 13 },
-  progressRow: { flexDirection: "row", alignItems: "baseline", gap: 6 },
-  progressAmt: { fontSize: 24, fontWeight: "800" },
-  progressOf: { fontSize: 14 },
-  progressTrack: { height: 10, borderRadius: 5, overflow: "hidden" },
-  progressFill: { height: "100%", borderRadius: 5 },
-  progressNote: { fontSize: 13 },
-  section: { paddingHorizontal: 16, gap: 12 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  sectionTitle: { fontSize: 20, fontWeight: "800" },
-  seeAll: { fontSize: 14, fontWeight: "600" },
-  claimsStack: { gap: 10 },
-  earnBanner: {
+    overflow: "hidden",
     flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 16,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    gap: 14,
   },
-  earnIcon: {
+  oppCardLeftBar: { width: 5 },
+  oppCardContent: { flex: 1, padding: 16, gap: 12 },
+  oppCardHeader: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
+  oppMedIcon: {
     width: 44,
     height: 44,
-    borderRadius: 12,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
   },
-  earnContent: { flex: 1, gap: 3 },
-  earnTitle: { fontSize: 15, fontWeight: "700" },
-  earnDesc: { fontSize: 13 },
+  oppMedEmoji: { fontSize: 22 },
+  oppCardTitles: { flex: 1 },
+  oppCardTitle: { fontSize: 15, fontWeight: "700" },
+  oppCardSub: { fontSize: 13, marginTop: 2 },
+  oppPointsBadge: {
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    alignItems: "center",
+  },
+  oppPointsBadgeText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  oppBenefit: { flexDirection: "row", alignItems: "center", gap: 8 },
+  oppBenefitText: { fontSize: 14, flex: 1 },
+  howToEarnBtn: {
+    borderRadius: 8,
+    paddingVertical: 13,
+    alignItems: "center",
+  },
+  howToEarnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  seeAllOpps: { fontSize: 14, fontWeight: "600", textAlign: "center", paddingVertical: 4 },
+  activityRow: {
+    flexDirection: "row",
+    gap: 12,
+    minHeight: 80,
+  },
+  activityLeft: { width: 40, alignItems: "center", paddingTop: 8 },
+  activityDate: { fontSize: 11, fontWeight: "700", textAlign: "center", lineHeight: 14 },
+  activityLine: { width: 1, flex: 1, marginTop: 6, marginBottom: -14 },
+  activityCard: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 12,
+  },
+  activityIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  activityContent: { flex: 1, gap: 2 },
+  activityTitle: { fontSize: 13, fontWeight: "700", lineHeight: 18 },
+  activityDesc: { fontSize: 12 },
+  activityPoints: { fontSize: 13, fontWeight: "700", flexShrink: 0 },
 });

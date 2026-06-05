@@ -14,19 +14,19 @@ function NativeTabLayout() {
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "house", selected: "house.fill" }} />
-        <Label>Home</Label>
+        <Label>Dashboard</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="opportunities">
         <Icon sf={{ default: "bolt", selected: "bolt.fill" }} />
         <Label>Opportunities</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="claims">
-        <Icon sf={{ default: "doc.text", selected: "doc.text.fill" }} />
-        <Label>Claims</Label>
+        <Icon sf={{ default: "shield", selected: "shield.fill" }} />
+        <Label>Care</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="rewards">
-        <Icon sf={{ default: "star", selected: "star.fill" }} />
-        <Label>Rewards</Label>
+        <Icon sf={{ default: "rosette", selected: "rosette" }} />
+        <Label>Points</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person", selected: "person.fill" }} />
@@ -51,8 +51,8 @@ function ClassicTabLayout() {
         headerShown: true,
         tabBarStyle: {
           position: "absolute",
-          backgroundColor: isIOS ? "transparent" : colors.background,
-          borderTopWidth: isWeb ? 1 : 0.5,
+          backgroundColor: isIOS ? "transparent" : colors.card,
+          borderTopWidth: 1,
           borderTopColor: colors.border,
           elevation: 0,
           ...(isWeb ? { height: 84 } : {}),
@@ -65,9 +65,7 @@ function ClassicTabLayout() {
               style={StyleSheet.absoluteFill}
             />
           ) : isWeb ? (
-            <View
-              style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]}
-            />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.card }]} />
           ) : null,
         tabBarLabelStyle: {
           fontSize: 10,
@@ -79,7 +77,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Dashboard",
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="house" tintColor={color} size={22} />
@@ -103,24 +101,24 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="claims"
         options={{
-          title: "Claims",
+          title: "Care",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="doc.text" tintColor={color} size={22} />
+              <SymbolView name="shield" tintColor={color} size={22} />
             ) : (
-              <Feather name="file-text" size={22} color={color} />
+              <Feather name="shield" size={22} color={color} />
             ),
         }}
       />
       <Tabs.Screen
         name="rewards"
         options={{
-          title: "Rewards",
+          title: "Points",
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="star" tintColor={color} size={22} />
             ) : (
-              <Feather name="star" size={22} color={color} />
+              <Feather name="award" size={22} color={color} />
             ),
         }}
       />

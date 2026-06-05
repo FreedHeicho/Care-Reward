@@ -1,24 +1,25 @@
 const colors = {
   light: {
-    text: "#0F172A",
-    tint: "#0EA5E9",
+    text: "#1A1A2E",
+    tint: "#2D7D6F",
 
-    background: "#F8FAFC",
-    foreground: "#0F172A",
+    background: "#F5F7FA",
+    foreground: "#1A1A2E",
 
     card: "#FFFFFF",
-    cardForeground: "#0F172A",
+    cardForeground: "#1A1A2E",
 
-    primary: "#0EA5E9",
+    primary: "#2D7D6F",
+    primaryDark: "#1B5E52",
     primaryForeground: "#FFFFFF",
 
-    secondary: "#E0F2FE",
-    secondaryForeground: "#0369A1",
+    secondary: "#E8F5F2",
+    secondaryForeground: "#2D7D6F",
 
-    muted: "#F1F5F9",
-    mutedForeground: "#64748B",
+    muted: "#F0F2F5",
+    mutedForeground: "#7A8699",
 
-    accent: "#10B981",
+    accent: "#2D7D6F",
     accentForeground: "#FFFFFF",
 
     rewards: "#F59E0B",
@@ -27,46 +28,53 @@ const colors = {
     destructive: "#EF4444",
     destructiveForeground: "#FFFFFF",
 
-    border: "#E2E8F0",
-    input: "#E2E8F0",
+    border: "#E4E9F0",
+    input: "#E4E9F0",
 
     surface: "#FFFFFF",
-    surfaceSecondary: "#F1F5F9",
+    surfaceSecondary: "#F0F2F5",
+
+    alertBorder: "#2D7D6F",
+    alertBg: "#EEF7F5",
   },
 
   dark: {
     text: "#F8FAFC",
-    tint: "#38BDF8",
+    tint: "#4DB6A4",
 
-    background: "#0F172A",
+    background: "#0F1F1C",
     foreground: "#F8FAFC",
 
-    card: "#1E293B",
+    card: "#1A2E2B",
     cardForeground: "#F8FAFC",
 
-    primary: "#38BDF8",
-    primaryForeground: "#0F172A",
+    primary: "#4DB6A4",
+    primaryDark: "#2D7D6F",
+    primaryForeground: "#0F1F1C",
 
-    secondary: "#0C4A6E",
-    secondaryForeground: "#7DD3FC",
+    secondary: "#0F2E28",
+    secondaryForeground: "#4DB6A4",
 
-    muted: "#1E293B",
+    muted: "#1A2E2B",
     mutedForeground: "#94A3B8",
 
-    accent: "#34D399",
-    accentForeground: "#0F172A",
+    accent: "#4DB6A4",
+    accentForeground: "#0F1F1C",
 
     rewards: "#FCD34D",
-    rewardsForeground: "#0F172A",
+    rewardsForeground: "#0F1F1C",
 
     destructive: "#F87171",
-    destructiveForeground: "#0F172A",
+    destructiveForeground: "#0F1F1C",
 
-    border: "#334155",
-    input: "#334155",
+    border: "#243D39",
+    input: "#243D39",
 
-    surface: "#1E293B",
-    surfaceSecondary: "#0F172A",
+    surface: "#1A2E2B",
+    surfaceSecondary: "#0F1F1C",
+
+    alertBorder: "#4DB6A4",
+    alertBg: "#0F2E28",
   },
 
   radius: 12,

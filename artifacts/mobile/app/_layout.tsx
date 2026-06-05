@@ -38,6 +38,18 @@ function RootLayoutNav() {
         name="redeem"
         options={{ title: "Redeem Points", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="log-upcoming-care"
+        options={{ title: "Log Upcoming Care", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="emr-access"
+        options={{ title: "EMR Access", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="how-to-earn"
+        options={{ title: "How to Earn Points", headerBackTitle: "Back" }}
+      />
     </Stack>
   );
 }
