@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
   Platform,
   ScrollView,
@@ -20,6 +20,7 @@ import {
   NEW_OPPORTUNITIES_COUNT,
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
+import { OpportunitiesSheet } from "@/components/OpportunitiesSheet";
 
 function ActivityRow({ event }: { event: ActivityEvent }) {
   const colors = useColors();
@@ -61,6 +62,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
 
+  const [sheetVisible, setSheetVisible] = useState(false);
   const firstName = user?.name?.split(" ")[0] ?? "Sarah";
   const topOpp = MOCK_OPPORTUNITIES.find((o) => o.id === "opp-1");
 
@@ -109,28 +111,30 @@ export default function DashboardScreen() {
         {/* Notification Alerts */}
         <TouchableOpacity
           style={[styles.alertBanner, { backgroundColor: colors.alertBg, borderLeftColor: colors.primary }]}
-          onPress={() => router.push("/(tabs)/opportunities" as never)}
+          onPress={() => setSheetVisible(true)}
         >
           <Feather name="bell" size={18} color={colors.primary} />
           <Text style={[styles.alertText, { color: colors.foreground }]}>
             You have {NEW_OPPORTUNITIES_COUNT} new opportunities
           </Text>
+          <Feather name="chevron-right" size={16} color={colors.primary} />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.alertBanner, { backgroundColor: colors.alertBg, borderLeftColor: colors.primary }]}
-          onPress={() => router.push("/(tabs)/opportunities" as never)}
+          style={[styles.alertBanner, { backgroundColor: "#FEF3C7", borderLeftColor: "#F59E0B" }]}
+          onPress={() => setSheetVisible(true)}
         >
-          <Feather name="bell" size={18} color={colors.primary} />
+          <Feather name="bell" size={18} color="#F59E0B" />
           <Text style={[styles.alertText, { color: colors.foreground }]}>
             You have {MISSED_OPPORTUNITIES_COUNT} missed opportunities
           </Text>
+          <Feather name="chevron-right" size={16} color="#F59E0B" />
         </TouchableOpacity>
 
         {/* Find More CTA */}
         <TouchableOpacity
           style={[styles.findMoreBtn, { backgroundColor: colors.primaryDark }]}
-          onPress={() => router.push("/(tabs)/opportunities" as never)}
+          onPress={() => setSheetVisible(true)}
           activeOpacity={0.85}
         >
           <Text style={styles.findMoreText}>Find more opportunities</Text>
@@ -237,7 +241,7 @@ export default function DashboardScreen() {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity onPress={() => router.push("/(tabs)/opportunities" as never)}>
+          <TouchableOpacity onPress={() => setSheetVisible(true)}>
             <Text style={[styles.seeAllOpps, { color: colors.primary }]}>
               See all {NEW_OPPORTUNITIES_COUNT} opportunities →
             </Text>
@@ -254,6 +258,11 @@ export default function DashboardScreen() {
           ))}
         </View>
       </ScrollView>
+
+      <OpportunitiesSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+      />
     </View>
   );
 }
