@@ -36,9 +36,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, name: string) => {
+    const derivedName = email
+      .split("@")[0]
+      .replace(/[._-]+/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
     const newUser: User = {
       id: "usr-" + Date.now(),
-      name: name || email.split("@")[0],
+      name: name.trim() || derivedName,
       email,
       memberId: "MBR-2024-8821",
       planName: "BlueCross PPO Gold",

@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useNavigation, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Platform,
   ScrollView,
@@ -62,9 +62,40 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
 
+  const navigation = useNavigation();
   const [sheetVisible, setSheetVisible] = useState(false);
   const firstName = user?.name?.split(" ")[0] ?? "Sarah";
   const topOpp = MOCK_OPPORTUNITIES.find((o) => o.id === "opp-1");
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: `Hi, ${firstName}! 👋`,
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => setSheetVisible(true)}
+          style={{ marginRight: 16 }}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <View style={{ position: "relative" }}>
+            <Feather name="bell" size={22} color="#FFFFFF" />
+            <View
+              style={{
+                position: "absolute",
+                top: -4,
+                right: -5,
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: "#F59E0B",
+                borderWidth: 1.5,
+                borderColor: "#05503C",
+              }}
+            />
+          </View>
+        </TouchableOpacity>
+      ),
+    });
+  }, [firstName, navigation]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

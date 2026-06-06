@@ -25,6 +25,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +41,7 @@ export default function LoginScreen() {
     setLoading(true);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await new Promise((r) => setTimeout(r, 800));
-    await signIn(email, "");
+    await signIn(email, name);
     setLoading(false);
     router.replace("/(tabs)");
   };
@@ -88,6 +89,27 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.form}>
+            <View style={styles.field}>
+              <Text style={[styles.label, { color: colors.foreground }]}>Your Name</Text>
+              <View
+                style={[
+                  styles.inputWrapper,
+                  { borderColor: colors.border, backgroundColor: colors.card },
+                ]}
+              >
+                <Feather name="user" size={18} color={colors.mutedForeground} />
+                <TextInput
+                  style={[styles.input, { color: colors.foreground }]}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="First and last name"
+                  placeholderTextColor={colors.mutedForeground}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
+
             <View style={styles.field}>
               <Text style={[styles.label, { color: colors.foreground }]}>Email</Text>
               <View
