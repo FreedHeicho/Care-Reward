@@ -1,7 +1,7 @@
 const colors = {
   light: {
     text: "#1A1A2E",
-    tint: "#2D7D6F",
+    tint: "#05503C",
 
     background: "#F5F7FA",
     foreground: "#1A1A2E",
@@ -9,17 +9,17 @@ const colors = {
     card: "#FFFFFF",
     cardForeground: "#1A1A2E",
 
-    primary: "#2D7D6F",
-    primaryDark: "#1B5E52",
+    primary: "#05503C",
+    primaryDark: "#03382A",
     primaryForeground: "#FFFFFF",
 
-    secondary: "#E8F5F2",
-    secondaryForeground: "#2D7D6F",
+    secondary: "#E6F0ED",
+    secondaryForeground: "#05503C",
 
     muted: "#F0F2F5",
     mutedForeground: "#7A8699",
 
-    accent: "#2D7D6F",
+    accent: "#05503C",
     accentForeground: "#FFFFFF",
 
     rewards: "#F59E0B",
@@ -34,47 +34,47 @@ const colors = {
     surface: "#FFFFFF",
     surfaceSecondary: "#F0F2F5",
 
-    alertBorder: "#2D7D6F",
-    alertBg: "#EEF7F5",
+    alertBorder: "#05503C",
+    alertBg: "#E6F0ED",
   },
 
   dark: {
     text: "#F8FAFC",
-    tint: "#4DB6A4",
+    tint: "#4CAF8F",
 
-    background: "#0F1F1C",
+    background: "#0A1F18",
     foreground: "#F8FAFC",
 
-    card: "#1A2E2B",
+    card: "#112B20",
     cardForeground: "#F8FAFC",
 
-    primary: "#4DB6A4",
-    primaryDark: "#2D7D6F",
-    primaryForeground: "#0F1F1C",
+    primary: "#4CAF8F",
+    primaryDark: "#05503C",
+    primaryForeground: "#0A1F18",
 
-    secondary: "#0F2E28",
-    secondaryForeground: "#4DB6A4",
+    secondary: "#0A2E20",
+    secondaryForeground: "#4CAF8F",
 
-    muted: "#1A2E2B",
+    muted: "#112B20",
     mutedForeground: "#94A3B8",
 
-    accent: "#4DB6A4",
-    accentForeground: "#0F1F1C",
+    accent: "#4CAF8F",
+    accentForeground: "#0A1F18",
 
     rewards: "#FCD34D",
-    rewardsForeground: "#0F1F1C",
+    rewardsForeground: "#0A1F18",
 
     destructive: "#F87171",
-    destructiveForeground: "#0F1F1C",
+    destructiveForeground: "#0A1F18",
 
-    border: "#243D39",
-    input: "#243D39",
+    border: "#1A3D2E",
+    input: "#1A3D2E",
 
-    surface: "#1A2E2B",
-    surfaceSecondary: "#0F1F1C",
+    surface: "#112B20",
+    surfaceSecondary: "#0A1F18",
 
-    alertBorder: "#4DB6A4",
-    alertBg: "#0F2E28",
+    alertBorder: "#4CAF8F",
+    alertBg: "#0A2E20",
   },
 
   radius: 12,

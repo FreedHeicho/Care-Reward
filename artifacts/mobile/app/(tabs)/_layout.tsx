@@ -8,6 +8,8 @@ import React from "react";
 import { Platform, StyleSheet, View, useColorScheme } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { useAuth } from "@/context/AuthContext";
+import { NEW_OPPORTUNITIES_COUNT } from "@/constants/data";
 
 function NativeTabLayout() {
   return (
@@ -39,9 +41,12 @@ function NativeTabLayout() {
 function ClassicTabLayout() {
   const colors = useColors();
   const colorScheme = useColorScheme();
+  const { user } = useAuth();
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
+
+  const pointsBalance = user?.pointsBalance ?? 245;
 
   return (
     <Tabs
@@ -49,6 +54,15 @@ function ClassicTabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,
         headerShown: true,
+        headerStyle: {
+          backgroundColor: colors.primary,
+        },
+        headerTintColor: "#FFFFFF",
+        headerTitleStyle: {
+          fontWeight: "700",
+          fontSize: 18,
+          color: "#FFFFFF",
+        },
         tabBarStyle: {
           position: "absolute",
           backgroundColor: isIOS ? "transparent" : colors.card,
@@ -72,6 +86,16 @@ function ClassicTabLayout() {
           fontWeight: "600",
           marginBottom: isWeb ? 8 : 0,
         },
+        tabBarBadgeStyle: {
+          backgroundColor: "#F59E0B",
+          color: "#FFFFFF",
+          fontSize: 10,
+          fontWeight: "700",
+          minWidth: 18,
+          height: 18,
+          borderRadius: 9,
+          lineHeight: 18,
+        },
       }}
     >
       <Tabs.Screen
@@ -90,6 +114,7 @@ function ClassicTabLayout() {
         name="opportunities"
         options={{
           title: "Opportunities",
+          tabBarBadge: NEW_OPPORTUNITIES_COUNT,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="bolt" tintColor={color} size={22} />
@@ -114,6 +139,17 @@ function ClassicTabLayout() {
         name="rewards"
         options={{
           title: "Points",
+          tabBarBadge: pointsBalance,
+          tabBarBadgeStyle: {
+            backgroundColor: colors.primary,
+            color: "#FFFFFF",
+            fontSize: 9,
+            fontWeight: "700",
+            minWidth: 20,
+            height: 18,
+            borderRadius: 9,
+            lineHeight: 18,
+          },
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="star" tintColor={color} size={22} />
