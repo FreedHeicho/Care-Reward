@@ -121,7 +121,7 @@ export default function OpportunityDetailScreen() {
         {opp.category === "medication" && (
           <TouchableOpacity
             style={[styles.doctorNoteBtn, { borderColor: colors.primary, backgroundColor: colors.primary + "10" }]}
-            onPress={() => {}}
+            onPress={() => router.push(`/doctor-note?id=${opp.id}` as never)}
           >
             <Feather name="file-text" size={16} color={colors.primary} />
             <Text style={[styles.doctorNoteBtnText, { color: colors.primary }]}>

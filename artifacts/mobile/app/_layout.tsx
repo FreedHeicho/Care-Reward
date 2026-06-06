@@ -54,6 +54,10 @@ function RootLayoutNav() {
         name="member-card"
         options={{ title: "Member ID Card", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="doctor-note"
+        options={{ title: "Doctor Note", headerBackTitle: "Back" }}
+      />
     </Stack>
   );
 }
