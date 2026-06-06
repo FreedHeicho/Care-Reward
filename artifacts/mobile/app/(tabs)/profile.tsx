@@ -163,6 +163,11 @@ export default function ProfileScreen() {
         </View>
 
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>MEMBER CARD</Text>
+          <SettingRow icon="credit-card" label="View Member ID Card" onPress={() => router.push("/member-card" as never)} />
+        </View>
+
+        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>HEALTH RECORDS</Text>
           <SettingRow icon="activity" label="Connect EMR / Health Records" onPress={() => router.push("/emr-access" as never)} />
           <SettingRow icon="plus-circle" label="Log Upcoming Care" onPress={() => router.push("/log-upcoming-care" as never)} />

@@ -50,6 +50,10 @@ function RootLayoutNav() {
         name="how-to-earn"
         options={{ title: "How to Earn Points", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="member-card"
+        options={{ title: "Member ID Card", headerBackTitle: "Back" }}
+      />
     </Stack>
   );
 }

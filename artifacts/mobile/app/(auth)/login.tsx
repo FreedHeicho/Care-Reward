@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,10 +15,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+
+const LOGO = require("../../assets/carealign-logo.png");
 
 export default function LoginScreen() {
   const colors = useColors();
@@ -68,15 +72,11 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoRow}>
-            <View style={[styles.logoIcon, { backgroundColor: colors.primary }]}>
-              <Feather name="heart" size={28} color="#fff" />
-            </View>
-            <View>
-              <Text style={[styles.logoTitle, { color: colors.foreground }]}>CareReward</Text>
-              <Text style={[styles.logoSub, { color: colors.mutedForeground }]}>
-                Health · Savings · Rewards
-              </Text>
-            </View>
+            <Image
+              source={LOGO}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
 
           <View style={styles.hero}>
@@ -226,7 +226,8 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   gradient: { ...StyleSheet.absoluteFillObject },
   scroll: { paddingHorizontal: 24, gap: 28 },
-  logoRow: { flexDirection: "row", alignItems: "center", gap: 14 },
+  logoRow: { alignItems: "flex-start", paddingVertical: 4 },
+  logoImage: { width: 200, height: 52 },
   logoIcon: {
     width: 52,
     height: 52,
