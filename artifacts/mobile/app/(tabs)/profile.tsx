@@ -68,8 +68,6 @@ export default function ProfileScreen() {
   const { user, signOut } = useAuth();
 
   const [notificationsOn, setNotificationsOn] = useState(true);
-  const [careReminders, setCareReminders] = useState(true);
-  const [newOpportunities, setNewOpportunities] = useState(true);
 
   const handleSignOut = () => {
     if (Platform.OS === "web") {
@@ -147,18 +145,10 @@ export default function ProfileScreen() {
             onToggle={setNotificationsOn}
           />
           <SettingRow
-            icon="calendar"
-            label="Care Reminders"
-            toggle
-            toggleValue={careReminders}
-            onToggle={setCareReminders}
-          />
-          <SettingRow
-            icon="zap"
-            label="New Opportunities"
-            toggle
-            toggleValue={newOpportunities}
-            onToggle={setNewOpportunities}
+            icon="settings"
+            label="Manage All Alerts"
+            value="14 enabled"
+            onPress={() => router.push("/notifications" as never)}
           />
         </View>
 

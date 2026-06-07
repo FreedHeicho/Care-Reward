@@ -58,6 +58,10 @@ function RootLayoutNav() {
         name="doctor-note"
         options={{ title: "Doctor Note", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="notifications"
+        options={{ title: "Notification Preferences", headerBackTitle: "Back" }}
+      />
     </Stack>
   );
 }
