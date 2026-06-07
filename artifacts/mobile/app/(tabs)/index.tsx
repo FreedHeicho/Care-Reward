@@ -21,6 +21,7 @@ import {
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 import { OpportunitiesSheet } from "@/components/OpportunitiesSheet";
+import { DeductibleTracker } from "@/components/DeductibleTracker";
 
 function ActivityRow({ event }: { event: ActivityEvent }) {
   const colors = useColors();
@@ -138,6 +139,9 @@ export default function DashboardScreen() {
             We help you navigate your health journey
           </Text>
         </View>
+
+        {/* Deductible Tracker */}
+        <DeductibleTracker />
 
         {/* Notification Alerts */}
         <TouchableOpacity
