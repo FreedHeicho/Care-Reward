@@ -176,44 +176,44 @@ export default function DashboardScreen() {
           <Feather name="arrow-right" size={18} color="#fff" />
         </TouchableOpacity>
 
-        {/* Get Started */}
+        {/* Quick Actions */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Get Started</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Quick Actions</Text>
           <View style={styles.getStartedGrid}>
             <TouchableOpacity
               style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => router.push("/how-to-earn" as never)}
+              onPress={() => router.push("/find-provider" as never)}
             >
+              <View style={[styles.quickActionIcon, { backgroundColor: colors.primary + "15" }]}>
+                <Feather name="search" size={20} color={colors.primary} />
+              </View>
               <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
-                How to Earn Points
+                Find a Provider
               </Text>
               <Text style={[styles.getStartedCardDesc, { color: colors.mutedForeground }]}>
-                Understand how to earn and redeem
+                Browse in-network doctors and see your copay upfront
               </Text>
-              <TouchableOpacity
-                style={[styles.getStartedCardBtn, { backgroundColor: colors.primaryDark }]}
-                onPress={() => router.push("/how-to-earn" as never)}
-              >
-                <Text style={styles.getStartedCardBtnText}>Learn More</Text>
-              </TouchableOpacity>
+              <View style={[styles.getStartedCardBtn, { backgroundColor: colors.primaryDark }]}>
+                <Text style={styles.getStartedCardBtnText}>Search</Text>
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => router.push("/(tabs)/care" as never)}
+              onPress={() => router.push("/how-to-earn" as never)}
             >
+              <View style={[styles.quickActionIcon, { backgroundColor: "#F59E0B15" }]}>
+                <Feather name="star" size={20} color="#F59E0B" />
+              </View>
               <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
-                Explanation of Benefits
+                How to Earn Points
               </Text>
               <Text style={[styles.getStartedCardDesc, { color: colors.mutedForeground }]}>
-                Understand your healthcare coverage
+                Understand how to earn and redeem rewards
               </Text>
-              <TouchableOpacity
-                style={[styles.getStartedCardBtn, { backgroundColor: colors.primaryDark }]}
-                onPress={() => router.push("/(tabs)/claims" as never)}
-              >
-                <Text style={styles.getStartedCardBtnText}>Benefits</Text>
-              </TouchableOpacity>
+              <View style={[styles.getStartedCardBtn, { backgroundColor: colors.primaryDark }]}>
+                <Text style={styles.getStartedCardBtnText}>Learn More</Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -357,6 +357,11 @@ const styles = StyleSheet.create({
   section: { gap: 12 },
   sectionTitle: { fontSize: 18, fontWeight: "800" },
   getStartedGrid: { flexDirection: "row", gap: 12 },
+  quickActionIcon: {
+    width: 40, height: 40, borderRadius: 10,
+    alignItems: "center", justifyContent: "center",
+    marginBottom: 2,
+  },
   getStartedCard: {
     flex: 1,
     borderRadius: 14,

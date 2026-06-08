@@ -159,6 +159,7 @@ export default function ProfileScreen() {
 
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>HEALTH RECORDS</Text>
+          <SettingRow icon="search" label="Find a Provider" onPress={() => router.push("/find-provider" as never)} />
           <SettingRow icon="activity" label="Connect EMR / Health Records" onPress={() => router.push("/emr-access" as never)} />
           <SettingRow icon="plus-circle" label="Log Upcoming Care" onPress={() => router.push("/log-upcoming-care" as never)} />
           <SettingRow icon="award" label="How to Earn Points" onPress={() => router.push("/how-to-earn" as never)} />

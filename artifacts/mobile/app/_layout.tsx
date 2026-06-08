@@ -67,6 +67,14 @@ function RootLayoutNav() {
         name="health-assessment"
         options={{ title: "Health Assessment", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="find-provider"
+        options={{ title: "Find a Provider", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="provider/[id]"
+        options={{ title: "Provider Details", headerBackTitle: "Back" }}
+      />
     </Stack>
   );
 }
