@@ -58,6 +58,7 @@ export interface ActivityEvent {
   dateLabel: string;
   icon: "heart" | "shield" | "check-circle" | "mail" | "activity" | "star";
   iconBg: string;
+  iconColor: string;
 }
 
 export interface UserPlan {
@@ -297,50 +298,55 @@ export const MOCK_ACTIVITY: ActivityEvent[] = [
     title: "You completed your annual wellness visit",
     description: "Annual wellness visit completed",
     points: 27,
-    date: "2025-06-04",
-    dateLabel: "JUN\n4",
+    date: "2025-06-15",
+    dateLabel: "JUN\n15",
     icon: "heart",
     iconBg: "#E8F5F2",
+    iconColor: "#2D7D6F",
   },
   {
     id: "act-2",
     title: "Refilled Amlodipine prescription",
     description: "Prescription refill completed",
     points: 9,
-    date: "2025-06-03",
-    dateLabel: "JUN\n3",
+    date: "2025-06-14",
+    dateLabel: "JUN\n14",
     icon: "shield",
-    iconBg: "#E8F5F2",
+    iconBg: "#F0F2F5",
+    iconColor: "#7A8699",
   },
   {
     id: "act-3",
     title: "4 day Admission at H&H Jacobi Hospital",
     description: "Hospital admission completed",
     points: 200,
-    date: "2025-05-31",
-    dateLabel: "MAY\n31",
+    date: "2025-06-11",
+    dateLabel: "JUN\n11",
     icon: "check-circle",
     iconBg: "#F0F2F5",
+    iconColor: "#7A8699",
   },
   {
     id: "act-4",
     title: "Switch your Amlodipine to mail order",
     description: "Mail order prescription setup",
     points: 20,
-    date: "2025-05-29",
-    dateLabel: "MAY\n29",
+    date: "2025-06-09",
+    dateLabel: "JUN\n9",
     icon: "mail",
     iconBg: "#FEF3C7",
+    iconColor: "#F59E0B",
   },
   {
     id: "act-5",
     title: "7 day post admission to primary care",
     description: "Post-admission follow-up visit",
     points: 100,
-    date: "2025-05-26",
-    dateLabel: "MAY\n26",
+    date: "2025-06-06",
+    dateLabel: "JUN\n6",
     icon: "check-circle",
     iconBg: "#F0F2F5",
+    iconColor: "#7A8699",
   },
 ];
 

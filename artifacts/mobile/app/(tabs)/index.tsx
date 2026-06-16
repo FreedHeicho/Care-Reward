@@ -21,24 +21,26 @@ import {
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 import { OpportunitiesSheet } from "@/components/OpportunitiesSheet";
-import { DeductibleTracker } from "@/components/DeductibleTracker";
 
 function ActivityRow({ event }: { event: ActivityEvent }) {
   const colors = useColors();
   return (
-    <View style={[styles.activityRow, { borderBottomColor: colors.border }]}>
+    <View style={styles.activityRow}>
       <View style={styles.activityLeft}>
-        <Text style={[styles.activityDate, { color: colors.mutedForeground }]}>
-          {event.dateLabel}
+        <Text style={[styles.activityMonth, { color: colors.mutedForeground }]}>
+          {event.dateLabel.split("\n")[0]}
+        </Text>
+        <Text style={[styles.activityDay, { color: colors.foreground }]}>
+          {event.dateLabel.split("\n")[1]}
         </Text>
         <View style={[styles.activityLine, { backgroundColor: colors.border }]} />
       </View>
       <View style={[styles.activityCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={[styles.activityIconWrap, { backgroundColor: event.iconBg }]}>
           <Feather
-            name={event.icon === "check-circle" ? "check-circle" : event.icon === "heart" ? "heart" : event.icon === "shield" ? "shield" : event.icon === "mail" ? "mail" : "activity"}
+            name={event.icon}
             size={18}
-            color={colors.primary}
+            color={event.iconColor || colors.primary}
           />
         </View>
         <View style={styles.activityContent}>
@@ -52,6 +54,7 @@ function ActivityRow({ event }: { event: ActivityEvent }) {
         <Text style={[styles.activityPoints, { color: colors.primary }]}>
           +{event.points} points
         </Text>
+        <Feather name="chevron-down" size={14} color={colors.mutedForeground} />
       </View>
     </View>
   );
@@ -70,7 +73,7 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     navigation.setOptions({
-      title: `Hi, ${firstName}! 👋`,
+      title: `Hi ${firstName}!`,
       headerRight: () => (
         <TouchableOpacity
           onPress={() => setSheetVisible(true)}
@@ -112,8 +115,8 @@ export default function DashboardScreen() {
       >
         {/* Points Balance Card */}
         <View style={[styles.pointsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={[styles.pointsIconCircle, { backgroundColor: colors.primary }]}>
-            <Feather name="star" size={28} color="#F59E0B" />
+          <View style={[styles.pointsIconCircle, { backgroundColor: "#05C5B6" }]}>
+            <Feather name="star" size={28} color="#FCD34D" />
           </View>
           <Text style={[styles.pointsValue, { color: colors.primary }]}>
             {(user?.pointsBalance ?? 245).toLocaleString()} Points
@@ -122,7 +125,7 @@ export default function DashboardScreen() {
             You are your best health advocate. We are here to enable you. Keep up the amazing work!
           </Text>
           <TouchableOpacity
-            style={[styles.redeemBtn, { backgroundColor: colors.primaryDark }]}
+            style={[styles.redeemBtn, { backgroundColor: colors.primary }]}
             onPress={() => router.push("/redeem" as never)}
             activeOpacity={0.85}
           >
@@ -131,7 +134,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Welcome Banner */}
-        <View style={[styles.welcomeBanner, { backgroundColor: colors.muted }]}>
+        <View style={[styles.welcomeBanner, { backgroundColor: "#E6F0ED" }]}>
           <Text style={[styles.welcomeTitle, { color: colors.foreground }]}>
             Welcome to CareReward!
           </Text>
@@ -140,19 +143,15 @@ export default function DashboardScreen() {
           </Text>
         </View>
 
-        {/* Deductible Tracker */}
-        <DeductibleTracker />
-
         {/* Notification Alerts */}
         <TouchableOpacity
-          style={[styles.alertBanner, { backgroundColor: colors.alertBg, borderLeftColor: colors.primary }]}
+          style={[styles.alertBanner, { backgroundColor: "#E6F0ED", borderLeftColor: "#05C5B6" }]}
           onPress={() => setSheetVisible(true)}
         >
-          <Feather name="bell" size={18} color={colors.primary} />
+          <Feather name="bell" size={18} color="#05C5B6" />
           <Text style={[styles.alertText, { color: colors.foreground }]}>
             You have {NEW_OPPORTUNITIES_COUNT} new opportunities
           </Text>
-          <Feather name="chevron-right" size={16} color={colors.primary} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -163,12 +162,11 @@ export default function DashboardScreen() {
           <Text style={[styles.alertText, { color: colors.foreground }]}>
             You have {MISSED_OPPORTUNITIES_COUNT} missed opportunities
           </Text>
-          <Feather name="chevron-right" size={16} color="#F59E0B" />
         </TouchableOpacity>
 
         {/* Find More CTA */}
         <TouchableOpacity
-          style={[styles.findMoreBtn, { backgroundColor: colors.primaryDark }]}
+          style={[styles.findMoreBtn, { backgroundColor: colors.primary }]}
           onPress={() => setSheetVisible(true)}
           activeOpacity={0.85}
         >
@@ -176,44 +174,44 @@ export default function DashboardScreen() {
           <Feather name="arrow-right" size={18} color="#fff" />
         </TouchableOpacity>
 
-        {/* Quick Actions */}
+        {/* Get Started */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Get Started</Text>
           <View style={styles.getStartedGrid}>
-            <TouchableOpacity
-              style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => router.push("/find-provider" as never)}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: colors.primary + "15" }]}>
-                <Feather name="search" size={20} color={colors.primary} />
-              </View>
-              <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
-                Find a Provider
-              </Text>
-              <Text style={[styles.getStartedCardDesc, { color: colors.mutedForeground }]}>
-                Browse in-network doctors and see your copay upfront
-              </Text>
-              <View style={[styles.getStartedCardBtn, { backgroundColor: colors.primaryDark }]}>
-                <Text style={styles.getStartedCardBtnText}>Search</Text>
-              </View>
-            </TouchableOpacity>
-
             <TouchableOpacity
               style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               onPress={() => router.push("/how-to-earn" as never)}
             >
-              <View style={[styles.quickActionIcon, { backgroundColor: "#F59E0B15" }]}>
-                <Feather name="star" size={20} color="#F59E0B" />
-              </View>
               <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
                 How to Earn Points
               </Text>
               <Text style={[styles.getStartedCardDesc, { color: colors.mutedForeground }]}>
-                Understand how to earn and redeem rewards
+                Understand how to earn and redeem
               </Text>
-              <View style={[styles.getStartedCardBtn, { backgroundColor: colors.primaryDark }]}>
+              <TouchableOpacity
+                style={[styles.getStartedCardBtn, { backgroundColor: colors.primary }]}
+                onPress={() => router.push("/how-to-earn" as never)}
+              >
                 <Text style={styles.getStartedCardBtnText}>Learn More</Text>
-              </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => router.push("/(tabs)/claims" as never)}
+            >
+              <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
+                Explanation of Benefits
+              </Text>
+              <Text style={[styles.getStartedCardDesc, { color: colors.mutedForeground }]}>
+                Understand your healthcare coverage
+              </Text>
+              <TouchableOpacity
+                style={[styles.getStartedCardBtn, { backgroundColor: colors.primary }]}
+                onPress={() => router.push("/(tabs)/claims" as never)}
+              >
+                <Text style={styles.getStartedCardBtnText}>Benefits</Text>
+              </TouchableOpacity>
             </TouchableOpacity>
           </View>
         </View>
@@ -224,7 +222,7 @@ export default function DashboardScreen() {
             <Text style={[styles.sectionTitle, { color: colors.primary }]}>
               Recommended for You
             </Text>
-            <View style={[styles.oppCountBadge, { backgroundColor: colors.primaryDark }]}>
+            <View style={[styles.oppCountBadge, { backgroundColor: colors.primary }]}>
               <Text style={styles.oppCountText}>
                 {NEW_OPPORTUNITIES_COUNT} Opportunities
               </Text>
@@ -237,7 +235,7 @@ export default function DashboardScreen() {
               onPress={() => router.push(`/opportunity/${topOpp.id}` as never)}
               activeOpacity={0.8}
             >
-              <View style={[styles.oppCardLeftBar, { backgroundColor: "#6366F1" }]} />
+              <View style={[styles.oppCardLeftBar, { backgroundColor: "#8B5CF6" }]} />
               <View style={styles.oppCardContent}>
                 <View style={styles.oppCardHeader}>
                   <View style={[styles.oppMedIcon, { backgroundColor: "#EDE9FE" }]}>
@@ -253,7 +251,7 @@ export default function DashboardScreen() {
                   </View>
                 </View>
 
-                <View style={[styles.oppPointsBadge, { backgroundColor: colors.primary }]}>
+                <View style={[styles.oppPointsBadge, { backgroundColor: "#05C5B6" }]}>
                   <Text style={styles.oppPointsBadgeText}>
                     {topOpp.points} points + {topOpp.pointsMonthly} points monthly
                   </Text>
@@ -267,7 +265,7 @@ export default function DashboardScreen() {
                 ))}
 
                 <TouchableOpacity
-                  style={[styles.howToEarnBtn, { backgroundColor: colors.primaryDark }]}
+                  style={[styles.howToEarnBtn, { backgroundColor: colors.primary }]}
                   onPress={() => router.push(`/opportunity/${topOpp.id}` as never)}
                 >
                   <Text style={styles.howToEarnText}>How To Earn</Text>
@@ -275,12 +273,6 @@ export default function DashboardScreen() {
               </View>
             </TouchableOpacity>
           )}
-
-          <TouchableOpacity onPress={() => setSheetVisible(true)}>
-            <Text style={[styles.seeAllOpps, { color: colors.primary }]}>
-              See all {NEW_OPPORTUNITIES_COUNT} opportunities →
-            </Text>
-          </TouchableOpacity>
         </View>
 
         {/* Recent Activity */}
@@ -305,6 +297,8 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { paddingHorizontal: 16, gap: 14 },
+
+  // Points card
   pointsCard: {
     borderRadius: 16,
     padding: 24,
@@ -329,6 +323,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   redeemBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+
+  // Welcome banner
   welcomeBanner: {
     borderRadius: 14,
     padding: 16,
@@ -336,6 +332,8 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: { fontSize: 16, fontWeight: "700" },
   welcomeSubtitle: { fontSize: 14 },
+
+  // Alert banners
   alertBanner: {
     flexDirection: "row",
     alignItems: "center",
@@ -345,6 +343,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
   },
   alertText: { fontSize: 14, fontWeight: "500", flex: 1 },
+
+  // Find more
   findMoreBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -354,14 +354,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   findMoreText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+
+  // Sections
   section: { gap: 12 },
   sectionTitle: { fontSize: 18, fontWeight: "800" },
+
+  // Get Started
   getStartedGrid: { flexDirection: "row", gap: 12 },
-  quickActionIcon: {
-    width: 40, height: 40, borderRadius: 10,
-    alignItems: "center", justifyContent: "center",
-    marginBottom: 2,
-  },
   getStartedCard: {
     flex: 1,
     borderRadius: 14,
@@ -378,6 +377,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   getStartedCardBtnText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+
+  // Recommended
   recommendedHeader: { flexDirection: "row", alignItems: "center", gap: 10, flexWrap: "wrap" },
   oppCountBadge: {
     paddingHorizontal: 10,
@@ -420,14 +421,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   howToEarnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
-  seeAllOpps: { fontSize: 14, fontWeight: "600", textAlign: "center", paddingVertical: 4 },
+
+  // Activity
   activityRow: {
     flexDirection: "row",
     gap: 12,
     minHeight: 80,
   },
   activityLeft: { width: 40, alignItems: "center", paddingTop: 8 },
-  activityDate: { fontSize: 11, fontWeight: "700", textAlign: "center", lineHeight: 14 },
+  activityMonth: { fontSize: 10, fontWeight: "700", textAlign: "center", letterSpacing: 0.5 },
+  activityDay: { fontSize: 18, fontWeight: "800", textAlign: "center" },
   activityLine: { width: 1, flex: 1, marginTop: 6, marginBottom: -14 },
   activityCard: {
     flex: 1,
