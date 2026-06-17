@@ -105,14 +105,21 @@ function OppRow({ opp, onPress }: { opp: Opportunity; onPress: () => void }) {
 interface Props {
   visible: boolean;
   onClose: () => void;
+  startFilter?: FilterType;
 }
 
-export function OpportunitiesSheet({ visible, onClose }: Props) {
+export function OpportunitiesSheet({ visible, onClose, startFilter = "all" }: Props) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [activeFilter, setActiveFilter] = useState<FilterType>(startFilter);
+
+  useEffect(() => {
+    if (visible) {
+      setActiveFilter(startFilter);
+    }
+  }, [visible, startFilter]);
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 

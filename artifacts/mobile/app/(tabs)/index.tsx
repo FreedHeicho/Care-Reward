@@ -68,6 +68,7 @@ export default function DashboardScreen() {
 
   const navigation = useNavigation();
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [sheetStartFilter, setSheetStartFilter] = useState<"all" | "new" | "missed">("all");
   const firstName = user?.name?.split(" ")[0] ?? "Sarah";
   const topOpp = MOCK_OPPORTUNITIES.find((o) => o.id === "opp-1");
 
@@ -145,20 +146,26 @@ export default function DashboardScreen() {
 
         {/* Notification Alerts */}
         <TouchableOpacity
-          style={[styles.alertBanner, { backgroundColor: "#E6F0ED", borderLeftColor: "#05C5B6" }]}
-          onPress={() => setSheetVisible(true)}
+          style={[styles.alertBanner, { backgroundColor: "#DCFCE7", borderLeftColor: "#16A34A" }]}
+          onPress={() => {
+            setSheetStartFilter("new");
+            setSheetVisible(true);
+          }}
         >
-          <Feather name="bell" size={18} color="#05C5B6" />
+          <Feather name="bell" size={18} color="#16A34A" />
           <Text style={[styles.alertText, { color: colors.foreground }]}>
             You have {NEW_OPPORTUNITIES_COUNT} new opportunities
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.alertBanner, { backgroundColor: "#FEF3C7", borderLeftColor: "#F59E0B" }]}
-          onPress={() => setSheetVisible(true)}
+          style={[styles.alertBanner, { backgroundColor: "#FEE2E2", borderLeftColor: "#DC2626" }]}
+          onPress={() => {
+            setSheetStartFilter("missed");
+            setSheetVisible(true);
+          }}
         >
-          <Feather name="bell" size={18} color="#F59E0B" />
+          <Feather name="bell" size={18} color="#DC2626" />
           <Text style={[styles.alertText, { color: colors.foreground }]}>
             You have {MISSED_OPPORTUNITIES_COUNT} missed opportunities
           </Text>
@@ -211,6 +218,24 @@ export default function DashboardScreen() {
                 onPress={() => router.push("/(tabs)/claims" as never)}
               >
                 <Text style={styles.getStartedCardBtnText}>Benefits</Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => router.push("/emr-access" as never)}
+            >
+              <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
+                Connect Your Health Data
+              </Text>
+              <Text style={[styles.getStartedCardDesc, { color: colors.mutedForeground }]}>
+                Link your medical records and labs
+              </Text>
+              <TouchableOpacity
+                style={[styles.getStartedCardBtn, { backgroundColor: colors.primary }]}
+                onPress={() => router.push("/emr-access" as never)}
+              >
+                <Text style={styles.getStartedCardBtnText}>Connect</Text>
               </TouchableOpacity>
             </TouchableOpacity>
           </View>
@@ -289,6 +314,7 @@ export default function DashboardScreen() {
       <OpportunitiesSheet
         visible={sheetVisible}
         onClose={() => setSheetVisible(false)}
+        startFilter={sheetStartFilter}
       />
     </View>
   );
@@ -359,26 +385,34 @@ const styles = StyleSheet.create({
   section: { gap: 12 },
   sectionTitle: { fontSize: 18, fontWeight: "800" },
 
-  // Get Started
-  getStartedGrid: { flexDirection: "row", gap: 12 },
+  // Get Started (compact, 3-column wrap)
+  getStartedGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
   getStartedCard: {
-    flex: 1,
-    borderRadius: 14,
-    padding: 16,
+    width: "47%",
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    gap: 8,
+    gap: 4,
   },
-  getStartedCardTitle: { fontSize: 14, fontWeight: "800", lineHeight: 20 },
-  getStartedCardDesc: { fontSize: 12, lineHeight: 17, flex: 1 },
+  getStartedCardTitle: { fontSize: 13, fontWeight: "800", lineHeight: 18 },
+  getStartedCardDesc: {
+    fontSize: 11,
+    lineHeight: 15,
+    minHeight: 30,
+  },
   getStartedCardBtn: {
-    borderRadius: 8,
-    paddingVertical: 10,
+    borderRadius: 6,
+    paddingVertical: 7,
     alignItems: "center",
-    marginTop: 4,
+    marginTop: 2,
   },
-  getStartedCardBtnText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+  getStartedCardBtnText: { color: "#fff", fontSize: 12, fontWeight: "700" },
 
-  // Recommended
+  // Recommended (compact)
   recommendedHeader: { flexDirection: "row", alignItems: "center", gap: 10, flexWrap: "wrap" },
   oppCountBadge: {
     paddingHorizontal: 10,
@@ -393,34 +427,34 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   oppCardLeftBar: { width: 5 },
-  oppCardContent: { flex: 1, padding: 16, gap: 12 },
-  oppCardHeader: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
+  oppCardContent: { flex: 1, padding: 12, gap: 8 },
+  oppCardHeader: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
   oppMedIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
-  oppMedEmoji: { fontSize: 22 },
+  oppMedEmoji: { fontSize: 18 },
   oppCardTitles: { flex: 1 },
-  oppCardTitle: { fontSize: 15, fontWeight: "700" },
-  oppCardSub: { fontSize: 13, marginTop: 2 },
+  oppCardTitle: { fontSize: 14, fontWeight: "700" },
+  oppCardSub: { fontSize: 12, marginTop: 1 },
   oppPointsBadge: {
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     alignItems: "center",
   },
-  oppPointsBadgeText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  oppPointsBadgeText: { color: "#fff", fontSize: 13, fontWeight: "700" },
   oppBenefit: { flexDirection: "row", alignItems: "center", gap: 8 },
-  oppBenefitText: { fontSize: 14, flex: 1 },
+  oppBenefitText: { fontSize: 13, flex: 1 },
   howToEarnBtn: {
     borderRadius: 8,
-    paddingVertical: 13,
+    paddingVertical: 10,
     alignItems: "center",
   },
-  howToEarnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  howToEarnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
 
   // Activity
   activityRow: {
