@@ -32,7 +32,7 @@ function NativeTabLayout() {
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="find-more">
         <Icon sf={{ default: "magnifyingglass", selected: "magnifyingglass" }} />
-        <Label>Find More</Label>
+        <Label>Find More Opportunities</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person", selected: "person.fill" }} />
@@ -165,7 +165,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="find-more"
         options={{
-          title: "Find More",
+          title: "Find More Opportunities",
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="magnifyingglass" tintColor={color} size={22} />

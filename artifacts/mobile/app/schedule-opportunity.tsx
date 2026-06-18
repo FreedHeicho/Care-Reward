@@ -30,16 +30,16 @@ export default function ScheduleOpportunityScreen() {
     if (!selected) return;
 
     if (selected === "for-me") {
+      router.push("/find-provider" as never);
+    } else {
       setConfirmed(true);
       if (Platform.OS !== "web") {
         Alert.alert(
-          "Request Submitted!",
-          "Our team will reach out within 24 hours to confirm your appointment.",
+          "Appointment Logged!",
+          "Your appointment details have been saved. We'll send you a reminder before the visit.",
           [{ text: "Done", onPress: () => router.push("/(tabs)" as never) }]
         );
       }
-    } else {
-      router.push("/find-provider" as never);
     }
   };
 
@@ -113,10 +113,10 @@ export default function ScheduleOpportunityScreen() {
                 )}
               </View>
               <Text style={[styles.choiceDesc, { color: colors.mutedForeground }]}>
-                We'll coordinate with your provider and contact you to confirm the appointment details.
+                Browse in-network providers near you and book directly at a time that works for you.
               </Text>
               <View style={styles.choiceBullets}>
-                {["No phone calls needed", "We handle provider coordination", "SMS confirmation sent to you"].map((b, i) => (
+                {["Search in-network providers", "See real-time availability", "Earn points on completion"].map((b, i) => (
                   <View key={i} style={styles.choiceBullet}>
                     <Feather name="check" size={13} color={colors.primary} />
                     <Text style={[styles.choiceBulletText, { color: colors.mutedForeground }]}>{b}</Text>
@@ -152,10 +152,10 @@ export default function ScheduleOpportunityScreen() {
                 )}
               </View>
               <Text style={[styles.choiceDesc, { color: colors.mutedForeground }]}>
-                Browse available providers in your network and book directly at a time that works for you.
+                Log your appointment yourself. We'll save the details and send a reminder before your visit.
               </Text>
               <View style={styles.choiceBullets}>
-                {["Search in-network providers", "See availability in real time", "Earn points on completion"].map((b, i) => (
+                {["Quick date & time entry", "Reminder sent before visit", "Points credited on completion"].map((b, i) => (
                   <View key={i} style={styles.choiceBullet}>
                     <Feather name="check" size={13} color="#8B5CF6" />
                     <Text style={[styles.choiceBulletText, { color: colors.mutedForeground }]}>{b}</Text>
