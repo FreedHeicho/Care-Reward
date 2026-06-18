@@ -74,6 +74,14 @@ function RootLayoutNav() {
         name="provider/[id]"
         options={{ title: "Provider Details", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="opportunity-variants/[id]"
+        options={{ title: "Choose Your Path", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="schedule-opportunity"
+        options={{ title: "Schedule Appointment", headerBackTitle: "Back" }}
+      />
     </Stack>
   );
 }

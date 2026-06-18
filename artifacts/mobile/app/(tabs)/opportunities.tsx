@@ -21,13 +21,13 @@ import {
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
-const CATEGORY_OPTIONS: { key: "all" | OpportunityCategory; label: string }[] = [
-  { key: "all", label: "All Categories" },
-  { key: "medication", label: "Medication" },
-  { key: "preventive", label: "Preventive Care" },
-  { key: "mail-delivery", label: "Mail Delivery" },
-  { key: "specialist", label: "Specialist" },
-  { key: "upcoming", label: "Upcoming Care" },
+const CATEGORY_OPTIONS: { key: "all" | OpportunityCategory; label: string; icon: string }[] = [
+  { key: "all", label: "All Categories", icon: "grid" },
+  { key: "medication", label: "Care Site Alternative", icon: "activity" },
+  { key: "mail-delivery", label: "Mail Delivery", icon: "package" },
+  { key: "upcoming", label: "Care Protocol Compliance", icon: "clipboard" },
+  { key: "preventive", label: "Preventive Care", icon: "shield" },
+  { key: "specialist", label: "Specialist", icon: "user-check" },
 ];
 
 const ICON_EMOJI: Record<string, string> = {
@@ -52,7 +52,7 @@ function OppCard({ opp }: { opp: Opportunity }) {
     if (opp.action === "log-care") {
       router.push("/log-upcoming-care" as never);
     } else {
-      router.push(`/opportunity/${opp.id}` as never);
+      router.push(`/opportunity-variants/${opp.id}` as never);
     }
   };
 
@@ -60,7 +60,7 @@ function OppCard({ opp }: { opp: Opportunity }) {
     if (opp.action === "log-care") {
       router.push("/log-upcoming-care" as never);
     } else {
-      router.push(`/opportunity/${opp.id}` as never);
+      router.push(`/opportunity-variants/${opp.id}` as never);
     }
   };
 
@@ -202,13 +202,12 @@ export default function OpportunitiesScreen() {
 
         {/* Missed alert */}
         <TouchableOpacity
-          style={[styles.missedBanner, { backgroundColor: "#F3F4F6", borderLeftColor: "#7A8699" }]}
+          style={[styles.missedBanner, { backgroundColor: "#FEE2E2", borderLeftColor: "#DC2626" }]}
           onPress={() => {
-            // Could route to a missed opportunities screen
             router.push("/how-to-earn" as never);
           }}
         >
-          <Feather name="bell" size={18} color="#7A8699" />
+          <Feather name="bell" size={18} color="#DC2626" />
           <Text style={[styles.missedText, { color: colors.foreground }]}>
             You have {MISSED_OPPORTUNITIES_COUNT} missed opportunities. Review them to learn and improve your health journey.
           </Text>
@@ -237,9 +236,16 @@ export default function OpportunitiesScreen() {
                   setShowDropdown(false);
                 }}
               >
-                <Text style={[styles.dropdownItemText, { color: filter === c.key ? colors.primary : colors.foreground }]}>
-                  {c.label}
-                </Text>
+                <View style={styles.dropdownItemLeft}>
+                  <Feather
+                    name={c.icon as any}
+                    size={16}
+                    color={filter === c.key ? colors.primary : colors.mutedForeground}
+                  />
+                  <Text style={[styles.dropdownItemText, { color: filter === c.key ? colors.primary : colors.foreground }]}>
+                    {c.label}
+                  </Text>
+                </View>
                 {filter === c.key && (
                   <Feather name="check" size={16} color={colors.primary} />
                 )}
@@ -315,6 +321,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderBottomWidth: 1,
   },
+  dropdownItemLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   dropdownItemText: { fontSize: 14, fontWeight: "500" },
 
   group: { gap: 10 },
