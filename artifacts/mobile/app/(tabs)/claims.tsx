@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   FlatList,
   Platform,
@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ClaimCard } from "@/components/ClaimCard";
-import { MOCK_CLAIMS, MOCK_USER_PLAN } from "@/constants/data";
+import { Claim, MOCK_CLAIMS, MOCK_USER_PLAN } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
 type StatusFilter = "all" | "processed" | "pending" | "in-review";
@@ -29,6 +29,7 @@ export default function SpendScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const listRef = useRef<FlatList<Claim>>(null);
 
   const filtered =
     statusFilter === "all"
@@ -41,6 +42,7 @@ export default function SpendScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
+        ref={listRef}
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ClaimCard claim={item} />}
@@ -96,7 +98,13 @@ export default function SpendScreen() {
             <View style={styles.quickActions}>
               <TouchableOpacity
                 style={[styles.quickAction, { backgroundColor: colors.card, borderColor: colors.border }]}
-                onPress={() => {}}
+                onPress={() => {
+                  if (filtered.length > 0) {
+                    listRef.current?.scrollToIndex({ index: 0, animated: true });
+                  } else {
+                    listRef.current?.scrollToOffset({ offset: 9999, animated: true });
+                  }
+                }}
               >
                 <View style={[styles.quickActionIcon, { backgroundColor: "#EDE9FE" }]}>
                   <Feather name="file-text" size={18} color="#7C3AED" />
