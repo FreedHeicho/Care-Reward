@@ -24,7 +24,7 @@ function NativeTabLayout() {
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="claims">
         <Icon sf={{ default: "shield", selected: "shield.fill" }} />
-        <Label>Care</Label>
+        <Label>Spend</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="rewards">
         <Icon sf={{ default: "rosette", selected: "rosette" }} />
@@ -130,7 +130,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="claims"
         options={{
-          title: "Care",
+          title: "Spend",
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="shield" tintColor={color} size={22} />

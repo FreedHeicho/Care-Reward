@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -23,9 +24,10 @@ const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
   { key: "in-review", label: "In Review" },
 ];
 
-export default function ClaimsScreen() {
+export default function SpendScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const filtered =
@@ -44,19 +46,22 @@ export default function ClaimsScreen() {
         renderItem={({ item }) => <ClaimCard claim={item} />}
         ListHeaderComponent={
           <View style={styles.header}>
+            {/* Your Benefits card — compressed */}
             <View style={[styles.benefitsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.benefitsTitle, { color: colors.foreground }]}>
-                Benefits Progress
-              </Text>
-              <Text style={[styles.planName, { color: colors.mutedForeground }]}>
-                {MOCK_USER_PLAN.planName}
-              </Text>
+              <View style={styles.benefitsHeaderRow}>
+                <Text style={[styles.benefitsTitle, { color: colors.foreground }]}>
+                  Your Benefits
+                </Text>
+                <Text style={[styles.planName, { color: colors.mutedForeground }]}>
+                  {MOCK_USER_PLAN.planName}
+                </Text>
+              </View>
 
               <View style={styles.progressSection}>
                 <View style={styles.progressHeader}>
                   <Text style={[styles.progressLabel, { color: colors.foreground }]}>Deductible</Text>
                   <Text style={[styles.progressValues, { color: colors.mutedForeground }]}>
-                    ${MOCK_USER_PLAN.deductibleMet.toLocaleString()} of ${MOCK_USER_PLAN.deductible.toLocaleString()}
+                    ${MOCK_USER_PLAN.deductibleMet.toLocaleString()} / ${MOCK_USER_PLAN.deductible.toLocaleString()}
                   </Text>
                 </View>
                 <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
@@ -73,7 +78,7 @@ export default function ClaimsScreen() {
                 <View style={styles.progressHeader}>
                   <Text style={[styles.progressLabel, { color: colors.foreground }]}>Out-of-Pocket Max</Text>
                   <Text style={[styles.progressValues, { color: colors.mutedForeground }]}>
-                    ${MOCK_USER_PLAN.oopMet.toLocaleString()} of ${MOCK_USER_PLAN.oopMax.toLocaleString()}
+                    ${MOCK_USER_PLAN.oopMet.toLocaleString()} / ${MOCK_USER_PLAN.oopMax.toLocaleString()}
                   </Text>
                 </View>
                 <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
@@ -87,6 +92,49 @@ export default function ClaimsScreen() {
               </View>
             </View>
 
+            {/* Quick actions — exactly two buttons */}
+            <View style={styles.quickActions}>
+              <TouchableOpacity
+                style={[styles.quickAction, { backgroundColor: colors.card, borderColor: colors.border }]}
+                onPress={() => {}}
+              >
+                <View style={[styles.quickActionIcon, { backgroundColor: "#EDE9FE" }]}>
+                  <Feather name="file-text" size={18} color="#7C3AED" />
+                </View>
+                <Text style={[styles.quickActionLabel, { color: colors.foreground }]}>
+                  View Claims YTD
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.quickAction, { backgroundColor: colors.card, borderColor: colors.border }]}
+                onPress={() => router.push("/emr-access" as never)}
+              >
+                <View style={[styles.quickActionIcon, { backgroundColor: "#E8F5F2" }]}>
+                  <Feather name="link" size={18} color={colors.primary} />
+                </View>
+                <Text style={[styles.quickActionLabel, { color: colors.foreground }]}>
+                  Connect to Health Records
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* YTD Spending section */}
+            <View style={[styles.ytdCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.ytdTitle, { color: colors.foreground }]}>YTD Spending</Text>
+              <View style={styles.ytdPanels}>
+                <View style={[styles.ytdPanel, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                  <Text style={[styles.ytdPanelLabel, { color: colors.mutedForeground }]}>Paid Amount</Text>
+                  <Text style={[styles.ytdPanelValue, { color: colors.foreground }]}>$1,240</Text>
+                </View>
+                <View style={[styles.ytdPanel, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                  <Text style={[styles.ytdPanelLabel, { color: colors.mutedForeground }]}>Copay</Text>
+                  <Text style={[styles.ytdPanelValue, { color: colors.foreground }]}>$340</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Status filters */}
             <FlatList
               horizontal
               data={STATUS_FILTERS}
@@ -143,21 +191,84 @@ export default function ClaimsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { gap: 0 },
+
+  /* Benefits card — ~20% compressed vs original */
   benefitsCard: {
     margin: 16,
-    borderRadius: 16,
-    padding: 18,
+    marginBottom: 10,
+    borderRadius: 14,
+    padding: 12,
     borderWidth: 1,
-    gap: 14,
+    gap: 8,
   },
-  benefitsTitle: { fontSize: 17, fontWeight: "700" },
-  planName: { fontSize: 13, marginTop: -8 },
-  progressSection: { gap: 8 },
+  benefitsHeaderRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 4,
+  },
+  benefitsTitle: { fontSize: 15, fontWeight: "700" },
+  planName: { fontSize: 11 },
+  progressSection: { gap: 5 },
   progressHeader: { flexDirection: "row", justifyContent: "space-between" },
-  progressLabel: { fontSize: 14, fontWeight: "500" },
-  progressValues: { fontSize: 13 },
-  progressTrack: { height: 8, borderRadius: 4, overflow: "hidden" },
-  progressFill: { height: "100%", borderRadius: 4 },
+  progressLabel: { fontSize: 12, fontWeight: "500" },
+  progressValues: { fontSize: 11 },
+  progressTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
+  progressFill: { height: "100%", borderRadius: 3 },
+
+  /* Quick actions */
+  quickActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginHorizontal: 16,
+    marginBottom: 10,
+  },
+  quickAction: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    alignItems: "center",
+    gap: 8,
+  },
+  quickActionIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  quickActionLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 16,
+  },
+
+  /* YTD Spending */
+  ytdCard: {
+    marginHorizontal: 16,
+    marginBottom: 10,
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    gap: 10,
+  },
+  ytdTitle: { fontSize: 15, fontWeight: "700" },
+  ytdPanels: { flexDirection: "row", gap: 10 },
+  ytdPanel: {
+    flex: 1,
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12,
+    gap: 4,
+    alignItems: "center",
+  },
+  ytdPanelLabel: { fontSize: 12, fontWeight: "500" },
+  ytdPanelValue: { fontSize: 20, fontWeight: "700" },
+
+  /* Filters */
   filters: { paddingHorizontal: 16, paddingBottom: 12, gap: 8 },
   filterChip: {
     paddingHorizontal: 14,
@@ -166,6 +277,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   filterText: { fontSize: 13, fontWeight: "600" },
+
+  /* List */
   list: { paddingHorizontal: 16, gap: 10 },
   empty: { alignItems: "center", paddingVertical: 48, gap: 12 },
   emptyTitle: { fontSize: 18, fontWeight: "700" },
