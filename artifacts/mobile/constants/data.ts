@@ -652,3 +652,11 @@ export const CATEGORY_COLORS: Record<OpportunityCategory, string> = {
   specialist: "#0EA5E9",
   upcoming: "#0EA5E9",
 };
+
+export const CATEGORY_EMOJIS: Record<OpportunityCategory, string> = {
+  medication: "💊",
+  preventive: "🪥",
+  "mail-delivery": "📦",
+  specialist: "🩺",
+  upcoming: "📅",
+};

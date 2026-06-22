@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  FlatList,
   Platform,
   ScrollView,
   StyleSheet,
@@ -14,13 +15,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import {
   ActivityEvent,
+  CATEGORY_COLORS,
+  CATEGORY_EMOJIS,
   MISSED_OPPORTUNITIES_COUNT,
   MOCK_ACTIVITY,
   MOCK_OPPORTUNITIES,
   NEW_OPPORTUNITIES_COUNT,
+  Opportunity,
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
-import { OpportunitiesSheet } from "@/components/OpportunitiesSheet";
 
 function ActivityRow({ event }: { event: ActivityEvent }) {
   const colors = useColors();
@@ -67,17 +70,14 @@ export default function DashboardScreen() {
   const { user } = useAuth();
 
   const navigation = useNavigation();
-  const [sheetVisible, setSheetVisible] = useState(false);
-  const [sheetStartFilter, setSheetStartFilter] = useState<"all" | "new" | "missed">("all");
   const firstName = user?.name?.split(" ")[0] ?? "Sarah";
-  const topOpp = MOCK_OPPORTUNITIES.find((o) => o.id === "opp-1");
 
   useEffect(() => {
     navigation.setOptions({
       title: `Hi ${firstName}!`,
       headerRight: () => (
         <TouchableOpacity
-          onPress={() => setSheetVisible(true)}
+          onPress={() => router.push("/(tabs)/opportunities" as never)}
           style={{ marginRight: 16 }}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
@@ -147,10 +147,7 @@ export default function DashboardScreen() {
         {/* Notification Alerts */}
         <TouchableOpacity
           style={[styles.alertBanner, { backgroundColor: "#DCFCE7", borderLeftColor: "#16A34A" }]}
-          onPress={() => {
-            setSheetStartFilter("new");
-            setSheetVisible(true);
-          }}
+          onPress={() => router.push("/(tabs)/opportunities" as never)}
         >
           <Feather name="bell" size={18} color="#16A34A" />
           <Text style={[styles.alertText, { color: colors.foreground }]}>
@@ -160,10 +157,7 @@ export default function DashboardScreen() {
 
         <TouchableOpacity
           style={[styles.alertBanner, { backgroundColor: "#FEE2E2", borderLeftColor: "#DC2626" }]}
-          onPress={() => {
-            setSheetStartFilter("missed");
-            setSheetVisible(true);
-          }}
+          onPress={() => router.push("/(tabs)/opportunities" as never)}
         >
           <Feather name="bell" size={18} color="#DC2626" />
           <Text style={[styles.alertText, { color: colors.foreground }]}>
@@ -174,7 +168,7 @@ export default function DashboardScreen() {
         {/* Find More CTA */}
         <TouchableOpacity
           style={[styles.findMoreBtn, { backgroundColor: colors.primary }]}
-          onPress={() => setSheetVisible(true)}
+          onPress={() => router.push("/(tabs)/opportunities" as never)}
           activeOpacity={0.85}
         >
           <Text style={styles.findMoreText}>Find more opportunities</Text>
@@ -259,63 +253,94 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Recommended for You */}
+        {/* Recommended for You — horizontal scroll of all 9 opportunities */}
         <View style={styles.section}>
           <View style={styles.recommendedHeader}>
             <Text style={[styles.sectionTitle, { color: colors.primary }]}>
               Recommended for You
             </Text>
-            <View style={[styles.oppCountBadge, { backgroundColor: colors.primary }]}>
+            <TouchableOpacity
+              style={[styles.oppCountBadge, { backgroundColor: colors.primary }]}
+              onPress={() => router.push("/(tabs)/opportunities" as never)}
+            >
               <Text style={styles.oppCountText}>
                 {NEW_OPPORTUNITIES_COUNT} Opportunities
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
 
-          {topOpp && (
-            <TouchableOpacity
-              style={[styles.oppCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => router.push(`/opportunity/${topOpp.id}` as never)}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.oppCardLeftBar, { backgroundColor: "#8B5CF6" }]} />
-              <View style={styles.oppCardContent}>
-                <View style={styles.oppCardHeader}>
-                  <View style={[styles.oppMedIcon, { backgroundColor: "#EDE9FE" }]}>
-                    <Text style={styles.oppMedEmoji}>💊</Text>
-                  </View>
-                  <View style={styles.oppCardTitles}>
-                    <Text style={[styles.oppCardTitle, { color: colors.foreground }]}>
-                      {topOpp.title}
-                    </Text>
-                    <Text style={[styles.oppCardSub, { color: colors.mutedForeground }]}>
-                      {topOpp.description}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={[styles.oppPointsBadge, { backgroundColor: "#05C5B6" }]}>
-                  <Text style={styles.oppPointsBadgeText}>
-                    {topOpp.points} points + {topOpp.pointsMonthly} points monthly
-                  </Text>
-                </View>
-
-                {topOpp.benefits.map((b) => (
-                  <View key={b} style={styles.oppBenefit}>
-                    <Feather name="check-circle" size={15} color={colors.primary} />
-                    <Text style={[styles.oppBenefitText, { color: colors.foreground }]}>{b}</Text>
-                  </View>
-                ))}
-
+          <FlatList
+            horizontal
+            data={MOCK_OPPORTUNITIES}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.hOppList}
+            snapToInterval={280}
+            decelerationRate="fast"
+            renderItem={({ item: opp }) => {
+              const barColor = CATEGORY_COLORS[opp.category] ?? colors.primary;
+              return (
                 <TouchableOpacity
-                  style={[styles.howToEarnBtn, { backgroundColor: colors.primary }]}
-                  onPress={() => router.push(`/opportunity/${topOpp.id}` as never)}
+                  style={[styles.hOppCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  onPress={() => router.push("/(tabs)/opportunities" as never)}
+                  activeOpacity={0.85}
                 >
-                  <Text style={styles.howToEarnText}>How To Earn</Text>
+                  <View style={[styles.hOppBar, { backgroundColor: barColor }]} />
+                  <View style={styles.hOppContent}>
+                    <View style={styles.hOppHeader}>
+                      <View style={[styles.hOppIcon, { backgroundColor: barColor + "20" }]}>
+                        <Text style={styles.hOppEmoji}>{CATEGORY_EMOJIS[opp.category]}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.hOppTitle, { color: colors.foreground }]} numberOfLines={1}>
+                          {opp.title}
+                        </Text>
+                        <Text style={[styles.hOppDesc, { color: colors.mutedForeground }]} numberOfLines={1}>
+                          {opp.description}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={[styles.hOppPointsBadge, { backgroundColor: colors.secondary }]}>
+                      <Text style={[styles.hOppPointsText, { color: colors.primary }]}>
+                        {opp.pointsMonthly > 0
+                          ? `${opp.points} points + ${opp.pointsMonthly} points monthly`
+                          : `Earn ${opp.points} points`}
+                      </Text>
+                    </View>
+
+                    {opp.benefits.slice(0, 2).map((b) => (
+                      <View key={b} style={styles.oppBenefit}>
+                        <Feather name="check-circle" size={14} color={colors.primary} />
+                        <Text style={[styles.oppBenefitText, { color: colors.foreground }]}>{b}</Text>
+                      </View>
+                    ))}
+
+                    <View style={[styles.howToEarnBtn, { backgroundColor: colors.primary }]}>
+                      <Text style={styles.howToEarnText}>How To Earn</Text>
+                    </View>
+                  </View>
                 </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          )}
+              );
+            }}
+          />
+
+          {/* View All CTA */}
+          <TouchableOpacity
+            style={[styles.viewAllOppBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() => router.push("/(tabs)/opportunities" as never)}
+            activeOpacity={0.85}
+          >
+            <View style={{ alignItems: "center", gap: 6 }}>
+              <Text style={[styles.viewAllOppTitle, { color: colors.primary }]}>
+                View All Opportunities
+              </Text>
+              <Text style={[styles.viewAllOppDesc, { color: colors.mutedForeground }]}>
+                See all available opportunities
+              </Text>
+              <Feather name="arrow-right" size={18} color={colors.primary} />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Recent Activity */}
@@ -328,12 +353,6 @@ export default function DashboardScreen() {
           ))}
         </View>
       </ScrollView>
-
-      <OpportunitiesSheet
-        visible={sheetVisible}
-        onClose={() => setSheetVisible(false)}
-        startFilter={sheetStartFilter}
-      />
     </View>
   );
 }
@@ -473,6 +492,49 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   howToEarnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+
+  // Horizontal opportunity cards
+  hOppList: { gap: 12, paddingHorizontal: 4 },
+  hOppCard: {
+    width: 264,
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: "hidden",
+    flexDirection: "row",
+  },
+  hOppBar: { width: 5 },
+  hOppContent: { flex: 1, padding: 12, gap: 8 },
+  hOppHeader: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "flex-start",
+  },
+  hOppIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  hOppEmoji: { fontSize: 18 },
+  hOppTitle: { fontSize: 14, fontWeight: "700" },
+  hOppDesc: { fontSize: 12, marginTop: 1 },
+  hOppPointsBadge: {
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: "center",
+  },
+  hOppPointsText: { fontSize: 13, fontWeight: "700" },
+  viewAllOppBtn: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    marginTop: 4,
+  },
+  viewAllOppTitle: { fontSize: 16, fontWeight: "700" },
+  viewAllOppDesc: { fontSize: 13, fontWeight: "500" },
 
   // Activity
   activityRow: {
