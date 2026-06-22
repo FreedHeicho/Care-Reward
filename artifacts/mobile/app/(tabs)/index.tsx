@@ -238,6 +238,24 @@ export default function DashboardScreen() {
                 <Text style={styles.getStartedCardBtnText}>Connect</Text>
               </TouchableOpacity>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => router.push("/emr-access" as never)}
+            >
+              <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
+                Connect other health devices
+              </Text>
+              <Text style={[styles.getStartedCardDesc, { color: colors.mutedForeground }]}>
+                Link your wearables and trackers
+              </Text>
+              <TouchableOpacity
+                style={[styles.getStartedCardBtn, { backgroundColor: colors.primary }]}
+                onPress={() => router.push("/emr-access" as never)}
+              >
+                <Text style={styles.getStartedCardBtnText}>Connect</Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
           </View>
         </View>
 
