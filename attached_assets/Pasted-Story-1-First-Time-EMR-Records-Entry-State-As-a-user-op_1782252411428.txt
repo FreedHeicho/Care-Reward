@@ -1,0 +1,133 @@
+Story 1 — First-Time EMR Records Entry State
+As a user opening the EMR Records section for the first time,
+
+I want to see an "Add Health System" prompt instead of an empty screen,
+
+So that I understand I need to connect a provider or hospital to get started.
+Acceptance Criteria:
+
+If no health system or provider has been linked yet, the EMR Records screen displays an "Add Health System" call-to-action (icon, headline, and button).
+The screen does not appear blank or broken on first load.
+Tapping "Add Health System" launches the search flow (Story 2).
+
+
+Story 2 — Choose Search Method: Provider or Hospital
+As a user adding a health system,
+
+I want to be asked whether I want to search by Provider or by Hospital/Clinic/Health System/Pharmacy,
+
+So that I can connect my records using whichever method applies to me.
+Acceptance Criteria:
+
+After tapping "Add Health System", a screen appears with two clearly labelled options:
+
+Option 1: Search by Provider ID
+Option 2: Search by Hospital, Clinic, Health System or Pharmacy
+
+
+Both options are displayed as tappable cards or buttons with a short description beneath each.
+The user must choose one before proceeding — no default is pre-selected.
+
+
+Story 3 — Search by Provider ID (NPI Number)
+As a user who knows my doctor's details,
+
+I want to search for my provider using their NPI Number (National Provider Identifier),
+
+So that I can connect directly to a specific doctor's records.
+Acceptance Criteria:
+
+Selecting "Search by Provider ID" opens a screen with an NPI Number input field.
+The field accepts numeric input only and shows a helper label such as: "Enter the provider's 10-digit NPI Number — a unique ID assigned to every licensed doctor."
+A Search button validates and submits the NPI Number.
+If the NPI is valid, the matched provider's name and specialty are displayed for the user to confirm before connecting.
+If the NPI is not found, display a clear error: "No provider found with that NPI Number. Please check and try again."
+
+
+Story 4 — Search by Hospital, Clinic, Health System or Pharmacy
+As a user who wants to connect via an institution,
+
+I want to search for and select a hospital, clinic, health system, or pharmacy by name,
+
+So that I can link my records from that institution to the app.
+Acceptance Criteria:
+
+Selecting "Search by Hospital, Clinic, Health System or Pharmacy" opens a search screen with a text input field.
+As the user types, a live list of matching institutions appears below (hospitals, clinics, health systems, and pharmacies).
+Each result in the list shows the institution name, type (e.g. Hospital, Pharmacy), and city/location.
+The user taps a result to select it and proceed to the confirmation step (Story 5).
+
+
+Story 5 — Confirm Account & Grant Access
+As a user who has selected a hospital or provider,
+
+I want to confirm that I have an existing account with that institution and consent to giving Care Reward access,
+
+So that my records can be securely retrieved.
+Acceptance Criteria:
+
+After selecting an institution, the user lands on a Confirmation Page that displays:
+
+The name and logo (if available) of the selected institution.
+A statement such as: "Do you have an existing patient account with [Institution Name]?"
+A consent notice: "By continuing, you authorize Care Reward to access your health records from [Institution Name]."
+
+
+Two buttons are shown: Confirm & Connect and Cancel.
+Tapping Cancel returns the user to the search screen.
+Tapping Confirm & Connect proceeds to the dummy connection/login page (Story 6).
+
+
+Story 6 — Dummy Health System Login Page
+As a user who has confirmed access,
+
+I want to be taken to a login or authentication page for the selected health system,
+
+So that the connection flow feels real and complete.
+Acceptance Criteria:
+
+After confirming, the user is navigated to a dummy login/portal page styled to represent the selected institution.
+This page simulates the institution's patient portal login (username and password fields, institution branding).
+Upon "logging in" on the dummy page, the connection is marked as successful and the user is returned to the EMR Records screen.
+
+
+Story 7 — Add Multiple Health Systems & Providers
+As a user who receives care from more than one provider or institution,
+
+I want to be able to add and manage multiple health systems and providers in one place,
+
+So that all my records are accessible from a single screen.
+Acceptance Criteria:
+
+After successfully connecting one health system or provider, the EMR Records screen displays the connected source with its name and status.
+A clearly visible "+ Add Another Health System" button is present on the screen at all times.
+Tapping it restarts the Add Health System flow (Story 2) without removing existing connections.
+There is no hard limit on the number of health systems or providers that can be added.
+Each connected source is displayed as a separate card showing the institution/provider name, connection status, and last synced date.
+
+
+Story 8 — Showcase Pulled Records from Multiple Sources
+As a user who has connected two or more health systems,
+
+I want to see my health records displayed and clearly labelled by which institution they came from,
+
+So that I can tell at a glance where each piece of information originated.
+Acceptance Criteria:
+
+When two or more sources are connected, the EMR Records screen clearly shows records grouped or tagged by institution (e.g. "From Lagos University Teaching Hospital" / "From St. Nicholas Hospital").
+Each record card displays the source institution name as a label or badge.
+Records from all connected sources are surfaced on the same screen — the user does not need to switch between views to see each source.
+
+
+Story 9 — Post-Login Health Records View (image-dependent)
+As a user who has connected my health systems,
+
+I want the EMR Records screen to display my health data exactly as shown in the attached design screenshots,
+
+So that the layout, components, and information hierarchy match the intended design precisely.
+Acceptance Criteria:
+
+Use the two attached screenshots as the single source of truth for this screen's UI.
+Replicate the exact layout, card styles, typography, colors, and section order shown in the images verbatim.
+Any element not visible in the screenshots should not appear on this screen.
+The design must render correctly on both iOS and Android.

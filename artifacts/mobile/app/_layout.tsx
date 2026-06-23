@@ -15,6 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/context/AuthContext";
+import { HealthRecordsProvider } from "@/context/HealthRecordsContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,7 +41,27 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="emr-access"
-        options={{ title: "EMR Access", headerBackTitle: "Back" }}
+        options={{ title: "Health Records", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="health-records/add-method"
+        options={{ title: "Add Health System", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="health-records/search-npi"
+        options={{ title: "Search by Provider ID", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="health-records/search-institution"
+        options={{ title: "Search Institution", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="health-records/confirm"
+        options={{ title: "Confirm Connection", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="health-records/portal-login"
+        options={{ title: "Patient Portal", headerBackTitle: "Back" }}
       />
       <Stack.Screen
         name="how-to-earn"
@@ -103,13 +124,15 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <AuthProvider>
-          <QueryClientProvider client={queryClient}>
-            <GestureHandlerRootView>
-              <KeyboardProvider>
-                <RootLayoutNav />
-              </KeyboardProvider>
-            </GestureHandlerRootView>
-          </QueryClientProvider>
+          <HealthRecordsProvider>
+            <QueryClientProvider client={queryClient}>
+              <GestureHandlerRootView>
+                <KeyboardProvider>
+                  <RootLayoutNav />
+                </KeyboardProvider>
+              </GestureHandlerRootView>
+            </QueryClientProvider>
+          </HealthRecordsProvider>
         </AuthProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

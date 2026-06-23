@@ -1,269 +1,282 @@
 import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { useHealthRecords } from "@/context/HealthRecordsContext";
+
+const RECORD_CATEGORIES = [
+  { id: "all", label: "All records", icon: "folder" as const, color: "#22C55E", bg: "#DCFCE7", lastUpdated: "Jun 19" },
+  { id: "allergies", label: "Allergies", icon: "alert-circle" as const, color: "#EAB308", bg: "#FEF9C3", lastUpdated: "Oct 29, 2025" },
+  { id: "conditions", label: "Conditions", icon: "user" as const, color: "#EC4899", bg: "#FCE7F3", lastUpdated: "Jun 12" },
+  { id: "immunizations", label: "Immunizations", icon: "shield" as const, color: "#14B8A6", bg: "#CCFBF1", lastUpdated: "Nov 5, 2025" },
+  { id: "labs", label: "Lab results", icon: "thermometer" as const, color: "#8B5CF6", bg: "#EDE9FE", lastUpdated: "Oct 29, 2025" },
+  { id: "medications", label: "Medications", icon: "package" as const, color: "#3B82F6", bg: "#DBEAFE", lastUpdated: "Jun 2" },
+  { id: "procedures", label: "Procedures", icon: "file-text" as const, color: "#10B981", bg: "#D1FAE5", lastUpdated: "Oct 29, 2025" },
+  { id: "visits", label: "Visits", icon: "map-pin" as const, color: "#6366F1", bg: "#E0E7FF", lastUpdated: "Jun 19" },
+  { id: "vitals", label: "Vitals", icon: "activity" as const, color: "#EF4444", bg: "#FEE2E2", lastUpdated: "Jun 19" },
+];
 
 export default function EmrAccessScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { connectedSystems, removeSystem } = useHealthRecords();
 
-  const [userId, setUserId] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [saveUserId, setSaveUserId] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const hasConnected = connectedSystems.length > 0;
 
-  const handleSignIn = async () => {
-    if (!userId.trim() || !password.trim()) return;
-    setLoading(true);
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    router.back();
-  };
+  if (!hasConnected) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.emptyWrap, { paddingBottom: insets.bottom + 40 }]}>
+          <View style={[styles.emptyIconCircle, { backgroundColor: colors.secondary }]}>
+            <Feather name="activity" size={40} color={colors.primary} />
+          </View>
+          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+            Connect Your Health Records
+          </Text>
+          <Text style={[styles.emptyDesc, { color: colors.mutedForeground }]}>
+            Link your hospital, clinic, pharmacy, or provider to view your medical records — all in one place.
+          </Text>
+          <TouchableOpacity
+            style={[styles.addBtn, { backgroundColor: colors.primary }]}
+            onPress={() => router.push("/health-records/add-method" as never)}
+            activeOpacity={0.85}
+          >
+            <Feather name="plus" size={18} color="#fff" />
+            <Text style={styles.addBtnText}>Add Health System</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.flex}
+      <ScrollView
+        contentContainerStyle={[
+          styles.scroll,
+          { paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0) + 100 },
+        ]}
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          contentContainerStyle={[
-            styles.scroll,
-            { paddingBottom: insets.bottom + 40 },
-          ]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={[styles.tagline, { color: colors.mutedForeground }]}>
-            Care made simple.
-          </Text>
-          <Text style={[styles.headline, { color: colors.foreground }]}>
-            Sign in to your{"\n"}account.
-          </Text>
-
-          <View style={styles.registerRow}>
-            <Text style={[styles.registerPrompt, { color: colors.foreground }]}>
-              No account?{" "}
+        {/* Banner */}
+        <View style={[styles.banner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.bannerContent}>
+            <Text style={[styles.bannerTitle, { color: colors.foreground }]}>
+              Schedule a Blood Pressure Check
             </Text>
-            <TouchableOpacity>
-              <Text style={[styles.registerLink, { color: colors.primary }]}>Register now.</Text>
-            </TouchableOpacity>
+            <Text style={[styles.bannerDesc, { color: colors.mutedForeground }]}>
+              Knowing your numbers is important for managing hypertension
+            </Text>
           </View>
+          <View style={[styles.bannerImage, { backgroundColor: colors.secondary }]}>
+            <Feather name="heart" size={28} color={colors.primary} />
+          </View>
+        </View>
 
-          <Text style={[styles.fieldsNote, { color: colors.mutedForeground }]}>
-            All fields are required unless marked as optional.
-          </Text>
-
-          <View style={styles.form}>
-            {/* User ID */}
-            <View style={styles.field}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: colors.foreground }]}>User ID</Text>
-                <TouchableOpacity style={[styles.infoIcon, { borderColor: colors.border }]}>
-                  <Feather name="info" size={12} color={colors.mutedForeground} />
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                style={[
-                  styles.input,
-                  { borderColor: colors.border, backgroundColor: colors.card, color: colors.foreground },
-                ]}
-                value={userId}
-                onChangeText={setUserId}
-                placeholder="Enter your User ID"
-                placeholderTextColor={colors.mutedForeground}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <Text style={[styles.fieldHint, { color: colors.mutedForeground }]}>
-                Enter the unique User ID you created during registration.
-              </Text>
-
-              <TouchableOpacity
-                style={styles.checkboxRow}
-                onPress={() => setSaveUserId(!saveUserId)}
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    {
-                      borderColor: colors.primary,
-                      backgroundColor: saveUserId ? colors.primary : "transparent",
-                    },
-                  ]}
-                >
-                  {saveUserId && <Feather name="check" size={12} color="#fff" />}
+        {/* Record categories grid */}
+        <View style={styles.grid}>
+          {RECORD_CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[styles.gridCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              activeOpacity={0.75}
+            >
+              <View style={styles.cardTopRow}>
+                <View style={[styles.cardIcon, { backgroundColor: cat.bg }]}>
+                  <Feather name={cat.icon} size={20} color={cat.color} />
                 </View>
-                <Text style={[styles.checkboxLabel, { color: colors.foreground }]}>
-                  Save User ID (optional)
+                <View style={styles.dot} />
+              </View>
+              <Text style={[styles.cardLabel, { color: colors.foreground }]}>{cat.label}</Text>
+              <Text style={[styles.cardUpdated, { color: colors.mutedForeground }]}>
+                Last updated: {cat.lastUpdated}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* My health systems */}
+        <View style={styles.systemsSection}>
+          <Text style={[styles.systemsTitle, { color: colors.mutedForeground }]}>My health systems</Text>
+
+          {connectedSystems.map((sys) => (
+            <View
+              key={sys.id}
+              style={[styles.systemCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+            >
+              <View style={[styles.systemLogo, { backgroundColor: colors.secondary }]}>
+                <Feather name="activity" size={20} color={colors.primary} />
+              </View>
+              <View style={styles.systemInfo}>
+                <Text style={[styles.systemName, { color: colors.foreground }]} numberOfLines={1}>
+                  {sys.name}
                 </Text>
+                <Text style={[styles.systemStatus, { color: "#22C55E" }]}>Connected</Text>
+                <Text style={[styles.systemSync, { color: colors.mutedForeground }]}>
+                  Last synced: {sys.lastSynced}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => removeSystem(sys.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Feather name="x" size={18} color={colors.mutedForeground} />
               </TouchableOpacity>
             </View>
+          ))}
 
-            {/* Password */}
-            <View style={styles.field}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: colors.foreground }]}>Password</Text>
-                <TouchableOpacity style={[styles.infoIcon, { borderColor: colors.border }]}>
-                  <Feather name="info" size={12} color={colors.mutedForeground} />
-                </TouchableOpacity>
-              </View>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  { borderColor: colors.border, backgroundColor: colors.card },
-                ]}
-              >
-                <TextInput
-                  style={[styles.inputInner, { color: colors.foreground }]}
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Enter your password"
-                  placeholderTextColor={colors.mutedForeground}
-                  secureTextEntry={!showPassword}
-                />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <Feather
-                    name={showPassword ? "eye" : "eye-off"}
-                    size={18}
-                    color={colors.mutedForeground}
-                  />
-                </TouchableOpacity>
-              </View>
-              <Text style={[styles.fieldHint, { color: colors.mutedForeground }]}>
-                Password must be at least 8 characters and include 1 letter and 1 number or 1 special character.
-              </Text>
+          <TouchableOpacity
+            style={[styles.addAnotherBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
+            onPress={() => router.push("/health-records/add-method" as never)}
+            activeOpacity={0.75}
+          >
+            <View style={[styles.addAnotherIcon, { backgroundColor: colors.secondary }]}>
+              <Feather name="plus" size={18} color={colors.primary} />
             </View>
-          </View>
-
-          <TouchableOpacity
-            style={[
-              styles.signInBtn,
-              {
-                backgroundColor:
-                  userId.trim() && password.trim() ? colors.primary : colors.muted,
-              },
-            ]}
-            onPress={handleSignIn}
-            disabled={!userId.trim() || !password.trim() || loading}
-            activeOpacity={0.85}
-          >
-            <Text
-              style={[
-                styles.signInBtnText,
-                { color: userId.trim() && password.trim() ? "#fff" : colors.mutedForeground },
-              ]}
-            >
-              Sign in
-            </Text>
+            <Text style={[styles.addAnotherText, { color: colors.foreground }]}>Add health system</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.registerBtn, { borderColor: colors.primary }]}
-            activeOpacity={0.8}
-          >
-            <Text style={[styles.registerBtnText, { color: colors.primary }]}>Register now</Text>
-          </TouchableOpacity>
-
-          <View style={[styles.securityNote, { backgroundColor: colors.secondary }]}>
-            <Feather name="lock" size={14} color={colors.primary} />
-            <Text style={[styles.securityText, { color: colors.primary }]}>
-              Your health data is encrypted and HIPAA-compliant
-            </Text>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  flex: { flex: 1 },
-  scroll: { paddingHorizontal: 20, paddingTop: 8, gap: 16 },
-  tagline: { fontSize: 16 },
-  headline: { fontSize: 30, fontWeight: "900", lineHeight: 38 },
-  registerRow: { flexDirection: "row", alignItems: "center" },
-  registerPrompt: { fontSize: 15 },
-  registerLink: { fontSize: 15, fontWeight: "700", textDecorationLine: "underline" },
-  fieldsNote: { fontSize: 13 },
-  form: { gap: 20 },
-  field: { gap: 8 },
-  labelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  label: { fontSize: 15, fontWeight: "600" },
-  infoIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1,
+  emptyWrap: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 32,
+    gap: 16,
   },
-  input: {
-    borderWidth: 1.5,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    fontSize: 15,
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1.5,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    gap: 10,
-  },
-  inputInner: { flex: 1, fontSize: 15 },
-  fieldHint: { fontSize: 12, lineHeight: 17 },
-  checkboxRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 4 },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 4,
-    borderWidth: 2,
+  emptyIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 8,
   },
-  checkboxLabel: { fontSize: 14, flex: 1 },
-  signInBtn: {
-    borderRadius: 10,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  signInBtnText: { fontSize: 16, fontWeight: "700" },
-  registerBtn: {
-    borderRadius: 10,
-    paddingVertical: 16,
-    alignItems: "center",
-    borderWidth: 1.5,
-  },
-  registerBtnText: { fontSize: 16, fontWeight: "600" },
-  securityNote: {
+  emptyTitle: { fontSize: 24, fontWeight: "800", textAlign: "center" },
+  emptyDesc: { fontSize: 15, textAlign: "center", lineHeight: 22 },
+  addBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 28,
+    marginTop: 8,
   },
-  securityText: { flex: 1, fontSize: 13 },
+  addBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+
+  scroll: { paddingHorizontal: 16, paddingTop: 16, gap: 16 },
+
+  banner: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  bannerContent: { flex: 1, gap: 4 },
+  bannerTitle: { fontSize: 16, fontWeight: "700", lineHeight: 22 },
+  bannerDesc: { fontSize: 13, lineHeight: 18 },
+  bannerImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  gridCard: {
+    width: "47%",
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    gap: 6,
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  cardIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#F97316",
+  },
+  cardLabel: { fontSize: 15, fontWeight: "700" },
+  cardUpdated: { fontSize: 12, lineHeight: 16 },
+
+  systemsSection: { gap: 10 },
+  systemsTitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  systemCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  systemLogo: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  systemInfo: { flex: 1, gap: 2 },
+  systemName: { fontSize: 14, fontWeight: "600" },
+  systemStatus: { fontSize: 13, fontWeight: "600" },
+  systemSync: { fontSize: 12 },
+  addAnotherBtn: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  addAnotherIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addAnotherText: { fontSize: 15, fontWeight: "600" },
 });
