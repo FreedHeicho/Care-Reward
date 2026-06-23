@@ -1,0 +1,91 @@
+Story 1 — Immunization Records Screen Layout
+As a user who taps on Immunizations from the EMR Records screen,
+ I want to see my immunization history displayed exactly as shown in the attached design screenshot,
+ So that the layout, card styles, typography, and information hierarchy match the intended design precisely.
+Acceptance Criteria:
+Use the attached Immunizations screenshot as the single source of truth for this screen's UI.
+Replicate the exact layout, section order, card styles, colors, font sizes, and spacing shown in the image verbatim.
+Any element not visible in the screenshot must not appear on this screen.
+The screen must render correctly on both iOS and Android.
+
+Story 2 — Immunization Provider Attribution
+As a user viewing my Immunization records,
+ I want the provider or healthcare organization name shown on this screen to reflect whichever dummy health system I have already connected in the app,
+ So that the records feel contextually tied to my actual connected source.
+Acceptance Criteria:
+Wherever the design shows a provider name or healthcare organization name, it is dynamically replaced with the name of the connected dummy provider/health system already set up in the app.
+If two health systems are connected, attribute each immunization record to the correct source.
+No hardcoded or placeholder provider name (e.g. "Hospital Name" or "Provider XYZ") should appear — always pull from the connected source.
+
+VISITS
+
+Story 3 — Visits Screen Layout
+As a user who taps on Visits from the EMR Records screen,
+ I want to see my visit history displayed exactly as shown in the attached design screenshot,
+ So that the layout, card styles, typography, and information hierarchy match the intended design precisely.
+Acceptance Criteria:
+Use the attached Visits screenshot as the single source of truth for this screen's UI.
+Replicate the exact layout, section order, card styles, colors, font sizes, and spacing shown in the image verbatim.
+Any element not visible in the screenshot must not appear on this screen.
+The screen must render correctly on both iOS and Android.
+
+Story 4 — Visit Records Provider Attribution
+As a user viewing my Visits records,
+ I want the provider or healthcare organization name shown on each visit card to reflect whichever dummy health system I have already connected in the app,
+ So that each visit is clearly tied to the institution it came from.
+Acceptance Criteria:
+Wherever the design shows a provider name, clinic name, or healthcare organization, it is dynamically replaced with the name of the connected dummy provider/health system already configured in the app.
+If two health systems are connected, each visit card is attributed to the correct source institution.
+No hardcoded or placeholder provider name should appear — always pull from the connected source.
+
+Story 5 — Visit Detail View
+As a user tapping on a specific visit from the Visits list,
+ I want to see the full details of that visit in a detail screen,
+ So that I can review what was discussed, diagnosed, or prescribed during that appointment.
+Acceptance Criteria:
+Tapping a visit card navigates to a Visit Detail screen.
+The detail screen displays all fields visible in the attached screenshot for that visit (e.g. date, reason for visit, attending physician, notes, diagnosis, follow-up instructions — replicate exactly what is shown in the image).
+The provider/organization name on the detail screen also reflects the connected dummy health system.
+A back button returns the user to the Visits list.
+
+LAB RESULTS
+
+Story 6 — Lab Results Screen Layout
+As a user who taps on Lab Results from the EMR Records screen,
+ I want to see my lab results displayed exactly as shown in the attached design screenshot,
+ So that the layout, card styles, result indicators, typography, and information hierarchy match the intended design precisely.
+Acceptance Criteria:
+Use the attached Lab Results screenshot as the single source of truth for this screen's UI.
+Replicate the exact layout, section order, card styles, colors, result status indicators (e.g. normal, high, low flags), font sizes, and spacing shown in the image verbatim.
+Any element not visible in the screenshot must not appear on this screen.
+The screen must render correctly on both iOS and Android.
+
+Story 7 — Lab Results Provider Attribution
+As a user viewing my Lab Results,
+ I want the provider or healthcare organization name shown on each result to reflect whichever dummy health system I have already connected in the app,
+ So that each lab result is clearly tied to the institution that ordered or processed it.
+Acceptance Criteria:
+Wherever the design shows a provider name, lab name, or healthcare organization, it is dynamically replaced with the name of the connected dummy provider/health system already configured in the app.
+If two health systems are connected, each lab result is attributed to the correct source institution.
+No hardcoded or placeholder provider name should appear — always pull from the connected source.
+
+Story 8 — Lab Result Detail View
+As a user tapping on a specific lab result from the Lab Results list,
+ I want to see the full details of that result in a detail screen,
+ So that I can review the test name, value, reference range, and result status clearly.
+Acceptance Criteria:
+Tapping a lab result card navigates to a Lab Result Detail screen.
+The detail screen displays all fields visible in the attached screenshot for that result (e.g. test name, result value, unit of measurement, reference range, normal/abnormal flag, date ordered, ordering physician — replicate exactly what is shown in the image).
+The provider/organization name on the detail screen also reflects the connected dummy health system.
+A back button returns the user to the Lab Results list.
+
+SHARED ACROSS ALL THREE SCREENS
+
+Story 9 — Empty State for All Three Screens
+As a user who has not yet connected a health system,
+ I want to see a meaningful empty state on the Immunizations, Visits, and Lab Results screens,
+ So that I understand why no data is showing and what I need to do next.
+Acceptance Criteria:
+If no health system is connected, all three screens show an empty state with an icon, a short message (e.g. "No records found. Connect a health system to view your [Immunizations / Visits / Lab Results]."), and a "Connect Health System" button that launches the Add Health System flow.
+Once a health system is connected, the empty state is replaced with the data layout from the attached screenshots.
+

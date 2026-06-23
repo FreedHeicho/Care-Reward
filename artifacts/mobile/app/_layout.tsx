@@ -64,6 +64,26 @@ function RootLayoutNav() {
         options={{ title: "Patient Portal", headerBackTitle: "Back" }}
       />
       <Stack.Screen
+        name="health-records/immunizations"
+        options={{ title: "Immunizations", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="health-records/visits"
+        options={{ title: "Visits", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="health-records/visit-detail"
+        options={{ title: "Visit Detail", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="health-records/lab-results"
+        options={{ title: "Lab Results", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="health-records/lab-result-detail"
+        options={{ title: "Lab Result", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
         name="how-to-earn"
         options={{ title: "How to Earn Points", headerBackTitle: "Back" }}
       />

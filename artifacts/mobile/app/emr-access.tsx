@@ -15,15 +15,15 @@ import { useColors } from "@/hooks/useColors";
 import { useHealthRecords } from "@/context/HealthRecordsContext";
 
 const RECORD_CATEGORIES = [
-  { id: "all", label: "All records", icon: "folder" as const, color: "#22C55E", bg: "#DCFCE7", lastUpdated: "Jun 19" },
-  { id: "allergies", label: "Allergies", icon: "alert-circle" as const, color: "#EAB308", bg: "#FEF9C3", lastUpdated: "Oct 29, 2025" },
-  { id: "conditions", label: "Conditions", icon: "user" as const, color: "#EC4899", bg: "#FCE7F3", lastUpdated: "Jun 12" },
-  { id: "immunizations", label: "Immunizations", icon: "shield" as const, color: "#14B8A6", bg: "#CCFBF1", lastUpdated: "Nov 5, 2025" },
-  { id: "labs", label: "Lab results", icon: "thermometer" as const, color: "#8B5CF6", bg: "#EDE9FE", lastUpdated: "Oct 29, 2025" },
-  { id: "medications", label: "Medications", icon: "package" as const, color: "#3B82F6", bg: "#DBEAFE", lastUpdated: "Jun 2" },
-  { id: "procedures", label: "Procedures", icon: "file-text" as const, color: "#10B981", bg: "#D1FAE5", lastUpdated: "Oct 29, 2025" },
-  { id: "visits", label: "Visits", icon: "map-pin" as const, color: "#6366F1", bg: "#E0E7FF", lastUpdated: "Jun 19" },
-  { id: "vitals", label: "Vitals", icon: "activity" as const, color: "#EF4444", bg: "#FEE2E2", lastUpdated: "Jun 19" },
+  { id: "all", label: "All records", icon: "folder" as const, color: "#22C55E", bg: "#DCFCE7", lastUpdated: "Jun 19", route: null },
+  { id: "allergies", label: "Allergies", icon: "alert-circle" as const, color: "#EAB308", bg: "#FEF9C3", lastUpdated: "Oct 29, 2025", route: null },
+  { id: "conditions", label: "Conditions", icon: "user" as const, color: "#EC4899", bg: "#FCE7F3", lastUpdated: "Jun 12", route: null },
+  { id: "immunizations", label: "Immunizations", icon: "shield" as const, color: "#14B8A6", bg: "#CCFBF1", lastUpdated: "Nov 5, 2025", route: "/health-records/immunizations" },
+  { id: "labs", label: "Lab results", icon: "thermometer" as const, color: "#8B5CF6", bg: "#EDE9FE", lastUpdated: "Oct 29, 2025", route: "/health-records/lab-results" },
+  { id: "medications", label: "Medications", icon: "package" as const, color: "#3B82F6", bg: "#DBEAFE", lastUpdated: "Jun 2", route: null },
+  { id: "procedures", label: "Procedures", icon: "file-text" as const, color: "#10B981", bg: "#D1FAE5", lastUpdated: "Oct 29, 2025", route: null },
+  { id: "visits", label: "Visits", icon: "map-pin" as const, color: "#6366F1", bg: "#E0E7FF", lastUpdated: "Jun 19", route: "/health-records/visits" },
+  { id: "vitals", label: "Vitals", icon: "activity" as const, color: "#EF4444", bg: "#FEE2E2", lastUpdated: "Jun 19", route: null },
 ];
 
 export default function EmrAccessScreen() {
@@ -90,7 +90,8 @@ export default function EmrAccessScreen() {
             <TouchableOpacity
               key={cat.id}
               style={[styles.gridCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              activeOpacity={0.75}
+              activeOpacity={cat.route ? 0.75 : 1}
+              onPress={cat.route ? () => router.push(cat.route as never) : undefined}
             >
               <View style={styles.cardTopRow}>
                 <View style={[styles.cardIcon, { backgroundColor: cat.bg }]}>
