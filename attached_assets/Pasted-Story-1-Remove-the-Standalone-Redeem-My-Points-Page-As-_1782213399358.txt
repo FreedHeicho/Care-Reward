@@ -1,0 +1,91 @@
+Story 1 — Remove the Standalone "Redeem My Points" Page
+As a user,
+
+When I tap "Redeem My Points" anywhere in the app,
+
+I want to be taken directly to the Points tab in the bottom navigation bar,
+
+So that redemption happens in one unified place and the separate Redeem page is no longer needed.
+Acceptance Criteria:
+
+The standalone "Redeem My Points" page is deleted/scrapped.
+Any button or CTA that previously navigated to that page now navigates to the Points tab instead.
+
+
+Story 2 — Move Redemption Options to Points Tab in a 2×2 Grid
+As a user on the Points tab,
+
+I want to see the 4 redemption options arranged in a 2×2 grid (two columns, two rows),
+
+So that all options are visible at a glance without scrolling horizontally.
+Acceptance Criteria:
+
+The 4 redemption options currently displayed in a horizontal scroll on the Points tab are replaced with a 2-column, 2-row grid layout.
+The titles/labels for each of the 4 options are taken from the now-deleted "Redeem My Points" page (not the old horizontal scroll labels).
+The "Schedule Redemption" option is removed entirely from the Points tab. It should not appear anywhere.
+
+
+Story 3 — Redemption Window Logic
+As a user trying to redeem points,
+
+I want to clearly understand when the redemption window is open or closed,
+
+So that I don't miss my opportunity to redeem for the current month.
+Acceptance Criteria:
+
+Every month, a redemption window opens (tied to when the monthly premium is sent to the insurance company, similar to a paycheck deduction cycle).
+If the user does not redeem within that window, they cannot redeem for that month and must wait for the next monthly window.
+The UI must clearly communicate:
+
+✅ Window is open — show available redemption options as active/tappable.
+❌ Window is closed — show redemption options as inactive/greyed out with a message such as: "The redemption window for this month has closed. Your next window opens on [date]."
+
+
+The next window open date must be dynamically calculated and displayed.
+
+
+Story 4 — Points Balance Reflects Page Calculation
+As a user viewing the Points tab,
+
+I want my current Points Balance to reflect the live calculation already used on the Points page,
+
+So that the number shown is always accurate and consistent.
+Acceptance Criteria:
+
+The Points Balance displayed uses the same calculation logic already present on the Points page — no hardcoded or static values.
+
+
+Story 5 — "Earned This Year" Typography Hierarchy
+As a user on the Points tab,
+
+I want the "Earned This Year" figure to be displayed larger/more prominently than the Points Balance,
+
+So that my yearly earnings feel like the headline metric.
+Acceptance Criteria:
+
+The "Earned This Year" value uses a larger font size than the Points Balance text.
+The visual hierarchy clearly makes "Earned This Year" the primary figure on the page.
+
+
+Story 6 — Remove "Quick Stats" Section
+As a user on the Points tab,
+
+I want the "Quick Stats" section removed from the page,
+
+So that the page is cleaner and focused only on what's useful.
+Acceptance Criteria:
+
+The Quick Stats component/section is fully removed from the Points tab.
+No blank space or layout gap is left where Quick Stats previously appeared.
+
+
+Story 7 — Text Color: Grey → Black
+As a user reading the Points tab,
+
+I want all body text, labels, and descriptions currently in grey to be changed to black,
+
+So that the content is easy to read at a glance.
+Acceptance Criteria:
+
+Every instance of grey-colored text on the Points tab is updated to black (or a near-black like #111111 / #1A1A1A).
+This applies to all labels, descriptions, metadata, and supporting copy — not just headings.

@@ -35,10 +35,6 @@ function RootLayoutNav() {
         options={{ title: "Claim Details", headerBackTitle: "Back" }}
       />
       <Stack.Screen
-        name="redeem"
-        options={{ title: "Redeem Points", headerBackTitle: "Back" }}
-      />
-      <Stack.Screen
         name="log-upcoming-care"
         options={{ title: "Log Upcoming Care", headerBackTitle: "Back" }}
       />

@@ -1,8 +1,7 @@
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  FlatList,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -16,66 +15,96 @@ import { useAuth } from "@/context/AuthContext";
 import { MOCK_POINTS_HISTORY } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
-const REDEMPTION_OPENS = new Date("2026-07-01T00:00:00");
+/* ─── Redemption Window Logic ─── */
+const WINDOW_OPEN_DAY = 1;   // 1st of month
+const WINDOW_CLOSE_DAY = 15; // 15th of month
 
-function useCountdown() {
-  const [diff, setDiff] = useState(REDEMPTION_OPENS.getTime() - Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setDiff(REDEMPTION_OPENS.getTime() - Date.now()), 60000);
-    return () => clearInterval(id);
-  }, []);
-  const days = Math.max(0, Math.floor(diff / 86400000));
-  const hours = Math.max(0, Math.floor((diff % 86400000) / 3600000));
-  const mins = Math.max(0, Math.floor((diff % 3600000) / 60000));
-  return { days, hours, mins, daysRemaining: days };
+function getWindowState() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-11
+  const date = now.getDate();
+
+  const isOpen = date >= WINDOW_OPEN_DAY && date <= WINDOW_CLOSE_DAY;
+
+  let nextOpen: Date;
+  if (isOpen) {
+    // If currently open, next window is next month
+    nextOpen = new Date(year, month + 1, WINDOW_OPEN_DAY);
+  } else if (date < WINDOW_OPEN_DAY) {
+    // Before open day of this month
+    nextOpen = new Date(year, month, WINDOW_OPEN_DAY);
+  } else {
+    // After close day, wait for next month
+    nextOpen = new Date(year, month + 1, WINDOW_OPEN_DAY);
+  }
+
+  const nextOpenStr = nextOpen.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const daysUntil = Math.max(0, Math.ceil((nextOpen.getTime() - now.getTime()) / 86400000));
+
+  return { isOpen, nextOpen, nextOpenStr, daysUntil };
 }
 
+/* ─── Redemption Options (from old redeem.tsx) ─── */
 const REDEMPTION_OPTIONS = [
   {
-    id: "hsa",
-    icon: "dollar-sign" as const,
-    title: "HSA Contribution",
-    description: "Add funds to your Health Savings Account",
-    value: "500 points = $500",
-  },
-  {
     id: "premium",
-    icon: "credit-card" as const,
-    title: "Premium Reimbursement",
-    description: "Reimburse your monthly premium payment",
-    value: "500 points = $500",
+    icon: "percent" as const,
+    title: "Premium Reduction",
+    description: "Applied to your next monthly premium",
+    value: "500 points = $5",
+    minPoints: 500,
   },
   {
     id: "copay",
-    icon: "activity" as const,
-    title: "Copay Credit",
-    description: "Apply toward your next eligible copay",
-    value: "250 points = $25",
+    icon: "dollar-sign" as const,
+    title: "Copay / Deductible Credit",
+    description: "Applied toward your next eligible copay",
+    value: "250 points = $2.50",
+    minPoints: 250,
   },
   {
-    id: "gift",
+    id: "gift-card",
     icon: "gift" as const,
     title: "Gift Cards",
-    description: "Amazon, Target, CVS & more",
-    value: "1000 points = $10",
+    description: "Amazon, Target, CVS, and more",
+    value: "1,000 points = $10",
+    minPoints: 1000,
   },
-];
-
-const QUICK_STATS = [
-  { icon: "calendar" as const, iconBg: "#E8F5F2", iconColor: "#2D7D6F", label: "This Month", value: "40+", sub: "24 earned" },
-  { icon: "trending-up" as const, iconBg: "#FEE2E2", iconColor: "#EF4444", label: "Redemption Rate", value: "41%", sub: "Points used" },
-  { icon: "award" as const, iconBg: "#EDE9FE", iconColor: "#8B5CF6", label: "Next Milestone", value: "550", sub: "to Premium tier" },
+  {
+    id: "healthcare",
+    icon: "activity" as const,
+    title: "Healthcare Services",
+    description: "Gym membership, wellness, vision, dental",
+    value: "500 points = $5",
+    minPoints: 500,
+  },
 ];
 
 export default function PointsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { user } = useAuth();
-  const { days, hours, mins, daysRemaining } = useCountdown();
+  const { isOpen, nextOpenStr, daysUntil } = useMemo(() => getWindowState(), []);
+
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
 
   const balance = user?.pointsBalance ?? 245;
-  const dollarValue = balance;
+  const earnedThisYear = useMemo(() => {
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    return MOCK_POINTS_HISTORY
+      .filter((tx) => tx.type === "earned" && new Date(tx.date) >= yearStart)
+      .reduce((sum, tx) => sum + tx.amount, 0) || balance;
+  }, [now, balance]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -88,153 +117,153 @@ export default function PointsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Redemption Window Warning */}
-        <View style={[styles.windowWarning, { backgroundColor: "#FEF3C7", borderColor: "#FDE68A" }]}>
-          <View style={styles.windowWarningLeft}>
-            <View style={[styles.windowIcon, { backgroundColor: "#FFFBEB" }]}>
-              <Feather name="clock" size={18} color="#F59E0B" />
-            </View>
-            <View style={styles.windowWarningText}>
-              <Text style={[styles.windowTitle, { color: "#92400E" }]}>Redemption Window Closed</Text>
-              <Text style={[styles.windowSub, { color: "#78350F" }]}>
-                Next window opens July 1, 2026
-              </Text>
-            </View>
-          </View>
-          <View style={styles.windowDays}>
-            <Text style={[styles.windowDaysValue, { color: "#F59E0B" }]}>{daysRemaining} days</Text>
-            <Text style={[styles.windowDaysLabel, { color: "#92400E" }]}>remaining</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.scheduleTopBtn, { backgroundColor: "#F59E0B" }]}
-          activeOpacity={0.85}
-        >
-          <Feather name="calendar" size={16} color="#fff" />
-          <Text style={styles.scheduleTopBtnText}>Schedule</Text>
-        </TouchableOpacity>
-
-        {/* Countdown Card */}
-        <View style={[styles.countdownCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.countdownTitle, { color: colors.foreground }]}>
-            Next Redemption Window
+        {/* ─── Earned This Year (Primary) ─── */}
+        <View style={[styles.earnedCard, { backgroundColor: colors.primaryDark }]}>
+          <Text style={styles.earnedLabel}>Earned This Year</Text>
+          <Text style={styles.earnedValue}>{earnedThisYear.toLocaleString()}</Text>
+          <Text style={styles.earnedUnit}>Points</Text>
+          <View style={[styles.earnedDivider, { backgroundColor: "#ffffff30" }]} />
+          <Text style={styles.earnedSub}>
+            Your Points Balance: {balance.toLocaleString()} Points
           </Text>
-          <View style={styles.countdownRow}>
-            <View style={styles.countdownUnit}>
-              <Text style={[styles.countdownValue, { color: colors.primary }]}>{days}</Text>
-              <Text style={[styles.countdownLabel, { color: colors.mutedForeground }]}>DAYS</Text>
-            </View>
-            <Text style={[styles.countdownDot, { color: colors.mutedForeground }]}>.</Text>
-            <View style={styles.countdownUnit}>
-              <Text style={[styles.countdownValue, { color: colors.primary }]}>{hours}</Text>
-              <Text style={[styles.countdownLabel, { color: colors.mutedForeground }]}>HOURS</Text>
-            </View>
-            <Text style={[styles.countdownDot, { color: colors.mutedForeground }]}>.</Text>
-            <View style={styles.countdownUnit}>
-              <Text style={[styles.countdownValue, { color: colors.primary }]}>{mins}</Text>
-              <Text style={[styles.countdownLabel, { color: colors.mutedForeground }]}>MIN</Text>
-            </View>
-          </View>
-          <Text style={[styles.countdownDate, { color: colors.mutedForeground }]}>
-            Opens July 1, 2026
+          <Text style={styles.earnedSub}>
+            = ${balance.toLocaleString()}
           </Text>
         </View>
 
-        {/* Action Buttons */}
-        <View style={[styles.closedPill, { backgroundColor: colors.muted }]}>
-          <Text style={[styles.closedPillText, { color: colors.mutedForeground }]}>
-            Redemption Window Closed
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.scheduleRedeemBtn, { backgroundColor: colors.primaryDark }]}
-          activeOpacity={0.85}
-        >
-          <Feather name="calendar" size={18} color="#fff" />
-          <Text style={styles.scheduleRedeemBtnText}>Schedule Redemption</Text>
-        </TouchableOpacity>
-
-        {/* Points Balance */}
-        <View style={[styles.balanceCard, { backgroundColor: colors.primaryDark }]}>
-          <Text style={styles.balanceCardLabel}>Your Points Balance</Text>
-          <Text style={styles.balanceCardValue}>{balance.toLocaleString()} Points</Text>
-          <Text style={styles.balanceCardDollar}>= ${dollarValue}</Text>
-          <Text style={styles.balanceCardDesc}>
-            Available toward premium, copays, or deductible
-          </Text>
-          <Text style={styles.balanceCardEarned}>
-            Earned this year: +{balance} points
-          </Text>
-          <View style={[styles.balanceProgressTrack, { backgroundColor: "#ffffff30" }]}>
-            <View style={[styles.balanceProgressFill, { width: "30%" }]} />
-          </View>
-        </View>
-
-        {/* Quick Stats */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Quick Stats</Text>
-          <View style={styles.quickStatsRow}>
-            {QUICK_STATS.map((stat) => (
-              <View
-                key={stat.label}
-                style={[styles.quickStatCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              >
-                <View style={[styles.quickStatIcon, { backgroundColor: stat.iconBg }]}>
-                  <Feather name={stat.icon} size={18} color={stat.iconColor} />
-                </View>
-                <Text style={[styles.quickStatLabel, { color: colors.mutedForeground }]}>
-                  {stat.label}
-                </Text>
-                <Text style={[styles.quickStatValue, { color: colors.foreground }]}>{stat.value}</Text>
-                <Text style={[styles.quickStatSub, { color: colors.mutedForeground }]}>{stat.sub}</Text>
+        {/* ─── Redemption Window Banner ─── */}
+        {isOpen ? (
+          <View style={[styles.windowBanner, { backgroundColor: "#DCFCE7", borderColor: "#86EFAC" }]}>
+            <View style={styles.windowBannerLeft}>
+              <View style={[styles.windowBannerIcon, { backgroundColor: "#16A34A20" }]}>
+                <Feather name="unlock" size={18} color="#16A34A" />
               </View>
-            ))}
+              <View style={styles.windowBannerText}>
+                <Text style={[styles.windowBannerTitle, { color: "#166534" }]}>
+                  Redemption Window Open
+                </Text>
+                <Text style={[styles.windowBannerSub, { color: "#15803D" }]}>
+                  Redeem your points before the 15th
+                </Text>
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View style={[styles.windowBanner, { backgroundColor: "#FEF3C7", borderColor: "#FDE68A" }]}>
+            <View style={styles.windowBannerLeft}>
+              <View style={[styles.windowBannerIcon, { backgroundColor: "#FFFBEB" }]}>
+                <Feather name="clock" size={18} color="#F59E0B" />
+              </View>
+              <View style={styles.windowBannerText}>
+                <Text style={[styles.windowBannerTitle, { color: "#92400E" }]}>
+                  Redemption Window Closed
+                </Text>
+                <Text style={[styles.windowBannerSub, { color: "#78350F" }]}>
+                  The redemption window for this month has closed.
+                  Your next window opens on {nextOpenStr}.
+                </Text>
+              </View>
+            </View>
+            <View style={styles.windowBannerRight}>
+              <Text style={[styles.windowDaysValue, { color: "#F59E0B" }]}>{daysUntil}</Text>
+              <Text style={[styles.windowDaysLabel, { color: "#92400E" }]}>days</Text>
+            </View>
+          </View>
+        )}
+
+        {/* ─── Redemption Options (2×2 Grid) ─── */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+            Redemption Options
+          </Text>
+          <View style={styles.optionsGrid}>
+            {REDEMPTION_OPTIONS.map((opt) => {
+              const canRedeem = isOpen && balance >= opt.minPoints;
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  style={[
+                    styles.optionCard,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: canRedeem ? colors.primary : colors.border,
+                      opacity: canRedeem ? 1 : 0.55,
+                    },
+                  ]}
+                  activeOpacity={canRedeem ? 0.85 : 1}
+                  onPress={() => {
+                    if (!isOpen) {
+                      if (Platform.OS !== "web") {
+                        Alert.alert(
+                          "Window Closed",
+                          `The redemption window is currently closed. Next window opens ${nextOpenStr}.`
+                        );
+                      }
+                      return;
+                    }
+                    if (balance < opt.minPoints) {
+                      if (Platform.OS !== "web") {
+                        Alert.alert(
+                          "Insufficient Points",
+                          `You need at least ${opt.minPoints} points for this option.`
+                        );
+                      }
+                      return;
+                    }
+                    if (Platform.OS !== "web") {
+                      Alert.alert(
+                        "Redemption Requested",
+                        `${opt.title} \u2014 ${opt.value}\n\nYour request has been submitted for processing.`,
+                      );
+                    }
+                  }}
+                >
+                  <View style={[styles.optionIcon, { backgroundColor: canRedeem ? colors.secondary : "#F0F2F5" }]}>
+                    <Feather name={opt.icon} size={20} color={canRedeem ? colors.primary : "#7A8699"} />
+                  </View>
+                  <Text style={[styles.optionTitle, { color: colors.foreground }]}>
+                    {opt.title}
+                  </Text>
+                  <Text style={[styles.optionDesc, { color: colors.foreground }]}>
+                    {opt.description}
+                  </Text>
+                  <Text style={[styles.optionValue, { color: colors.primary }]}>
+                    {opt.value}
+                  </Text>
+                  {!isOpen && (
+                    <View style={[styles.optionLocked, { backgroundColor: "#FEF3C7" }]}>
+                      <Text style={[styles.optionLockedText, { color: "#92400E" }]}>
+                        Window Closed
+                      </Text>
+                    </View>
+                  )}
+                  {isOpen && balance < opt.minPoints && (
+                    <View style={[styles.optionLocked, { backgroundColor: "#F0F2F5" }]}>
+                      <Text style={[styles.optionLockedText, { color: "#7A8699" }]}>
+                        Need {opt.minPoints} pts
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
-        {/* Redemption Options */}
+        {/* ─── Recent Activity ─── */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Redemption Options</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.redeemScroll}>
-            {REDEMPTION_OPTIONS.map((opt, idx) => (
-              <View
-                key={opt.id}
-                style={[
-                  styles.redeemOptionCard,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: idx === 1 ? colors.primary : colors.border,
-                    borderTopWidth: idx === 1 ? 4 : 1,
-                  },
-                ]}
-              >
-                <View style={[styles.redeemOptionIcon, { backgroundColor: colors.secondary }]}>
-                  <Feather name={opt.icon} size={20} color={colors.primary} />
-                </View>
-                <Text style={[styles.redeemOptionTitle, { color: colors.foreground }]}>
-                  {opt.title}
-                </Text>
-                <Text style={[styles.redeemOptionDesc, { color: colors.mutedForeground }]}>
-                  {opt.description}
-                </Text>
-                <Text style={[styles.redeemOptionValue, { color: colors.primary }]}>{opt.value}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Recent Activity */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recent Activity</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+            Recent Activity
+          </Text>
           {MOCK_POINTS_HISTORY.map((tx) => (
             <View
               key={tx.id}
               style={[styles.txRow, { backgroundColor: colors.card, borderColor: colors.border }]}
             >
               <View style={styles.txDateCol}>
-                <Text style={[styles.txDate, { color: colors.mutedForeground }]}>{tx.dateLabel}</Text>
+                <Text style={[styles.txDate, { color: colors.foreground }]}>
+                  {tx.dateLabel}
+                </Text>
               </View>
               <View style={[styles.txIcon, { backgroundColor: colors.secondary }]}>
                 <Feather name="activity" size={16} color={colors.primary} />
@@ -243,7 +272,7 @@ export default function PointsScreen() {
                 <Text style={[styles.txTitle, { color: colors.foreground }]} numberOfLines={2}>
                   {tx.description}
                 </Text>
-                <Text style={[styles.txCategory, { color: colors.mutedForeground }]}>
+                <Text style={[styles.txCategory, { color: colors.foreground }]}>
                   {tx.category}
                 </Text>
               </View>
@@ -260,120 +289,82 @@ export default function PointsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { paddingHorizontal: 16, paddingTop: 12, gap: 14 },
-  windowWarning: {
+  scroll: { paddingHorizontal: 16, paddingTop: 12, gap: 16 },
+
+  // Earned This Year Card
+  earnedCard: {
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+    gap: 6,
+  },
+  earnedLabel: { color: "#fff", fontSize: 14, opacity: 0.8, fontWeight: "600" },
+  earnedValue: { color: "#fff", fontSize: 56, fontWeight: "900", lineHeight: 60 },
+  earnedUnit: { color: "#fff", fontSize: 16, opacity: 0.85, fontWeight: "600" },
+  earnedDivider: { width: "100%", height: 1, marginVertical: 8 },
+  earnedSub: { color: "#fff", fontSize: 13, opacity: 0.75, textAlign: "center" },
+
+  // Window Banner
+  windowBanner: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
     gap: 10,
   },
-  windowWarningLeft: { flexDirection: "row", alignItems: "flex-start", gap: 10, flex: 1 },
-  windowIcon: {
+  windowBannerLeft: { flexDirection: "row", alignItems: "flex-start", gap: 10, flex: 1 },
+  windowBannerIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
-  windowWarningText: { gap: 2, flex: 1 },
-  windowTitle: { fontSize: 14, fontWeight: "700" },
-  windowSub: { fontSize: 12, lineHeight: 16 },
-  windowDays: { alignItems: "flex-end" },
-  windowDaysValue: { fontSize: 18, fontWeight: "900" },
+  windowBannerText: { gap: 2, flex: 1 },
+  windowBannerTitle: { fontSize: 14, fontWeight: "700" },
+  windowBannerSub: { fontSize: 12, lineHeight: 16 },
+  windowBannerRight: { alignItems: "flex-end" },
+  windowDaysValue: { fontSize: 20, fontWeight: "900" },
   windowDaysLabel: { fontSize: 11 },
-  scheduleTopBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderRadius: 10,
-    paddingVertical: 14,
-  },
-  scheduleTopBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
-  countdownCard: {
-    borderRadius: 16,
-    padding: 24,
-    borderWidth: 1,
-    alignItems: "center",
-    gap: 14,
-  },
-  countdownTitle: { fontSize: 17, fontWeight: "700" },
-  countdownRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  countdownUnit: { alignItems: "center" },
-  countdownValue: { fontSize: 40, fontWeight: "900", lineHeight: 44 },
-  countdownLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 0.5 },
-  countdownDot: { fontSize: 32, fontWeight: "900", marginBottom: 10 },
-  countdownDate: { fontSize: 13 },
-  closedPill: {
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  closedPillText: { fontSize: 15, fontWeight: "600" },
-  scheduleRedeemBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderRadius: 10,
-    paddingVertical: 16,
-  },
-  scheduleRedeemBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
-  balanceCard: {
-    borderRadius: 16,
-    padding: 20,
-    alignItems: "center",
-    gap: 8,
-  },
-  balanceCardLabel: { color: "#fff", fontSize: 14, opacity: 0.8 },
-  balanceCardValue: { color: "#fff", fontSize: 40, fontWeight: "900", lineHeight: 48 },
-  balanceCardDollar: { color: "#fff", fontSize: 16, opacity: 0.85 },
-  balanceCardDesc: { color: "#fff", fontSize: 13, textAlign: "center", opacity: 0.75 },
-  balanceCardEarned: { color: "#fff", fontSize: 13, opacity: 0.85 },
-  balanceProgressTrack: { width: "100%", height: 6, borderRadius: 3, overflow: "hidden", marginTop: 4 },
-  balanceProgressFill: { height: "100%", backgroundColor: "#fff", borderRadius: 3 },
+
+  // Section
   section: { gap: 12 },
   sectionTitle: { fontSize: 18, fontWeight: "800" },
-  quickStatsRow: { flexDirection: "row", gap: 10 },
-  quickStatCard: {
-    flex: 1,
+
+  // 2×2 Grid
+  optionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  optionCard: {
+    width: "47%",
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    alignItems: "center",
-    gap: 6,
-  },
-  quickStatIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  quickStatLabel: { fontSize: 11, textAlign: "center" },
-  quickStatValue: { fontSize: 18, fontWeight: "800" },
-  quickStatSub: { fontSize: 10, textAlign: "center" },
-  redeemScroll: { gap: 12, paddingRight: 4 },
-  redeemOptionCard: {
-    width: 160,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
     gap: 8,
+    alignItems: "flex-start",
   },
-  redeemOptionIcon: {
+  optionIcon: {
     width: 44,
     height: 44,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  redeemOptionTitle: { fontSize: 14, fontWeight: "700", lineHeight: 18 },
-  redeemOptionDesc: { fontSize: 12, lineHeight: 16 },
-  redeemOptionValue: { fontSize: 13, fontWeight: "600" },
+  optionTitle: { fontSize: 14, fontWeight: "700" },
+  optionDesc: { fontSize: 12, lineHeight: 16 },
+  optionValue: { fontSize: 13, fontWeight: "600" },
+  optionLocked: {
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginTop: 2,
+  },
+  optionLockedText: { fontSize: 11, fontWeight: "700" },
+
+  // Transaction Rows
   txRow: {
     flexDirection: "row",
     alignItems: "flex-start",

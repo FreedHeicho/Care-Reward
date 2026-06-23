@@ -127,7 +127,7 @@ export default function DashboardScreen() {
           </Text>
           <TouchableOpacity
             style={[styles.redeemBtn, { backgroundColor: colors.primary }]}
-            onPress={() => router.push("/redeem" as never)}
+            onPress={() => router.push("/(tabs)/rewards" as never)}
             activeOpacity={0.85}
           >
             <Text style={styles.redeemBtnText}>Redeem My Points</Text>
