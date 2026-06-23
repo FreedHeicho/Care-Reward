@@ -45,9 +45,12 @@ function getWindowState() {
     year: "numeric",
   });
 
-  const daysUntil = Math.max(0, Math.ceil((nextOpen.getTime() - now.getTime()) / 86400000));
+  const diffMs = Math.max(0, nextOpen.getTime() - now.getTime());
+  const daysUntil = Math.floor(diffMs / 86400000);
+  const hoursUntil = Math.floor((diffMs % 86400000) / 3600000);
+  const minsUntil = Math.floor((diffMs % 3600000) / 60000);
 
-  return { isOpen, nextOpen, nextOpenStr, daysUntil };
+  return { isOpen, nextOpen, nextOpenStr, daysUntil, hoursUntil, minsUntil };
 }
 
 /* ─── Redemption Options (from old redeem.tsx) ─── */
@@ -90,7 +93,7 @@ export default function PointsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { isOpen, nextOpenStr, daysUntil } = useMemo(() => getWindowState(), []);
+  const { isOpen, nextOpenStr, daysUntil, hoursUntil, minsUntil } = useMemo(() => getWindowState(), []);
 
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -128,6 +131,34 @@ export default function PointsScreen() {
           </Text>
           <Text style={styles.earnedSub}>
             = ${balance.toLocaleString()}
+          </Text>
+        </View>
+
+        {/* ─── Countdown Card ─── */}
+        <View style={[styles.countdownCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.countdownTitle, { color: colors.foreground }]}>
+            {isOpen ? "Redemption Window Closes In" : "Next Redemption Window"}
+          </Text>
+          <View style={styles.countdownRow}>
+            <View style={styles.countdownUnit}>
+              <Text style={[styles.countdownValue, { color: colors.primary }]}>{daysUntil}</Text>
+              <Text style={[styles.countdownLabel, { color: colors.foreground }]}>DAYS</Text>
+            </View>
+            <Text style={[styles.countdownDot, { color: colors.foreground }]}>·</Text>
+            <View style={styles.countdownUnit}>
+              <Text style={[styles.countdownValue, { color: colors.primary }]}>{hoursUntil}</Text>
+              <Text style={[styles.countdownLabel, { color: colors.foreground }]}>HOURS</Text>
+            </View>
+            <Text style={[styles.countdownDot, { color: colors.foreground }]}>·</Text>
+            <View style={styles.countdownUnit}>
+              <Text style={[styles.countdownValue, { color: colors.primary }]}>{minsUntil}</Text>
+              <Text style={[styles.countdownLabel, { color: colors.foreground }]}>MIN</Text>
+            </View>
+          </View>
+          <Text style={[styles.countdownDate, { color: colors.foreground }]}>
+            {isOpen
+              ? `Window closes on the ${WINDOW_CLOSE_DAY}th`
+              : `Opens ${nextOpenStr}`}
           </Text>
         </View>
 
@@ -327,6 +358,22 @@ const styles = StyleSheet.create({
   windowBannerRight: { alignItems: "flex-end" },
   windowDaysValue: { fontSize: 20, fontWeight: "900" },
   windowDaysLabel: { fontSize: 11 },
+
+  // Countdown Card
+  countdownCard: {
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    alignItems: "center",
+    gap: 14,
+  },
+  countdownTitle: { fontSize: 17, fontWeight: "700" },
+  countdownRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  countdownUnit: { alignItems: "center" },
+  countdownValue: { fontSize: 40, fontWeight: "900", lineHeight: 44 },
+  countdownLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 0.5 },
+  countdownDot: { fontSize: 32, fontWeight: "900", marginBottom: 10 },
+  countdownDate: { fontSize: 13 },
 
   // Section
   section: { gap: 12 },
