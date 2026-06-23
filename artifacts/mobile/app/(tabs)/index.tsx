@@ -165,16 +165,6 @@ export default function DashboardScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Find More CTA */}
-        <TouchableOpacity
-          style={[styles.findMoreBtn, { backgroundColor: colors.primary }]}
-          onPress={() => router.push("/(tabs)/opportunities" as never)}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.findMoreText}>Find more opportunities</Text>
-          <Feather name="arrow-right" size={18} color="#fff" />
-        </TouchableOpacity>
-
         {/* Get Started */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Get Started</Text>
@@ -406,17 +396,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
   },
   alertText: { fontSize: 14, fontWeight: "500", flex: 1 },
-
-  // Find more
-  findMoreBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderRadius: 10,
-    paddingVertical: 16,
-  },
-  findMoreText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 
   // Sections
   section: { gap: 12 },

@@ -24,15 +24,11 @@ function NativeTabLayout() {
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="claims">
         <Icon sf={{ default: "shield", selected: "shield.fill" }} />
-        <Label>Spend</Label>
+        <Label>Care</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="rewards">
         <Icon sf={{ default: "rosette", selected: "rosette" }} />
         <Label>Points</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="find-more">
-        <Icon sf={{ default: "magnifyingglass", selected: "magnifyingglass" }} />
-        <Label>Find More Opportunities</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person", selected: "person.fill" }} />
@@ -130,7 +126,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="claims"
         options={{
-          title: "Spend",
+          title: "Care",
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="shield" tintColor={color} size={22} />
@@ -159,18 +155,6 @@ function ClassicTabLayout() {
               <SymbolView name="star" tintColor={color} size={22} />
             ) : (
               <Feather name="award" size={22} color={color} />
-            ),
-        }}
-      />
-      <Tabs.Screen
-        name="find-more"
-        options={{
-          title: "Find More Opportunities",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="magnifyingglass" tintColor={color} size={22} />
-            ) : (
-              <Feather name="search" size={22} color={color} />
             ),
         }}
       />
