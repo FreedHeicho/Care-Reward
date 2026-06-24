@@ -5,6 +5,13 @@ export type OpportunityCategory =
   | "specialist"
   | "upcoming";
 
+export type OpportunityFilterCategory =
+  | "care-site-alternative"
+  | "care-protocol"
+  | "preventative-care"
+  | "care-quality"
+  | "mail-delivery";
+
 export type OpportunityStatus = "active" | "completed" | "missed";
 export type OpportunityPriority = "high" | "medium" | "low";
 
@@ -22,6 +29,7 @@ export interface Opportunity {
   why: string;
   benefits: string[];
   group?: string;
+  filterCategory?: OpportunityFilterCategory;
   icon?: string;
   iconBg?: string;
   frequency?: "monthly" | "one-time";
@@ -107,7 +115,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Same therapeutic benefits as brand name",
       "No change in effectiveness",
     ],
-    group: "Care Site Alternative",
+    group: "Care Site Sub Opportunities",
+    filterCategory: "care-site-alternative",
     icon: "pill",
     iconBg: "#EDE9FE",
     frequency: "monthly",
@@ -135,7 +144,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Automatic refill reminders",
       "Free shipping and delivery",
     ],
-    group: "Mail Delivery",
+    group: "Mail Delivery Opportunities",
+    filterCategory: "mail-delivery",
     icon: "package",
     iconBg: "#E8F5F2",
     frequency: "one-time",
@@ -162,7 +172,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Help improve care quality",
       "Share your experience",
     ],
-    group: "Care Protocol Compliance",
+    group: "Care Planning Opportunities",
+    filterCategory: "care-quality",
     icon: "calendar",
     iconBg: "#DBEAFE",
     frequency: "one-time",
@@ -189,7 +200,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Help improve care quality",
       "Share your experience",
     ],
-    group: "Care Protocol Compliance",
+    group: "Care Planning Opportunities",
+    filterCategory: "care-quality",
     icon: "calendar",
     iconBg: "#DBEAFE",
     frequency: "one-time",
@@ -216,7 +228,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Find better appointment times",
       "Compare provider options",
     ],
-    group: "Care Protocol Compliance",
+    group: "Care Planning Opportunities",
+    filterCategory: "care-protocol",
     icon: "calendar",
     iconBg: "#DBEAFE",
     frequency: "one-time",
@@ -243,7 +256,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Complete required screening",
       "Maintain care protocol compliance",
     ],
-    group: "Care Protocol Compliance",
+    group: "Care Planning Opportunities",
+    filterCategory: "care-protocol",
     icon: "calendar",
     iconBg: "#DBEAFE",
     frequency: "one-time",
@@ -270,7 +284,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Complete required screening",
       "Maintain care protocol compliance",
     ],
-    group: "Care Protocol Compliance",
+    group: "Care Planning Opportunities",
+    filterCategory: "care-protocol",
     icon: "calendar",
     iconBg: "#DBEAFE",
     frequency: "one-time",
@@ -297,7 +312,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Maintain medication adherence",
       "Follow care protocol",
     ],
-    group: "Care Protocol Compliance",
+    group: "Care Planning Opportunities",
+    filterCategory: "care-protocol",
     icon: "calendar",
     iconBg: "#DBEAFE",
     frequency: "one-time",
@@ -324,7 +340,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Protect against seasonal flu",
       "Reduce risk of complications",
     ],
-    group: "Care Protocol Compliance",
+    group: "Care Planning Opportunities",
+    filterCategory: "preventative-care",
     icon: "calendar",
     iconBg: "#DBEAFE",
     frequency: "one-time",
@@ -351,7 +368,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Comprehensive health assessment",
       "Preventive care recommendations",
     ],
-    group: "Care Protocol Compliance",
+    group: "Care Planning Opportunities",
+    filterCategory: "preventative-care",
     icon: "calendar",
     iconBg: "#DBEAFE",
     frequency: "one-time",
