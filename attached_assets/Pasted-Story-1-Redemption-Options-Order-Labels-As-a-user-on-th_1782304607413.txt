@@ -1,0 +1,36 @@
+Story 1 — Redemption Options Order & Labels
+As a user on the Points tab,
+ I want to see exactly 4 redemption options displayed in a specific order,
+ So that the options are clear, correctly labelled, and logically sequenced.
+Acceptance Criteria:
+The 4 redemption options must appear in this exact order in the 2×2 grid (left to right, top to bottom):
+Position 1 (top-left): Premium
+Position 2 (top-right): HSA Contribution
+Position 3 (bottom-left): Healthcare Savings Giftcards
+Position 4 (bottom-right): Copay/Deductible Credit
+No other redemption options appear. This is the complete and final list.
+The label for each option uses the exact titles listed above — no rewording or abbreviation.
+
+Story 2 — Healthcare Savings Giftcards Description Text
+As a user viewing the redemption options on the Points tab,
+ I want the Healthcare Savings Giftcards option to display a short description beneath its title,
+ So that I understand what this option does before tapping it.
+Acceptance Criteria:
+The Healthcare Savings Giftcards card displays the following sub-text beneath its title, verbatim:
+ "Add funds to your health savings accounts."
+This description text appears on the card itself, not in a tooltip or popup.
+
+
+HOME  — FIVE Missed OPPORTUNITIES
+
+Story 3 — "Five Missed Opportunities" Navigates to Missed Opportunities Page
+As a user on the Home Page,
+ When I tap on the "Five New Opportunities" banner or card,
+ I want to be taken directly to the Missed Opportunities page,which i will attach
+ So that I can immediately see missed opportunities without extra steps.
+Acceptance Criteria:
+Tapping "Five Missed Opportunities" on the Home page navigates the user directly to the Missed Opportunities page.
+The Missed Opportunities page opens in its default state showing all Missed opportunities.
+The attached picture is the single sources of truth for the rMissed Opportunities page UI
+No intermediate screen or modal appears between tapping and landing on the Missed Opportunities page.
+The navigation is immediate — back-button returns the user to the Home Dashboard.

@@ -157,7 +157,7 @@ export default function DashboardScreen() {
 
         <TouchableOpacity
           style={[styles.alertBanner, { backgroundColor: "#FEE2E2", borderLeftColor: "#DC2626" }]}
-          onPress={() => router.push("/(tabs)/opportunities" as never)}
+          onPress={() => router.push("/missed-opportunities" as never)}
         >
           <Feather name="bell" size={18} color="#DC2626" />
           <Text style={[styles.alertText, { color: colors.foreground }]}>

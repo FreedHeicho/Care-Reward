@@ -119,6 +119,10 @@ function RootLayoutNav() {
         name="schedule-opportunity"
         options={{ title: "Schedule Appointment", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="missed-opportunities"
+        options={{ title: "Missed Opportunities", headerBackTitle: "Back" }}
+      />
     </Stack>
   );
 }
