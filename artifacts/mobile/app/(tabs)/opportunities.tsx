@@ -42,9 +42,9 @@ const ICON_EMOJI: Record<string, string> = {
 function OppCard({ opp }: { opp: Opportunity }) {
   const colors = useColors();
   const router = useRouter();
-  const barColor = opp.category === "medication" ? "#A78BFA"
-    : opp.category === "mail-delivery" ? "#38BDF8"
-    : "#38BDF8";
+  const barColor = opp.filterCategory === "care-site-alternative" ? "#9333EA"
+    : opp.filterCategory === "mail-delivery" ? "#0EA5E9"
+    : "#3B82F6";
 
   const icon = opp.icon ? ICON_EMOJI[opp.icon] ?? "💊" : ICON_EMOJI[opp.category] ?? "💊";
   const bg = opp.iconBg ?? "#EDE9FE";
