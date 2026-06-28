@@ -52,7 +52,7 @@ export default function ConfirmScreen() {
             <Feather name="check" size={16} color="#fff" />
           </View>
           <Text style={[styles.consentText, { color: colors.foreground }]}>
-            I confirm that I have an account with this health system and I agree to allow b.well to retrieve my health records.
+            I confirm that I have an account with this health system and I agree to allow CareReward to retrieve my health records.
           </Text>
         </View>
 

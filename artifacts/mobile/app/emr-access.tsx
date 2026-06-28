@@ -14,43 +14,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useHealthRecords } from "@/context/HealthRecordsContext";
 
-const TAPPABLE_CATEGORIES = [
-  {
-    id: "immunizations",
-    label: "Immunizations",
-    icon: "shield" as const,
-    color: "#05503C",
-    bg: "#DCFCE7",
-    lastUpdated: "Nov 5, 2025",
-    route: "/health-records/immunizations",
-  },
-  {
-    id: "visits",
-    label: "Visits",
-    icon: "map-pin" as const,
-    color: "#05503C",
-    bg: "#DCFCE7",
-    lastUpdated: "Jun 19",
-    route: "/health-records/visits",
-  },
-  {
-    id: "labs",
-    label: "Lab results",
-    icon: "thermometer" as const,
-    color: "#05503C",
-    bg: "#DCFCE7",
-    lastUpdated: "Oct 29, 2025",
-    route: "/health-records/lab-results",
-  },
-];
-
-const STATIC_CATEGORIES = [
-  { id: "all",        label: "All records",  icon: "folder" as const,    color: "#22C55E", bg: "#DCFCE7", lastUpdated: "Jun 19" },
-  { id: "allergies",  label: "Allergies",    icon: "alert-circle" as const, color: "#EAB308", bg: "#FEF9C3", lastUpdated: "Oct 29, 2025" },
-  { id: "conditions", label: "Conditions",   icon: "user" as const,      color: "#EC4899", bg: "#FCE7F3", lastUpdated: "Jun 12" },
-  { id: "medications",label: "Medications",  icon: "package" as const,   color: "#3B82F6", bg: "#DBEAFE", lastUpdated: "Jun 2" },
-  { id: "procedures", label: "Procedures",   icon: "file-text" as const, color: "#10B981", bg: "#D1FAE5", lastUpdated: "Oct 29, 2025" },
-  { id: "vitals",     label: "Vitals",       icon: "activity" as const,  color: "#EF4444", bg: "#FEE2E2", lastUpdated: "Jun 19" },
+const RECORD_CATEGORIES = [
+  { id: "all",          label: "All records",  icon: "folder" as const,     color: "#22C55E", bg: "#DCFCE7", lastUpdated: "Jun 19",       route: null },
+  { id: "allergies",   label: "Allergies",    icon: "alert-circle" as const, color: "#EAB308", bg: "#FEF9C3", lastUpdated: "Oct 29, 2025", route: null },
+  { id: "conditions",  label: "Conditions",   icon: "user" as const,        color: "#EC4899", bg: "#FCE7F3", lastUpdated: "Jun 12",        route: null },
+  { id: "immunizations",label: "Immunizations",icon: "shield" as const,     color: "#14B8A6", bg: "#CCFBF1", lastUpdated: "Nov 5, 2025",  route: "/health-records/immunizations" },
+  { id: "labs",        label: "Lab results",  icon: "thermometer" as const, color: "#8B5CF6", bg: "#EDE9FE", lastUpdated: "Oct 29, 2025", route: "/health-records/lab-results" },
+  { id: "medications", label: "Medications",  icon: "package" as const,     color: "#3B82F6", bg: "#DBEAFE", lastUpdated: "Jun 2",         route: null },
+  { id: "procedures",  label: "Procedures",   icon: "file-text" as const,   color: "#10B981", bg: "#D1FAE5", lastUpdated: "Oct 29, 2025", route: null },
+  { id: "visits",      label: "Visits",       icon: "map-pin" as const,     color: "#6366F1", bg: "#E0E7FF", lastUpdated: "Jun 19",       route: "/health-records/visits" },
+  { id: "vitals",      label: "Vitals",       icon: "activity" as const,    color: "#EF4444", bg: "#FEE2E2", lastUpdated: "Jun 19",       route: null },
 ];
 
 export default function EmrAccessScreen() {
@@ -111,62 +84,42 @@ export default function EmrAccessScreen() {
           </View>
         </View>
 
-        {/* Interactive records — full-width rows with chevron */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-            YOUR RECORDS
-          </Text>
-          <View style={styles.tappableList}>
-            {TAPPABLE_CATEGORIES.map((cat) => (
+        {/* Record categories grid — tappable cards get green border + chevron */}
+        <View style={styles.grid}>
+          {RECORD_CATEGORIES.map((cat) => {
+            const isTappable = !!cat.route;
+            return (
               <TouchableOpacity
                 key={cat.id}
                 style={[
-                  styles.tappableRow,
+                  styles.gridCard,
                   {
                     backgroundColor: colors.card,
-                    borderColor: colors.primary,
-                    shadowColor: colors.primary,
+                    borderColor: isTappable ? colors.primary : colors.border,
+                    borderWidth: isTappable ? 1.5 : 1,
+                    shadowColor: isTappable ? colors.primary : "transparent",
                   },
                 ]}
-                activeOpacity={0.7}
-                onPress={() => router.push(cat.route as never)}
+                activeOpacity={isTappable ? 0.7 : 1}
+                onPress={isTappable ? () => router.push(cat.route as never) : undefined}
               >
-                <View style={[styles.tappableIcon, { backgroundColor: cat.bg }]}>
-                  <Feather name={cat.icon} size={22} color={cat.color} />
+                <View style={styles.cardTopRow}>
+                  <View style={[styles.cardIcon, { backgroundColor: cat.bg }]}>
+                    <Feather name={cat.icon} size={20} color={cat.color} />
+                  </View>
+                  {isTappable ? (
+                    <Feather name="chevron-right" size={16} color={colors.primary} />
+                  ) : (
+                    <View style={styles.dot} />
+                  )}
                 </View>
-                <View style={styles.tappableInfo}>
-                  <Text style={[styles.tappableLabel, { color: colors.foreground }]}>
-                    {cat.label}
-                  </Text>
-                  <Text style={[styles.tappableUpdated, { color: colors.mutedForeground }]}>
-                    Last updated: {cat.lastUpdated}
-                  </Text>
-                </View>
-                <Feather name="chevron-right" size={20} color={colors.primary} />
+                <Text style={[styles.cardLabel, { color: colors.foreground }]}>{cat.label}</Text>
+                <Text style={[styles.cardUpdated, { color: colors.mutedForeground }]}>
+                  Last updated: {cat.lastUpdated}
+                </Text>
               </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Static records grid */}
-        <View style={styles.grid}>
-          {STATIC_CATEGORIES.map((cat) => (
-            <View
-              key={cat.id}
-              style={[styles.gridCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-            >
-              <View style={styles.cardTopRow}>
-                <View style={[styles.cardIcon, { backgroundColor: cat.bg }]}>
-                  <Feather name={cat.icon} size={20} color={cat.color} />
-                </View>
-                <View style={styles.dot} />
-              </View>
-              <Text style={[styles.cardLabel, { color: colors.foreground }]}>{cat.label}</Text>
-              <Text style={[styles.cardUpdated, { color: colors.mutedForeground }]}>
-                Last updated: {cat.lastUpdated}
-              </Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
         {/* My health systems */}
@@ -264,37 +217,6 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
 
-  section: { gap: 10 },
-  sectionLabel: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-  },
-  tappableList: { gap: 10 },
-  tappableRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    padding: 14,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  tappableIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  tappableInfo: { flex: 1, gap: 3 },
-  tappableLabel: { fontSize: 16, fontWeight: "700" },
-  tappableUpdated: { fontSize: 12 },
-
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -303,9 +225,12 @@ const styles = StyleSheet.create({
   gridCard: {
     width: "47%",
     borderRadius: 16,
-    borderWidth: 1,
     padding: 14,
     gap: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   cardTopRow: {
     flexDirection: "row",

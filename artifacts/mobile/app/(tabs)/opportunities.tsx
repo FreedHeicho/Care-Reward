@@ -85,13 +85,6 @@ function OppCard({ opp }: { opp: Opportunity }) {
                 : `Earn ${opp.points} points`}
             </Text>
           </View>
-          {isOneTime && !isMonthly && (
-            <View style={[styles.oneTimeBadge, { borderColor: colors.border }]}>
-              <Text style={[styles.oneTimeBadgeText, { color: colors.foreground }]}>
-                ONE-TIME
-              </Text>
-            </View>
-          )}
         </View>
 
         {opp.benefits.map((b, i) => (
@@ -277,15 +270,10 @@ export default function OpportunitiesScreen() {
                 ))}
               </View>
               {sub && (
-                <View style={[styles.subGroup, { borderLeftColor: colors.border }]}>
-                  <Text style={[styles.subGroupTitle, { color: colors.mutedForeground }]}>
-                    {sub.name}
-                  </Text>
-                  <View style={styles.groupCards}>
-                    {sub.opps.map((opp) => (
-                      <OppCard key={opp.id} opp={opp} />
-                    ))}
-                  </View>
+                <View style={styles.groupCards}>
+                  {sub.opps.map((opp) => (
+                    <OppCard key={opp.id} opp={opp} />
+                  ))}
                 </View>
               )}
             </View>

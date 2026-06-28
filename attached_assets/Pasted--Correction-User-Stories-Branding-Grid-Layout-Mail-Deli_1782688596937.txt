@@ -1,0 +1,74 @@
+🧾 Correction User Stories: Branding, Grid Layout, Mail Delivery & Card Design
+
+CORRECTION 1 — Replace "b.well" with "CareReward" in Confirmation Message
+As a user on the institution confirmation screen,
+
+I want the app name in the consent message to correctly read CareReward,
+
+So that the branding is accurate and consistent throughout the app.
+Acceptance Criteria:
+
+Locate the confirmation message that currently reads:
+
+"I confirm that I have an account with this health system and I agree to allow b.well to retrieve my health records."
+Replace b.well with CareReward so it reads:
+
+"I confirm that I have an account with this health system and I agree to allow CareReward to retrieve my health records."
+Search the entire codebase for any other instance of "b.well" and replace with "CareReward" wherever it appears.
+No other part of the message is changed — only the app name is updated.
+
+
+CORRECTION 2 — Revert Grid Layout; Apply Clickability Styling Within the Grid
+As a user on the Health Records home screen,
+
+I want Immunizations, Visits, and Lab Results to remain in their original grid layout,
+
+So that the layout is not disrupted, while still making it visually clear they are tappable.
+Acceptance Criteria:
+
+Revert the previous change that pulled Immunizations, Visits, and Lab Results out of the grid into full-width list rows — these three items must go back into the grid exactly as they were before that change.
+The grid structure, column count, and card dimensions must be restored to their original state.
+While remaining inside the grid, apply the following clickability treatment to all three cards:
+
+Green-tinted border: 1.5px solid border using the app's primary green color.
+Green chevron: A › chevron icon in the primary green color, positioned on the right side of each card.
+Subtle shadow/elevation: A soft card shadow to lift the card visually off the background.
+Pressed state: activeOpacity: 0.7 on tap so the user gets visual feedback that their tap registered.
+
+
+All three cards must receive the same treatment — consistent styling across Immunizations, Visits, and Lab Results.
+No other grid cards or non-tappable elements receive this treatment.
+
+
+CORRECTION 3 — Remove "Mail Delivery Opportunities" Section Header Text
+As a user browsing the Opportunities page,
+
+I want the grey "MAIL DELIVERY OPPORTUNITIES" section label removed entirely,
+
+So that Mail Delivery seamlessly becomes a quiet subset of Care Site Alternative without a separate heading drawing attention to it.
+Acceptance Criteria:
+
+The grey "MAIL DELIVERY OPPORTUNITIES" header/label text is completely removed from the Opportunities page.
+The Mail Delivery opportunity cards that sat beneath that label remain — only the label itself is deleted.
+No blank space or gap is left where the label previously appeared — the cards reflow naturally upward.
+Mail Delivery opportunity cards now appear as a natural continuation under Care Site Alternative with no visual separation or sub-heading distinguishing them.
+
+CORRECTION 4 — Remove "ONE-TIME" Button; All Cards Match Medication Opportunity Design
+As a user viewing the Opportunities page,
+
+I want the "ONE-TIME" button removed from all opportunity cards that currently show it,
+
+So that every card looks exactly like the Medication Opportunity card with no extra elements breaking the consistent design.
+Acceptance Criteria:
+
+The "ONE-TIME" button is completely removed from every opportunity card that currently displays it.
+No placeholder, blank space, or gap is left where the "ONE-TIME" button previously appeared — the card layout reflows cleanly without it.
+After removing the button, every opportunity card across the entire Opportunities page must be a pixel-perfect match to the Medication Opportunity card design — same layout, same spacing, same typography, same button style, same icon/logo placement, same labels.
+Do a full audit of every card on the Opportunities page after making this change to confirm no card still carries the "ONE-TIME" button or any other element not present on the Medication Opportunity card.
+The only permitted differences between cards remain:
+
+The name/title of the opportunity.
+The logo or brand icon of the relevant provider or institution.
+
+
+Everything else must be identical across all cards.
