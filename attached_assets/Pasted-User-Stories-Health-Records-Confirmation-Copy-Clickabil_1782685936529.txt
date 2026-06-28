@@ -1,0 +1,76 @@
+User Stories: Health Records Confirmation Copy, Clickability Indicators & Opportunities Design
+
+HEALTH RECORDS — CONFIRMATION PAGE COPY
+
+Story 1 — Update Messaging on Institution Confirmation Page
+As a user who has selected a hospital or health system during the Add Health System flow,
+
+I want the confirmation screen to display the exact messaging shown in the attached screenshot,
+
+So that the language is clear, on-brand, and accurately reflects what I am agreeing to.
+Acceptance Criteria:
+
+The current text "Do you have an account?" and any surrounding copy on the institution confirmation screen is completely replaced with the messaging shown in the attached screenshot.
+The new copy must be reproduced verbatim — no rewording, paraphrasing, or reformatting.
+The layout, font size, and position of the new messaging must match the attached screenshot exactly.
+
+This update applies to the confirmation screen reached via: Connect Health Records → Add Health System → Search by Hospital, Clinic, Health System or Pharmacy → Select Institution → Confirmation Screen.
+
+
+HEALTH RECORDS HOME — CLICKABILITY INDICATORS
+
+Story 2 — Make Immunizations, Visits & Lab Results Visually Clickable
+As a user on the Health Records home screen,
+
+I want the Immunizations, Visits, and Lab Results items to look clearly interactive and tappable,
+
+So that I immediately know I can tap them to view more detail without guessing.
+Acceptance Criteria:
+
+All three items — Immunizations, Visits, and Lab Results — must be styled to communicate interactivity using the following design treatment:
+
+Color: Apply a green accent color to each card or row (border, icon, or label) to signal that it is active and tappable.
+Affordance indicator: Add a right-facing chevron arrow ( › ) on the right side of each item, which is a universally understood "tap to go deeper" pattern in mobile design.
+Touch state: Each item must have a visible pressed/highlighted state when tapped (e.g. background darkens slightly or scales down) to confirm the tap registered.
+Elevation or border: Apply a subtle card shadow or green-tinted border around each item to lift it visually off the page and distinguish it as interactive.
+
+
+The three items must be visually consistent with each other — same color treatment, same chevron, same card style.
+Static/non-tappable elements on the same screen must not receive this treatment, so the contrast between tappable and non-tappable is clear.
+The solution must follow platform conventions — no custom gestures or non-standard patterns.
+
+
+OPPORTUNITIES PAGE — STRUCTURE & CARD DESIGN
+
+Story 3 — Place Mail Delivery Opportunities Under Care Site Opportunities
+As a user browsing the Opportunities page,
+
+I want Mail Delivery Opportunities to appear as a sub-category or grouped item under Care Site Opportunities,
+
+So that the information architecture is logical and related opportunities are grouped together.
+Acceptance Criteria:
+
+On the Opportunities page, Mail Delivery Opportunities is nested under or grouped beneath the Care Site Opportunities section — it is not a standalone top-level category.
+The grouping is visually clear — Care Site Opportunities acts as the parent, and Mail Delivery Opportunities sits beneath it as a child item or sub-section.
+When the Care Site Alternative filter category is selected, Mail Delivery Opportunities entries appear within those results.
+The section heading or label hierarchy must make the parent-child relationship obvious to the user at a glance.
+
+
+Story 4 — Every Opportunity Card Matches the Medication Opportunity Design
+As a user viewing any opportunity on the Opportunities page,
+
+I want every opportunity card to look exactly like the Medication Opportunity card design,
+
+So that the page is visually consistent and every card follows the same layout and style.
+Acceptance Criteria:
+
+The Medication Opportunity card is the single design template for all opportunity cards across the entire Opportunities page.
+Every other opportunity card — including all Care Site Opportunities, Mail Delivery Opportunities, and any other category — must replicate the Medication Opportunity card exactly: layout, spacing, font sizes, font weights, colors, button style, icon/logo placement, and any labels or tags.
+The only differences allowed between cards are:
+
+The name/title of the opportunity (unique per card).
+The logo or brand icon of the relevant provider or institution (unique per card).
+
+
+No other visual differences are permitted — background color, card shape, padding, typography, and button design must be identical across all cards.
+If a card previously had a different design, it must be updated to match the Medication Opportunity template.

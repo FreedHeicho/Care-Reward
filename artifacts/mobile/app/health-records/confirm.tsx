@@ -31,61 +31,38 @@ export default function ConfirmScreen() {
     } as never);
   };
 
-  const handleCancel = () => {
-    router.back();
-  };
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Stack.Screen options={{ title: "Confirm Connection", headerBackTitle: "Back" }} />
+      <Stack.Screen options={{ title: "Add health system", headerBackTitle: "Back" }} />
 
       <View style={[styles.inner, { paddingBottom: insets.bottom + 32 }]}>
         <View style={styles.topSection}>
-          <View style={[styles.logoBox, { backgroundColor: colors.secondary }]}>
-            <Feather name="activity" size={36} color={colors.primary} />
+          <View style={styles.logoBox}>
+            <Feather name="home" size={42} color="#9CA3AF" />
           </View>
-          <Text style={[styles.institutionName, { color: colors.foreground }]}>{institutionName}</Text>
-          {institutionLocation && (
-            <Text style={[styles.institutionMeta, { color: colors.mutedForeground }]}>
-              {institutionType} · {institutionLocation}
-            </Text>
-          )}
-        </View>
-
-        <View style={[styles.questionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Feather name="help-circle" size={20} color={colors.primary} />
-          <Text style={[styles.questionText, { color: colors.foreground }]}>
-            Do you have an existing patient account with{" "}
-            <Text style={{ fontWeight: "700" }}>{institutionName}</Text>?
+          <Text style={[styles.institutionName, { color: colors.foreground }]}>
+            {institutionName}
           </Text>
         </View>
 
-        <View style={[styles.consentCard, { backgroundColor: colors.secondary, borderColor: colors.primary + "30" }]}>
-          <Feather name="lock" size={16} color={colors.primary} />
-          <Text style={[styles.consentText, { color: colors.primary }]}>
-            By continuing, you authorize CareReward to access your health records from{" "}
-            <Text style={{ fontWeight: "700" }}>{institutionName}</Text>. Your data is encrypted and HIPAA-compliant.
+        <View style={styles.spacer} />
+
+        <View style={styles.consentRow}>
+          <View style={styles.checkCircle}>
+            <Feather name="check" size={16} color="#fff" />
+          </View>
+          <Text style={[styles.consentText, { color: colors.foreground }]}>
+            I confirm that I have an account with this health system and I agree to allow b.well to retrieve my health records.
           </Text>
         </View>
 
-        <View style={styles.buttons}>
-          <TouchableOpacity
-            style={[styles.confirmBtn, { backgroundColor: colors.primary }]}
-            onPress={handleConfirm}
-            activeOpacity={0.85}
-          >
-            <Feather name="link" size={18} color="#fff" />
-            <Text style={styles.confirmBtnText}>Confirm &amp; Connect</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.cancelBtn, { borderColor: colors.border }]}
-            onPress={handleCancel}
-            activeOpacity={0.75}
-          >
-            <Text style={[styles.cancelBtnText, { color: colors.foreground }]}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.connectBtn}
+          onPress={handleConfirm}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.connectBtnText}>Connect account</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -96,52 +73,56 @@ const styles = StyleSheet.create({
   inner: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 32,
+    paddingTop: 48,
+  },
+  topSection: {
+    alignItems: "center",
     gap: 20,
   },
-  topSection: { alignItems: "center", gap: 12 },
   logoBox: {
-    width: 88,
-    height: 88,
-    borderRadius: 20,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#F3F4F6",
     alignItems: "center",
     justifyContent: "center",
   },
-  institutionName: { fontSize: 20, fontWeight: "800", textAlign: "center" },
-  institutionMeta: { fontSize: 14, textAlign: "center" },
-  questionCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 16,
+  institutionName: {
+    fontSize: 22,
+    fontWeight: "700",
+    textAlign: "center",
+    lineHeight: 30,
+  },
+  spacer: { flex: 1 },
+  consentRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 12,
+    gap: 14,
+    marginBottom: 20,
   },
-  questionText: { flex: 1, fontSize: 15, lineHeight: 22 },
-  consentCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  consentText: { flex: 1, fontSize: 13, lineHeight: 19 },
-  buttons: { gap: 12, marginTop: "auto" },
-  confirmBtn: {
-    flexDirection: "row",
+  checkCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#22C55E",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    borderRadius: 14,
-    paddingVertical: 16,
+    flexShrink: 0,
   },
-  confirmBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-  cancelBtn: {
-    borderWidth: 1.5,
-    borderRadius: 14,
-    paddingVertical: 15,
+  consentText: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 23,
+  },
+  connectBtn: {
+    backgroundColor: "#22C55E",
+    borderRadius: 32,
+    paddingVertical: 18,
     alignItems: "center",
   },
-  cancelBtnText: { fontSize: 16, fontWeight: "600" },
+  connectBtnText: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "700",
+  },
 });

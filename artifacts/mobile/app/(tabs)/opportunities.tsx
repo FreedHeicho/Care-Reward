@@ -19,7 +19,7 @@ import {
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
-type FilterKey = OpportunityFilterCategory | null;
+type FilterKey = Exclude<OpportunityFilterCategory, "mail-delivery"> | null;
 
 const FILTER_OPTIONS: { key: Exclude<OpportunityFilterCategory, "mail-delivery">; label: string }[] = [
   { key: "care-site-alternative", label: "Care Site Alternative" },
@@ -29,32 +29,27 @@ const FILTER_OPTIONS: { key: Exclude<OpportunityFilterCategory, "mail-delivery">
 ];
 
 const ICON_EMOJI: Record<string, string> = {
-  pill:         "💊",
-  package:      "📦",
-  calendar:     "📅",
-  medication:   "💊",
-  preventive:   "🛡️",
+  pill:            "💊",
+  package:         "📦",
+  calendar:        "📅",
+  medication:      "💊",
+  preventive:      "🛡️",
   "mail-delivery": "📦",
-  specialist:   "🩺",
-  upcoming:     "📅",
+  specialist:      "🩺",
+  upcoming:        "📅",
 };
 
 function OppCard({ opp }: { opp: Opportunity }) {
   const colors = useColors();
   const router = useRouter();
   const barColor = opp.filterCategory === "care-site-alternative" ? "#9333EA"
-    : opp.filterCategory === "mail-delivery" ? "#0EA5E9"
     : "#3B82F6";
 
   const icon = opp.icon ? ICON_EMOJI[opp.icon] ?? "💊" : ICON_EMOJI[opp.category] ?? "💊";
   const bg = opp.iconBg ?? "#EDE9FE";
 
   const handleAction = () => {
-    if (opp.action === "log-care") {
-      router.push("/log-upcoming-care" as never);
-    } else {
-      router.push(`/opportunity-variants/${opp.id}` as never);
-    }
+    router.push(`/opportunity-variants/${opp.id}` as never);
   };
 
   const isOneTime = opp.frequency === "one-time";
@@ -68,7 +63,6 @@ function OppCard({ opp }: { opp: Opportunity }) {
     >
       <View style={[styles.cardBar, { backgroundColor: barColor }]} />
       <View style={styles.cardContent}>
-        {/* Header */}
         <View style={styles.cardHeader}>
           <View style={[styles.cardIcon, { backgroundColor: bg }]}>
             <Text style={styles.cardEmoji}>{icon}</Text>
@@ -83,41 +77,23 @@ function OppCard({ opp }: { opp: Opportunity }) {
           </View>
         </View>
 
-        {/* Points row */}
-        {opp.action === "earn" ? (
-          <View style={styles.earnRow}>
-            <View style={[styles.earnBadge, { backgroundColor: "#05C5B6" }]}>
-              <Text style={styles.earnBadgeText}>
-                {isMonthly
-                  ? `${opp.points} points + ${opp.pointsMonthly} points monthly`
-                  : `Earn ${opp.points} points`}
+        <View style={styles.earnRow}>
+          <View style={[styles.earnBadge, { backgroundColor: "#05C5B6" }]}>
+            <Text style={styles.earnBadgeText}>
+              {isMonthly
+                ? `${opp.points} points + ${opp.pointsMonthly} points monthly`
+                : `Earn ${opp.points} points`}
+            </Text>
+          </View>
+          {isOneTime && !isMonthly && (
+            <View style={[styles.oneTimeBadge, { borderColor: colors.border }]}>
+              <Text style={[styles.oneTimeBadgeText, { color: colors.foreground }]}>
+                ONE-TIME
               </Text>
             </View>
-            {isOneTime && !isMonthly && (
-              <View style={[styles.oneTimeBadge, { borderColor: colors.border }]}>
-                <Text style={[styles.oneTimeBadgeText, { color: colors.foreground }]}>
-                  ONE-TIME
-                </Text>
-              </View>
-            )}
-          </View>
-        ) : (
-          <View style={styles.logCareRow}>
-            <View style={[styles.pointsPill, { backgroundColor: colors.primary }]}>
-              <Text style={styles.pointsPillText}>{opp.points} points</Text>
-            </View>
-            <TouchableOpacity style={[styles.shareBtn, { borderColor: colors.border }]} onPress={handleAction}>
-              <Feather name="share-2" size={18} color={colors.mutedForeground} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleAction}>
-              <Text style={[styles.logCareLinkText, { color: colors.primary }]}>
-                {opp.actionLabel} →
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          )}
+        </View>
 
-        {/* Benefits */}
         {opp.benefits.map((b, i) => (
           <View key={i} style={styles.benefit}>
             <Feather name="check" size={14} color={colors.primary} />
@@ -125,20 +101,23 @@ function OppCard({ opp }: { opp: Opportunity }) {
           </View>
         ))}
 
-        {/* Action button for earn-type */}
-        {opp.action === "earn" && (
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.primary }]}
-            onPress={handleAction}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.actionBtnText}>{opp.actionLabel || "How To Earn"}</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+          onPress={handleAction}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.actionBtnText}>{opp.actionLabel || "How To Earn"}</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 }
+
+type GroupSection = {
+  name: string;
+  opps: Opportunity[];
+  sub?: { name: string; opps: Opportunity[] };
+};
 
 export default function OpportunitiesScreen() {
   const colors = useColors();
@@ -168,6 +147,11 @@ export default function OpportunitiesScreen() {
     if (filter === null) {
       return MOCK_OPPORTUNITIES.filter((o) => !!o.filterCategory);
     }
+    if (filter === "care-site-alternative") {
+      return MOCK_OPPORTUNITIES.filter(
+        (o) => o.filterCategory === "care-site-alternative"
+      );
+    }
     return MOCK_OPPORTUNITIES.filter((o) => o.filterCategory === filter);
   }, [filter]);
 
@@ -182,6 +166,27 @@ export default function OpportunitiesScreen() {
     return Array.from(map.entries());
   }, [filtered]);
 
+  const hierarchical = useMemo<GroupSection[]>(() => {
+    const result: GroupSection[] = [];
+    let careAlt: GroupSection | null = null;
+
+    for (const [name, opps] of grouped) {
+      if (name === "Care Site Alternative") {
+        careAlt = { name, opps };
+        result.push(careAlt);
+      } else if (name === "Mail Delivery Opportunities") {
+        if (careAlt) {
+          careAlt.sub = { name, opps };
+        } else {
+          result.push({ name, opps });
+        }
+      } else {
+        result.push({ name, opps });
+      }
+    }
+    return result;
+  }, [grouped]);
+
   const activeLabel = filter
     ? FILTER_OPTIONS.find((f) => f.key === filter)?.label
     : null;
@@ -195,7 +200,6 @@ export default function OpportunitiesScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Missed alert */}
         <TouchableOpacity
           style={[styles.missedBanner, { backgroundColor: "#FEE2E2", borderLeftColor: "#DC2626" }]}
           onPress={() => router.push("/missed-opportunities" as never)}
@@ -206,7 +210,6 @@ export default function OpportunitiesScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Filter dropdown */}
         <TouchableOpacity
           style={[styles.filterDropdown, { backgroundColor: colors.card, borderColor: colors.border }]}
           onPress={() => setShowDropdown((v) => !v)}
@@ -254,8 +257,7 @@ export default function OpportunitiesScreen() {
           </View>
         )}
 
-        {/* Grouped sections */}
-        {grouped.length === 0 ? (
+        {hierarchical.length === 0 ? (
           <View style={styles.empty}>
             <Feather name="check-circle" size={40} color={colors.mutedForeground} />
             <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
@@ -266,14 +268,26 @@ export default function OpportunitiesScreen() {
             </Text>
           </View>
         ) : (
-          grouped.map(([groupName, opps]) => (
-            <View key={groupName} style={styles.group}>
-              <Text style={[styles.groupTitle, { color: colors.foreground }]}>{groupName}</Text>
+          hierarchical.map(({ name, opps, sub }) => (
+            <View key={name} style={styles.group}>
+              <Text style={[styles.groupTitle, { color: colors.foreground }]}>{name}</Text>
               <View style={styles.groupCards}>
                 {opps.map((opp) => (
                   <OppCard key={opp.id} opp={opp} />
                 ))}
               </View>
+              {sub && (
+                <View style={[styles.subGroup, { borderLeftColor: colors.border }]}>
+                  <Text style={[styles.subGroupTitle, { color: colors.mutedForeground }]}>
+                    {sub.name}
+                  </Text>
+                  <View style={styles.groupCards}>
+                    {sub.opps.map((opp) => (
+                      <OppCard key={opp.id} opp={opp} />
+                    ))}
+                  </View>
+                </View>
+              )}
             </View>
           ))
         )}
@@ -326,6 +340,20 @@ const styles = StyleSheet.create({
   groupTitle: { fontSize: 18, fontWeight: "800", marginTop: 4 },
   groupCards: { gap: 14 },
 
+  subGroup: {
+    marginTop: 12,
+    paddingLeft: 14,
+    borderLeftWidth: 2,
+    gap: 8,
+  },
+  subGroupTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+
   card: {
     borderRadius: 14,
     borderWidth: 1,
@@ -368,27 +396,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   oneTimeBadgeText: { fontSize: 11, fontWeight: "800" },
-
-  logCareRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  pointsPill: {
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-  },
-  pointsPillText: { color: "#fff", fontSize: 12, fontWeight: "700" },
-  shareBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logCareLinkText: { fontSize: 14, fontWeight: "700" },
 
   benefit: { flexDirection: "row", alignItems: "center", gap: 8 },
   benefitText: { fontSize: 13, flex: 1, lineHeight: 18 },
