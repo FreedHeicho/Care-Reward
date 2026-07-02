@@ -143,6 +143,10 @@ function RootLayoutNav() {
         name="connect-devices/[type]"
         options={{ title: "Available Devices", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="connect-devices/pair"
+        options={{ title: "Pair Device", headerBackTitle: "Back" }}
+      />
     </Stack>
   );
 }
