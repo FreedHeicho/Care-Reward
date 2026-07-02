@@ -225,7 +225,7 @@ export default function DashboardScreen() {
 
             <TouchableOpacity
               style={[styles.getStartedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => router.push("/emr-access" as never)}
+              onPress={() => router.push("/connect-devices" as never)}
             >
               <Text style={[styles.getStartedCardTitle, { color: colors.foreground }]}>
                 Connect other health devices
@@ -235,7 +235,7 @@ export default function DashboardScreen() {
               </Text>
               <TouchableOpacity
                 style={[styles.getStartedCardBtn, { backgroundColor: colors.primary }]}
-                onPress={() => router.push("/emr-access" as never)}
+                onPress={() => router.push("/connect-devices" as never)}
               >
                 <Text style={styles.getStartedCardBtnText}>Connect</Text>
               </TouchableOpacity>

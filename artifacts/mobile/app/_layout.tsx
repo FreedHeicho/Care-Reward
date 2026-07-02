@@ -123,6 +123,26 @@ function RootLayoutNav() {
         name="missed-opportunities"
         options={{ title: "Missed Opportunities", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="redeem/premium"
+        options={{ title: "Premium Allocation", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="redeem/hsa"
+        options={{ title: "HSA Contribution", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="redeem/giftcard"
+        options={{ title: "Healthcare Giftcards", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="connect-devices/index"
+        options={{ title: "Connect Health Devices", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="connect-devices/[type]"
+        options={{ title: "Available Devices", headerBackTitle: "Back" }}
+      />
     </Stack>
   );
 }

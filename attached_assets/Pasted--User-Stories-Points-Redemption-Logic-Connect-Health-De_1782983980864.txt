@@ -1,0 +1,132 @@
+🧾 User Stories: Points Redemption Logic & Connect Health Devices
+
+POINTS PAGE — LAYOUT & ROLLOVER RULE
+
+Story 1 — Points Do Not Roll Over; Balance Cannot Exceed Earned This Year
+As a user on the Points tab,
+ I want the app to enforce that my Points Balance can never exceed my Earned This Year total,
+ So that the system correctly reflects that points reset annually and do not carry over.
+Acceptance Criteria:
+Points Balance is capped at the Earned This Year value at all times — the system must never display a Points Balance higher than Earned This Year.
+Any calculation, allocation, or display logic that could produce a Points Balance greater than Earned This Year must be blocked.
+Points do not roll over at year end — at the start of each new year, both values reset to zero.
+
+Story 2 — Switch Positions of Points Balance and Earned This Year
+As a user on the Points tab,
+ I want "Points Balance" displayed as the primary top figure and "Earned This year" shown beneath it as the secondary figure,
+ So that the most important metric is the first thing I see.
+Acceptance Criteria:
+Points Balance moves to the top/hero position — largest font, most prominent placement.
+Earned This Year moves below it as the secondary figure — smaller font size.
+All surrounding layout, spacing, and styling adjusts cleanly to reflect the new order.
+
+REDEMPTION OPTION 1 — PREMIUM ALLOCATION
+
+Story 3 — Allocate Points to Monthly Premium
+As a user redeeming points for my monthly premium,
+ I want to allocate some or all of my available points toward my monthly premium cost,
+ So that my points reduce the amount I owe for that month's premium.
+Acceptance Criteria:
+Tapping Premium opens an allocation screen showing:
+Monthly Premium: the fixed dollar amount (e.g. $400)
+Points Available: the user's current points balance
+Points to Allocate: two input options side by side:
+% field — user enters a percentage of their available points
+Points field — user enters a specific number of points directly
+Only one method needs to be filled at a time; entering one auto-calculates the other
+An OK button to confirm the allocation
+1 point = $1. The allocation converts points to dollar value against the premium.
+Tapping OK:
+Subtracts the allocated points from the Points Balance immediately
+Returns the user to the Points main screen
+The updated (reduced) Points Balance is visible on return
+Do not display any backend logic about removing the dollar price from the insurance system — this is internal only.
+If the user tries to allocate more points than their available balance, show an error: "You don't have enough points for this allocation."
+If the user tries to allocate more than the premium dollar amount (converted from points), show an error: "Allocation cannot exceed the monthly premium amount."
+
+REDEMPTION OPTION 2 — HSA CONTRIBUTION
+
+Story 4 — Allocate Points to HSA Contribution
+As a user redeeming points for my HSA,
+ I want to allocate points toward my Health Savings Account contribution,
+ So that my points are converted to HSA funds within IRS contribution limits.
+Acceptance Criteria:
+Tapping HSA Contribution opens an allocation screen showing:
+2026 HSA Contribution Limit: $4,400
+YTD HSA Contribution: the amount already contributed this year (dynamic value)
+Remaining Contribution Room: auto-calculated as $4,400 minus YTD contribution
+Points Available: the user's current points balance
+Points to Allocate: two input options:
+% field — user enters a percentage of available points
+Points field — user enters a specific number of points
+Only one method needs to be filled; entering one auto-calculates the other
+An OK button to confirm
+Tapping OK validates the allocation:
+✅ If allocation is within limits → subtract points from balance → return to Points main screen with updated balance
+❌ If the allocation would cause YTD contribution to exceed $4,400 → block submission and show error: "This allocation exceeds your 2026 HSA contribution limit of $4,400. Please enter a lower amount."
+If the user tries to allocate more points than their available balance, show error: "You don't have enough points for this allocation."
+After successful allocation, the remaining points balance is clearly shown and can be used for any of the other 3 redemption options.
+
+REDEMPTION OPTION 3 — HEALTHCARE SAVINGS GIFT CARDS
+
+Story 5 — Allocate Points and Redirect to Amazon FSA Store
+As a user redeeming points for healthcare gift cards,
+ I want to allocate my points and then be taken to the Amazon FSA store to spend them,
+ So that I can purchase FSA-eligible health products using my Care Reward points.
+Acceptance Criteria:
+Tapping Healthcare Savings Giftcards opens an allocation screen showing:
+Points Available: the user's current points balance
+Points to Allocate: two input options:
+% field — user enters a percentage of available points
+Points field — user enters a specific number of points directly
+Only one method needs to be filled; entering one auto-calculates the other
+An OK button to confirm allocation
+After tapping OK and allocating, the screen shows:
+The allocated point amount confirmed
+The remaining points balance
+A prominently styled "Take Me to the Website" button (follows design system — primary button style, clear CTA)
+Tapping "Take Me to the Website" opens the Amazon FSA store in an in-app browser or external browser:
+URL: https://www.amazon.com/b/?node=122265875011
+Backend logic for later (do not build now): Once the customer uses their allocated points on the Amazon FSA site, the system should deduct the purchase price from their allocated points and not prompt them for payment again. Flag this as a future integration story.
+
+REDEMPTION OPTION 4 — COPAY / DEDUCTIBLE CREDIT
+
+Story 6 — Copay/Deductible Placeholder Modal
+As a user tapping on the Copay/Deductible redemption option,
+ I want to see a simple placeholder modal for now,
+ So that the option exists in the UI while the EMR integration is built in a future phase.
+Acceptance Criteria:
+Tapping Copay/Deductible Credit triggers a simple modal popup.
+The modal contains only an "OK" button to dismiss it.
+Tapping OK closes the modal and returns the user to the Points tab.
+No allocation flow, no input fields, and no additional copy is shown at this stage.
+Backend logic for later (do not build now): Copay/Deductible redemption must eventually connect to the EMR system to verify and pay copay amounts owed to hospitals and doctors offices. Flag this as a future integration story requiring EMR access.
+
+CONNECT HEALTH DEVICES — SCREEN 1
+
+Story 7 — Connect Health Devices: Device Type Selection Screen
+As a user accessing Connect Health Devices from the Home Dashboard via Get Started,
+ I want to see a screen where I select the type of health monitoring device I want to connect,
+ So that I can link my personal health devices to Care Reward and track my metrics.
+Acceptance Criteria:
+The entry point is: Home Dashboard → Get Started → Connect Health Devices
+Screen 1 displays a selection of device types the user can connect. The available device types are:
+Blood Pressure
+Glucose
+Oxygen
+Heart Rate
+Stress
+The design of Screen 1 must match the attached screenshots exactly — layout, card style, icons, typography, and spacing must be replicated verbatim.
+The one change from the attached design: replace any "Enter" button with "Connect" — the label changes, the button style stays the same.
+The user selects a device type and taps "Connect" to proceed to Screen 2.
+The entire Connect Health Devices flow contains no more than 3 screens total.
+
+Story 8 — Connect Health Devices: Available Devices Screen (Screen 2)
+As a user who has selected a device type on Screen 1,
+ I want to see the available devices I can connect for that type,
+ So that I can pick my specific device and complete the connection.
+Acceptance Criteria:
+Screen 2 displays the available devices for the selected type from Screen 1.
+Full design and content for Screen 2 is to be provided by the product owner — hold for incoming screenshots and specifications.
+The screen must be consistent in style and navigation with Screen 1.
+The full flow must not exceed 3 screens.
