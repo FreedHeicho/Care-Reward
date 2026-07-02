@@ -1,0 +1,153 @@
+
+
+Here's the complete workflow recommendation picking up from where Screen 1 ends:
+Screen 2 shows a filtered device list based on whatever type the user tapped. Each row has the device name, a connectivity badge (Bluetooth vs WiFi), the form factor, and a "Connect" button. A "Don't see your device? Search by name" escape hatch at the bottom handles edge cases.
+Screen 3 is one screen that handles the entire connection journey through three inline states — ready to pair (setup checklist), searching (with a cancel option), and success (showing what metrics will be tracked + a Done button). This keeps the flow to exactly 3 screens without any extra navigation.
+The device catalog covers all 5 types with real-world devices your users are likely to own. You can expand or trim this list as needed.
+Key UX decisions made:
+Connectivity badge (Bluetooth vs WiFi) helps users know if they need WiFi before connecting
+The 3-step checklist on Screen 3 State A cuts down pairing failures dramatically
+Four error states are called out so your code generator handles them explicitly — these are the most common reasons a pairing flow frustrates users
+
+🧾 User Stories: Connect Health Devices — Screens 2 & 3
+
+SCREEN 2 — CHOOSE YOUR DEVICE
+
+Story 1 — Display Filtered Device List Based on Selected Type
+As a user who has selected a device type on Screen 1,
+ I want to see a list of compatible devices filtered to that type,
+ So that I only see relevant devices and can quickly find mine.
+Acceptance Criteria:
+Screen 2 header displays the selected device type as the page title (e.g. "Blood pressure monitors", "Glucose monitors").
+A back arrow on the top left returns the user to Screen 1.
+A search icon on the top right allows manual search by device name.
+A subtitle beneath the header reads: "Select your device to begin pairing."
+The device list is pre-filtered to only show devices matching the type selected on Screen 1 — no cross-category devices appear.
+Each device row contains:
+A branded icon  in a colored square tile on the left.
+The device name in medium weight text.
+A connectivity badge (e.g. "Bluetooth" or "WiFi") in a colored pill.
+The form factor label in muted text (e.g. "Upper arm", "Wrist", "Ring", "Chest strap").
+A "Connect" button on the right.
+At the bottom of the list, a text link reads: "Don't see your device? Search by name" — tapping it opens the manual search field.
+
+Story 2 — Supported Device Catalog Per Category
+As a user browsing devices on Screen 2,
+ I want to see a populated list of real compatible devices for my selected category,
+ So that I can identify my device and connect it without guessing.
+Acceptance Criteria:
+The following devices must be pre-loaded per category:
+Blood pressure: Omron Evolv (Bluetooth, upper arm), Withings BPM Connect (WiFi, upper arm), iHealth Track (Bluetooth, wrist)
+Glucose: Dexcom G7 (Bluetooth, CGM), FreeStyle Libre 3 (NFC, CGM), Contour Next One (Bluetooth, glucometer)
+Oxygen: Wellue O2Ring (Bluetooth, ring), iHealth Air (Bluetooth, fingertip), Masimo MightySat (Bluetooth, fingertip)
+Heart rate: Apple Watch (Bluetooth, watch), Fitbit Charge 6 (Bluetooth, band), Garmin Venu 3 (Bluetooth, watch), Polar H10 (Bluetooth, chest strap)
+Stress: WHOOP 4.0 (Bluetooth, band), Fitbit Sense 2 (Bluetooth, watch), Garmin Body Battery (Bluetooth, watch)
+Connectivity badge color must distinguish type — Bluetooth and WiFi/NFC badges use visually distinct colors.
+Tapping "Connect" on any device row navigates to Screen 3 and carries the selected device name forward.
+
+SCREEN 3 — PAIR AND CONFIRM
+
+Story 3 — Screen 3 Has Three Inline States on One Screen
+As a user pairing a device,
+ I want the connection process to happen on a single screen that updates its state,
+ So that I'm not navigated away or lost during pairing.
+Acceptance Criteria:
+Screen 3 is a single screen with three sequential states — State A, State B, and State C.
+The screen does not navigate to a new route between states — it transitions inline.
+The selected device name from Screen 2 is displayed on this screen throughout all three states.
+A back button is available in States A and B to return to Screen 2.
+
+Story 4 — State A: Ready to Pair
+As a user who has selected a device,
+ I want to see a pre-pairing checklist before the connection attempt begins,
+ So that I can set up my device correctly and reduce the chance of a failed connection.
+Acceptance Criteria:
+State A displays:
+A Bluetooth icon centered on the screen.
+A heading: "Ready to connect [Device Name]"
+A subtitle: "Before tapping connect:"
+Three numbered checklist steps:
+Turn on your device
+Enable Bluetooth on your phone
+Keep device within 3 feet
+A full-width "Start pairing" primary button at the bottom.
+Tapping "Start pairing" transitions the screen to State B.
+
+Story 5 — State B: Searching for Device
+As a user who has started pairing,
+ I want to see a clear searching indicator while the app looks for my device,
+ So that I know the app is actively working and I'm not left wondering.
+Acceptance Criteria:
+State B displays:
+An animated loading/searching icon centered on screen.
+A heading: "Searching for your device…"
+A subtitle: "Keep your device nearby and powered on."
+A "Cancel" text link that stops the search and returns to State A.
+If the device is found within the timeout window, the screen automatically transitions to State C.
+If the device is not found within 30 seconds, the screen transitions to the "Device not found" error state (Story 8).
+
+Story 6 — State C: Device Connected — Success
+As a user whose device has been successfully paired,
+ I want to see a clear confirmation of the connection and what will be tracked,
+ So that I feel confident the setup is complete and know what data CareReward will receive.
+Acceptance Criteria:
+State C displays:
+A large green checkmark icon centered on screen.
+A heading: "[Device Name] connected!"
+A subtitle: "CareReward will now track:"
+A 2-column grid of metric badges showing what data will be collected (e.g. Blood pressure, Pulse rate — specific metrics depend on device type).
+A full-width "Done" button at the bottom.
+Tapping "Done" returns the user to the Connect Health Devices home screen or the app Dashboard, with the newly connected device displayed in the connected devices list.
+
+SCREEN 3 — ERROR STATES
+
+Story 7 — Error: Bluetooth Is Off
+As a user attempting to pair a Bluetooth device with Bluetooth disabled,
+ I want to see a clear message explaining the issue and how to fix it,
+ So that I know exactly what to do and am not confused by a failed connection.
+Acceptance Criteria:
+If Bluetooth is off when the user taps "Start pairing", the app detects this before attempting and shows an inline error state with:
+Message: "Bluetooth is required to connect this device. Enable it in your phone settings."
+An "Open settings" button that deep-links to the phone's Bluetooth settings page (iOS and Android).
+After the user enables Bluetooth and returns to the app, the screen returns to State A ready to try again.
+
+Story 8 — Error: Device Not Found After Timeout
+As a user whose device was not found during the search,
+ I want to see a helpful error with options to retry or go back,
+ So that I'm not stuck and have a clear path forward.
+Acceptance Criteria:
+If no device is found within 30 seconds, State B transitions to a "not found" error state showing:
+Message: "Couldn't find your device. Make sure it's powered on and within range."
+A "Try again" button that restarts State B.
+A "Choose a different device" button that returns to Screen 2.
+
+Story 9 — Error: Device Already Connected
+As a user trying to connect a device already linked to their account,
+ I want to be notified that it's already connected,
+ So that I don't duplicate the connection and am directed to the right place.
+Acceptance Criteria:
+If the found device is already linked to the user's account, show an inline message:
+"This device is already linked to your account."
+A "View connected devices" button that navigates to the connected devices list.
+
+Story 10 — Error: Pairing Failed
+As a user whose pairing attempt failed mid-connection,
+ I want to see a clear error and next steps,
+ So that I know what happened and can try to resolve it.
+Acceptance Criteria:
+If the pairing process starts but fails before completing, show an inline error state with:
+Message: "Connection failed. Restart the device and try again."
+A "Try again" button that returns to State A.
+A "Choose a different device" button that returns to Screen 2.
+
+GENERAL — FLOW RULES
+
+Story 11 — Three Screen Maximum; No Additional Screens
+As a product stakeholder,
+ I want the entire Connect Health Devices flow to be contained within exactly 3 screens,
+ So that the experience is fast, focused, and does not overwhelm the user.
+Acceptance Criteria:
+The complete flow — type selection, device list, pairing, and success — must be achievable in exactly 3 screens.
+Error states are handled inline within Screen 3 — they do not navigate to a new screen.
+No modal overlays, no bottom sheets that count as separate navigation layers.
+Screen 3 State transitions (A → B → C) happen on the same screen route with no new navigation stack entries — the back button always takes the user to Screen 2, not to a previous state.

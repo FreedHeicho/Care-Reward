@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,
+    flexShrink: 0,
   },
   heading: {
     fontSize: 24,

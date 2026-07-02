@@ -275,6 +275,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 24,
     alignItems: "center",
+    alignSelf: "stretch",
     gap: 16,
   },
   successIcon: {
