@@ -37,12 +37,11 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
-      # 6. Generate Native Android Directories (The Expo Prebuild Step)
-      # This generates the temporary /android folder inside artifacts/mobile/
+   # 6. Generate Native Android Directories (The Expo Prebuild Step)
       - name: Expo Prebuild Android
         run: |
           cd artifacts/mobile
-          npx expo prebuild --platform android --skip-dependency-install
+          npx expo prebuild --platform android --no-install
 
       # 7. Compile the Demo APK using Gradle inside the workspace
       - name: Compile Demo APK
