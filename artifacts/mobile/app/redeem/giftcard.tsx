@@ -3,7 +3,6 @@ import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
-  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -17,26 +16,49 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 
-const AMAZON_FSA_URL = "https://www.amazon.com/b/?node=122265875011";
+const STORES = [
+  {
+    id: "amazon",
+    name: "Amazon FSA Store",
+    icon: "shopping-bag" as const,
+    description: "FSA/HSA-eligible products on Amazon",
+    url: "https://www.amazon.com/b/?node=122265875011",
+  },
+  {
+    id: "cvs",
+    name: "CVS HSA/FSA Shop",
+    icon: "heart" as const,
+    description: "HSA/FSA items at CVS Pharmacy",
+    url: "https://www.cvs.com/shop/merch/shop-all/q/true/fs?widgetID=n918nxj7&mc=0?icid=shop-hsa-fsa-shop-all",
+  },
+  {
+    id: "fsastore",
+    name: "FSA Store",
+    icon: "package" as const,
+    description: "Dedicated FSA-eligible product store",
+    url: "https://fsastore.com/?srsltid=AfmBOoovm7oOs-wswDVBNykp2okYnK1k18rJAZpFXEtToDcyUHBhJMIJ",
+  },
+];
 
 export default function GiftcardAllocationScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, updatePoints } = useAuth();
+  const { user } = useAuth();
 
   const balance = user?.pointsBalance ?? 0;
 
   const [pctText, setPctText] = useState("");
   const [ptsText, setPtsText] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
-  const [allocatedPts, setAllocatedPts] = useState(0);
-  const [remainingBalance, setRemainingBalance] = useState(0);
+  const [allocationConfirmed, setAllocationConfirmed] = useState(false);
+  const [confirmedPts, setConfirmedPts] = useState(0);
+  const [selectedStore, setSelectedStore] = useState<string | null>(null);
 
   const onPctChange = (text: string) => {
     setPctText(text);
     setError(null);
+    setAllocationConfirmed(false);
     const pct = parseFloat(text);
     if (!isNaN(pct) && balance > 0) {
       setPtsText(Math.round((pct / 100) * balance).toString());
@@ -48,6 +70,7 @@ export default function GiftcardAllocationScreen() {
   const onPtsChange = (text: string) => {
     setPtsText(text);
     setError(null);
+    setAllocationConfirmed(false);
     const pts = parseFloat(text);
     if (!isNaN(pts) && balance > 0) {
       setPctText(((pts / balance) * 100).toFixed(1));
@@ -66,62 +89,28 @@ export default function GiftcardAllocationScreen() {
       setError("You don't have enough points for this allocation.");
       return;
     }
-    updatePoints(pts);
-    setAllocatedPts(pts);
-    setRemainingBalance(balance - pts);
-    setConfirmed(true);
+    setConfirmedPts(pts);
+    setAllocationConfirmed(true);
+    setError(null);
   };
 
-  if (confirmed) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Stack.Screen options={{ title: "Healthcare Giftcards", headerBackTitle: "Back" }} />
-        <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 40 }]}
-        >
-          <View style={[styles.confirmCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.successIcon, { backgroundColor: "#DCFCE7" }]}>
-              <Feather name="check-circle" size={32} color="#16A34A" />
-            </View>
-            <Text style={[styles.confirmTitle, { color: colors.foreground }]}>
-              Points Allocated
-            </Text>
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <View style={styles.confirmRow}>
-              <Text style={[styles.confirmLabel, { color: colors.mutedForeground }]}>Allocated</Text>
-              <Text style={[styles.confirmValue, { color: colors.primary }]}>
-                {allocatedPts.toLocaleString()} pts = ${allocatedPts.toLocaleString()}
-              </Text>
-            </View>
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <View style={styles.confirmRow}>
-              <Text style={[styles.confirmLabel, { color: colors.mutedForeground }]}>Remaining Balance</Text>
-              <Text style={[styles.confirmValue, { color: colors.foreground }]}>
-                {remainingBalance.toLocaleString()} pts
-              </Text>
-            </View>
-          </View>
+  const store = STORES.find((s) => s.id === selectedStore);
+  const canProceed = allocationConfirmed && selectedStore !== null;
 
-          <TouchableOpacity
-            style={[styles.websiteBtn, { backgroundColor: colors.primary }]}
-            onPress={() => Linking.openURL(AMAZON_FSA_URL)}
-            activeOpacity={0.85}
-          >
-            <Feather name="external-link" size={18} color="#fff" />
-            <Text style={styles.websiteBtnText}>Take Me to the Website</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.doneBtn, { borderColor: colors.border }]}
-            onPress={() => router.back()}
-            activeOpacity={0.75}
-          >
-            <Text style={[styles.doneBtnText, { color: colors.foreground }]}>Done</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-    );
-  }
+  const handleProceed = () => {
+    if (!store || !canProceed) return;
+    router.push({
+      pathname: "/redeem/confirm" as never,
+      params: {
+        option: "gift-card",
+        label: "Healthcare Savings Giftcards",
+        points: String(confirmedPts),
+        remaining: String(balance - confirmedPts),
+        storeUrl: store.url,
+        storeName: store.name,
+      },
+    });
+  };
 
   return (
     <KeyboardAvoidingView
@@ -134,24 +123,30 @@ export default function GiftcardAllocationScreen() {
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 40 }]}
         keyboardShouldPersistTaps="handled"
       >
+        {/* 1. Points available */}
         <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>Points Available</Text>
+            <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>
+              Points Available
+            </Text>
             <Text style={[styles.infoValue, { color: colors.foreground }]}>
               {balance.toLocaleString()} pts
             </Text>
           </View>
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>Destination</Text>
-            <Text style={[styles.infoValue, { color: colors.primary }]}>Amazon FSA Store</Text>
+            <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>Rate</Text>
+            <Text style={[styles.infoValue, { color: colors.primary }]}>1 point = $1</Text>
           </View>
         </View>
 
+        {/* 2. Points to allocate */}
         <View style={[styles.inputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.inputLabel, { color: colors.foreground }]}>Points to Allocate</Text>
+          <Text style={[styles.inputLabel, { color: colors.foreground }]}>
+            Points to Allocate
+          </Text>
           <View style={styles.inputRow}>
-            <View style={[styles.inputWrap, { borderColor: colors.border }]}>
+            <View style={[styles.inputWrap, { borderColor: allocationConfirmed ? colors.primary : colors.border }]}>
               <TextInput
                 style={[styles.input, { color: colors.foreground }]}
                 placeholder="0"
@@ -163,7 +158,7 @@ export default function GiftcardAllocationScreen() {
               <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>%</Text>
             </View>
             <Text style={[styles.orText, { color: colors.mutedForeground }]}>or</Text>
-            <View style={[styles.inputWrap, { borderColor: colors.border }]}>
+            <View style={[styles.inputWrap, { borderColor: allocationConfirmed ? colors.primary : colors.border }]}>
               <TextInput
                 style={[styles.input, { color: colors.foreground }]}
                 placeholder="0"
@@ -181,24 +176,148 @@ export default function GiftcardAllocationScreen() {
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
+          {allocationConfirmed && (
+            <View style={[styles.allocConfirmedRow, { backgroundColor: colors.secondary }]}>
+              <Feather name="check-circle" size={14} color={colors.primary} />
+              <Text style={[styles.allocConfirmedText, { color: colors.primary }]}>
+                {confirmedPts.toLocaleString()} pts (${confirmedPts.toLocaleString()}) confirmed
+              </Text>
+            </View>
+          )}
         </View>
 
-        {ptsText !== "" && !isNaN(parseInt(ptsText, 10)) && (
-          <View style={[styles.previewCard, { backgroundColor: colors.secondary, borderColor: colors.primary + "40" }]}>
-            <Text style={[styles.previewLabel, { color: colors.primary }]}>Allocation Preview</Text>
-            <Text style={[styles.previewValue, { color: colors.primary }]}>
-              {parseInt(ptsText, 10).toLocaleString()} points = ${parseInt(ptsText, 10).toLocaleString()} on Amazon FSA Store
-            </Text>
-          </View>
-        )}
-
+        {/* 3. OK button */}
         <TouchableOpacity
-          style={[styles.okBtn, { backgroundColor: colors.primary }]}
+          style={[
+            styles.okBtn,
+            {
+              backgroundColor: allocationConfirmed ? colors.secondary : colors.primary,
+              borderWidth: allocationConfirmed ? 1.5 : 0,
+              borderColor: allocationConfirmed ? colors.primary : "transparent",
+            },
+          ]}
           onPress={handleOk}
           activeOpacity={0.85}
         >
-          <Text style={styles.okBtnText}>OK</Text>
+          {allocationConfirmed ? (
+            <>
+              <Feather name="check" size={16} color={colors.primary} />
+              <Text style={[styles.okBtnText, { color: colors.primary }]}>
+                Amount confirmed
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.okBtnText}>OK</Text>
+          )}
         </TouchableOpacity>
+
+        {/* 4. Store selection — always shown below allocation */}
+        <View style={styles.storeSection}>
+          <Text style={[styles.storeSectionTitle, { color: colors.foreground }]}>
+            Choose your store
+          </Text>
+          {!allocationConfirmed && (
+            <Text style={[styles.storeSectionHint, { color: colors.mutedForeground }]}>
+              Confirm your allocation above first.
+            </Text>
+          )}
+          <View style={styles.storeList}>
+            {STORES.map((s) => {
+              const isSelected = selectedStore === s.id;
+              const disabled = !allocationConfirmed;
+              return (
+                <TouchableOpacity
+                  key={s.id}
+                  style={[
+                    styles.storeCard,
+                    {
+                      backgroundColor: isSelected ? colors.secondary : colors.card,
+                      borderColor: isSelected ? colors.primary : colors.border,
+                      opacity: disabled ? 0.45 : 1,
+                    },
+                  ]}
+                  onPress={() => {
+                    if (!disabled) setSelectedStore(s.id);
+                  }}
+                  activeOpacity={disabled ? 1 : 0.85}
+                >
+                  <View
+                    style={[
+                      styles.storeIconBox,
+                      {
+                        backgroundColor: isSelected
+                          ? colors.primary + "20"
+                          : colors.secondary,
+                      },
+                    ]}
+                  >
+                    <Feather
+                      name={s.icon}
+                      size={20}
+                      color={isSelected ? colors.primary : colors.mutedForeground}
+                    />
+                  </View>
+                  <View style={styles.storeInfo}>
+                    <Text
+                      style={[styles.storeName, { color: colors.foreground }]}
+                      numberOfLines={1}
+                    >
+                      {s.name}
+                    </Text>
+                    <Text
+                      style={[styles.storeDesc, { color: colors.mutedForeground }]}
+                      numberOfLines={2}
+                    >
+                      {s.description}
+                    </Text>
+                  </View>
+                  {isSelected && (
+                    <Feather
+                      name="check-circle"
+                      size={20}
+                      color={colors.primary}
+                      style={{ flexShrink: 0 }}
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* 5. Take me to the website */}
+        <TouchableOpacity
+          style={[
+            styles.proceedBtn,
+            {
+              backgroundColor: canProceed ? colors.primary : colors.border,
+            },
+          ]}
+          onPress={handleProceed}
+          activeOpacity={canProceed ? 0.85 : 1}
+          disabled={!canProceed}
+        >
+          <Feather
+            name="external-link"
+            size={18}
+            color={canProceed ? "#fff" : colors.mutedForeground}
+          />
+          <Text
+            style={[
+              styles.proceedBtnText,
+              { color: canProceed ? "#fff" : colors.mutedForeground },
+            ]}
+          >
+            Take me to the website
+          </Text>
+        </TouchableOpacity>
+        {!canProceed && (
+          <Text style={[styles.proceedHint, { color: colors.mutedForeground }]}>
+            {!allocationConfirmed
+              ? "Enter and confirm your allocation first."
+              : "Select a store above to continue."}
+          </Text>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -254,48 +373,49 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   errorText: { color: "#DC2626", fontSize: 13, flex: 1 },
-  previewCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 14,
-    gap: 4,
+  allocConfirmedRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
-  previewLabel: { fontSize: 12, fontWeight: "600" },
-  previewValue: { fontSize: 15, fontWeight: "700" },
+  allocConfirmedText: { fontSize: 13, fontWeight: "600" },
   okBtn: {
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: "center",
-    marginTop: 4,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 0,
   },
   okBtnText: { color: "#fff", fontSize: 17, fontWeight: "700" },
-
-  confirmCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 24,
+  storeSection: { gap: 10 },
+  storeSectionTitle: { fontSize: 17, fontWeight: "800" },
+  storeSectionHint: { fontSize: 13, lineHeight: 18 },
+  storeList: { gap: 10 },
+  storeCard: {
+    flexDirection: "row",
     alignItems: "center",
-    alignSelf: "stretch",
-    gap: 16,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    padding: 14,
+    gap: 12,
   },
-  successIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+  storeIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
-  confirmTitle: { fontSize: 22, fontWeight: "800" },
-  confirmRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingVertical: 4,
-  },
-  confirmLabel: { fontSize: 14 },
-  confirmValue: { fontSize: 15, fontWeight: "700" },
-
-  websiteBtn: {
+  storeInfo: { flex: 1, gap: 3 },
+  storeName: { fontSize: 14, fontWeight: "700", lineHeight: 18 },
+  storeDesc: { fontSize: 12, lineHeight: 16 },
+  proceedBtn: {
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: "center",
@@ -304,12 +424,10 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 4,
   },
-  websiteBtnText: { color: "#fff", fontSize: 17, fontWeight: "700" },
-  doneBtn: {
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: "center",
-    borderWidth: 1.5,
+  proceedBtnText: { fontSize: 17, fontWeight: "700" },
+  proceedHint: {
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: -8,
   },
-  doneBtnText: { fontSize: 16, fontWeight: "600" },
 });

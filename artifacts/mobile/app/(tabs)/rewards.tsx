@@ -17,6 +17,8 @@ import { useAuth } from "@/context/AuthContext";
 import { MOCK_POINTS_HISTORY } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
+const ENABLE_TEST_RESET = __DEV__;
+
 const WINDOW_OPEN_DAY = 1;
 const WINDOW_CLOSE_DAY = 15;
 
@@ -94,7 +96,7 @@ export default function PointsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, resetPoints } = useAuth();
   const { isOpen, nextOpenStr, daysUntil, hoursUntil, minsUntil } = useMemo(
     () => getWindowState(),
     []
@@ -385,6 +387,23 @@ export default function PointsScreen() {
           </View>
         </View>
 
+        {/* ─── Testing: Reset Points ─── */}
+        {ENABLE_TEST_RESET && (
+          <View style={styles.testResetSection}>
+            <TouchableOpacity
+              style={[styles.testResetBtn, { borderColor: "#9CA3AF" }]}
+              onPress={resetPoints}
+              activeOpacity={0.75}
+            >
+              <Feather name="refresh-cw" size={14} color="#6B7280" />
+              <Text style={styles.testResetBtnText}>Reset points (testing only)</Text>
+            </TouchableOpacity>
+            <Text style={styles.testResetNote}>
+              For testing purposes only. Will be removed before launch.
+            </Text>
+          </View>
+        )}
+
         {/* ─── Recent Activity ─── */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
@@ -571,6 +590,26 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   optionLockedText: { fontSize: 11, fontWeight: "700" },
+
+  // Testing Reset
+  testResetSection: { alignItems: "center", gap: 6 },
+  testResetBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    borderWidth: 1.5,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderStyle: "dashed",
+  },
+  testResetBtnText: { color: "#6B7280", fontSize: 13, fontWeight: "600" },
+  testResetNote: {
+    color: "#9CA3AF",
+    fontSize: 11,
+    textAlign: "center",
+    lineHeight: 15,
+  },
 
   // Transaction Rows
   txRow: {

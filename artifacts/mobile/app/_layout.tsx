@@ -147,6 +147,18 @@ function RootLayoutNav() {
         name="connect-devices/pair"
         options={{ title: "Pair Device", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="redeem/confirm"
+        options={{ title: "Confirm Redemption", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="redeem/final-confirm"
+        options={{ title: "Final Confirmation", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
+        name="browser"
+        options={{ headerShown: false, presentation: "modal" }}
+      />
     </Stack>
   );
 }

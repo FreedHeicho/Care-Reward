@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
+import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -23,7 +24,7 @@ export default function HsaAllocationScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, updatePoints } = useAuth();
+  const { user } = useAuth();
 
   const balance = user?.pointsBalance ?? 0;
   const remainingRoom = HSA_LIMIT_2026 - YTD_CONTRIBUTION;
@@ -70,8 +71,15 @@ export default function HsaAllocationScreen() {
       );
       return;
     }
-    updatePoints(pts);
-    router.back();
+    router.push({
+      pathname: "/redeem/confirm" as never,
+      params: {
+        option: "hsa",
+        label: "HSA Contribution",
+        points: String(pts),
+        remaining: String(balance - pts),
+      },
+    });
   };
 
   return (

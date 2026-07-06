@@ -17,11 +17,14 @@ interface AuthContextValue {
   signIn: (email: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
   updatePoints: (delta: number) => void;
+  resetPoints: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const USER_KEY = "@carereward_user";
+const INITIAL_POINTS = 2450;
+const INITIAL_SAVINGS = 847;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -46,8 +49,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       memberId: "MBR-2024-8821",
       planName: "BlueCross PPO Gold",
-      pointsBalance: 2450,
-      savingsThisYear: 847,
+      pointsBalance: INITIAL_POINTS,
+      savingsThisYear: INITIAL_SAVINGS,
     };
     await AsyncStorage.setItem(USER_KEY, JSON.stringify(newUser));
     setUser(newUser);
@@ -68,8 +71,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.setItem(USER_KEY, JSON.stringify(updated));
   };
 
+  const resetPoints = () => {
+    if (!user) return;
+    const updated = {
+      ...user,
+      pointsBalance: INITIAL_POINTS,
+      savingsThisYear: INITIAL_SAVINGS,
+    };
+    setUser(updated);
+    AsyncStorage.setItem(USER_KEY, JSON.stringify(updated));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, updatePoints }}>
+    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, updatePoints, resetPoints }}>
       {children}
     </AuthContext.Provider>
   );

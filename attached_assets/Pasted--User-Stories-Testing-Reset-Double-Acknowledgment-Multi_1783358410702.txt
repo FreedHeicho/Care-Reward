@@ -1,0 +1,133 @@
+## 🧾 User Stories: Testing Reset, Double Acknowledgment, Multi-Store Gift Cards & In-App Browser
+
+---
+
+### TESTING — POINTS RESET
+
+---
+
+### Story 1 — Testing Mode: Reset Points to Full Balance
+
+**As a** tester using the app before go-live,
+**I want** a way to restore my points balance back to its full amount after exhausting it,
+**So that** I can continue testing all redemption flows without being blocked by a zero balance.
+
+**Acceptance Criteria:**
+
+* On the Points tab, display a clearly labelled **"Reset points (testing only)"** button — styled in a muted, non-primary color so it is visually distinct from production features (e.g. a grey outlined button, not the primary CTA color).
+* Tapping the button immediately restores the user's Points Balance and Earned This Year back to the original full test amount.
+* A small label beneath or beside the button reads: *"For testing purposes only. Will be removed before launch."*
+* This button must be **feature-flagged** — it is controlled by a single toggle so it can be removed entirely in one change when the app goes live without touching any other code.
+* The reset does not affect any other part of the app — it only restores the points balance displayed on the Points tab.
+
+---
+
+### DOUBLE ACKNOWLEDGMENT — ALL REDEMPTION OPTIONS
+
+---
+
+### Story 2 — Redirect to Points Page for First Acknowledgment After Allocation
+
+**As a** user who has filled in a points allocation for any redemption option,
+**I want** to be redirected back to the Points page after submitting my allocation,
+**So that** I can see a summary of what I am about to redeem before it is locked in.
+
+**Acceptance Criteria:**
+
+* After the user fills in their allocation (by percentage or points) on any of the 4 redemption options and taps **"OK"**, they are redirected to the **Points page** instead of the redemption being immediately processed.
+* The Points page displays a clear **redemption summary panel** showing:
+  * The redemption option selected (e.g. "Premium", "HSA Contribution", "Healthcare Savings Giftcards", "Copay/Deductible").
+  * The number of points being allocated.
+  * The dollar equivalent (since 1 point = $1).
+  * The remaining points balance after this allocation.
+* The summary panel contains a prominently styled **"Confirm redemption"** button.
+* A **"Go back"** or **"Cancel"** option is also available to return to the redemption option screen without processing anything.
+
+---
+
+### Story 3 — Final Acknowledgment Screen Before Locking In Redemption
+
+**As a** user reviewing my redemption summary on the Points page,
+**I want** tapping "Confirm redemption" to take me to a dedicated Final Acknowledgment screen,
+**So that** I have one last explicit chance to confirm before the points are deducted and the redemption is locked in.
+
+**Acceptance Criteria:**
+
+* Tapping **"Confirm redemption"** navigates to a standalone **Final Acknowledgment screen**.
+* This screen displays:
+  * A clear heading: *"Final confirmation"*
+  * A summary of the redemption: option name, points to be deducted, dollar value, and remaining balance after deduction.
+  * A consent statement such as: *"By confirming, your points will be redeemed and this action cannot be undone."*
+  * A large, prominent **"Confirm and redeem"** primary button.
+  * A **"Cancel"** secondary option that returns the user to the Points page without processing.
+* Tapping **"Confirm and redeem"** processes the redemption, deducts the points, and returns the user to the Points tab with the updated balance visible.
+* Once **"Confirm and redeem"** is tapped, the redemption is locked — it cannot be reversed from the UI.
+
+---
+
+### HEALTHCARE SAVINGS GIFT CARDS — MULTI-STORE & PAGE REORDER
+
+---
+
+### Story 4 — Add CVS and FSA Store as Destination Options
+
+**As a** user redeeming points for Healthcare Savings Giftcards,
+**I want** to choose from three store destinations to spend my points,
+**So that** I have flexibility in where I shop for FSA/HSA-eligible products.
+
+**Acceptance Criteria:**
+
+* The Healthcare Savings Giftcards redemption flow offers exactly **three store options**:
+  * **Amazon FSA Store** — URL: `https://www.amazon.com/b/?node=122265875011`
+  * **CVS HSA/FSA Shop** — URL: `https://www.cvs.com/shop/merch/shop-all/q/true/fs?widgetID=n918nxj7&mc=0?icid=shop-hsa-fsa-shop-all`
+  * **FSA Store** — URL: `https://fsastore.com/?srsltid=AfmBOoovm7oOs-wswDVBNykp2okYnK1k18rJAZpFXEtToDcyUHBhJMIJ`
+* Each store is displayed as a selectable card showing the store name, logo or icon, and a short one-line description.
+* The user must select one store before proceeding — no store is pre-selected by default.
+* Only one store can be selected at a time.
+
+---
+
+### Story 5 — Reorder the Healthcare Gift Cards Page: Allocation First, Store Selection Second
+
+**As a** user on the Healthcare Savings Giftcards screen,
+**I want** to allocate my points first and then choose my destination store,
+**So that** I know exactly how many points I have to spend before I pick where to spend them.
+
+**Acceptance Criteria:**
+
+* The Healthcare Savings Giftcards page must follow this exact top-to-bottom order:
+  1. **Points available** — current balance displayed at the top.
+  2. **Points to allocate** — the percentage / points dual-input allocation field.
+  3. **OK button** — confirms the allocation amount.
+  4. **Store selection** — the three store cards (Amazon FSA, CVS, FSA Store) appear below the allocation, after the user has entered their amount.
+  5. **"Take me to the website"** button — appears after a store is selected.
+* The store selection section must not appear above or alongside the allocation input — it must appear below it.
+* The **"Take me to the website"** button remains inactive/disabled until both an allocation amount has been entered and a store has been selected.
+* After store selection and tapping **"Take me to the website"**, the flow proceeds to the double acknowledgment (Story 2 and Story 3) before opening the external store.
+
+---
+
+### IN-APP BROWSER — EXTERNAL WEBSITE NAVIGATION
+
+---
+
+### Story 6 — Open External Websites Inside an In-App Browser Modal
+
+**As a** user being directed to an external store from the Healthcare Savings Giftcards screen,
+**I want** the external website to open inside the app rather than switching me to an external browser,
+**So that** I never lose my place in the app and can return to CareReward easily at any time.
+
+**Acceptance Criteria:**
+
+* When the user taps **"Take me to the website"** after completing the double acknowledgment, the external store URL opens in a **full-screen in-app browser modal** that slides up from the bottom of the screen.
+* The in-app browser modal contains:
+  * A **top navigation bar** showing:
+    * The store name and favicon/icon on the left.
+    * The URL displayed in a non-editable address bar for trust and transparency.
+    * A clearly visible **"Back to CareReward"** button or a close icon ( ✕ ) on the right.
+  * The full store website rendered below the navigation bar.
+* Tapping **"Back to CareReward"** or the close icon dismisses the modal and returns the user to the Points tab with their updated points balance visible.
+* The in-app browser must support standard web navigation: scroll, tap links, go back within the site.
+* The in-app browser does not share cookies or session data with the user's default phone browser — it is sandboxed to the app session.
+* This in-app browser behavior applies to all three stores equally — Amazon FSA, CVS, and FSA Store all open the same way.
+* **Backend logic for later (do not build now):** When the user completes a purchase on the external site, the purchase amount should be deducted from their allocated points and the store should not prompt them for payment again. Flag this as a future integration story.

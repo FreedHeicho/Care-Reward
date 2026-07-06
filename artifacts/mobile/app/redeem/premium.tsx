@@ -2,7 +2,6 @@ import { Feather } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -23,7 +22,7 @@ export default function PremiumAllocationScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, updatePoints } = useAuth();
+  const { user } = useAuth();
 
   const balance = user?.pointsBalance ?? 0;
 
@@ -67,8 +66,15 @@ export default function PremiumAllocationScreen() {
       setError("Allocation cannot exceed the monthly premium amount.");
       return;
     }
-    updatePoints(pts);
-    router.back();
+    router.push({
+      pathname: "/redeem/confirm" as never,
+      params: {
+        option: "premium",
+        label: "Premium",
+        points: String(pts),
+        remaining: String(balance - pts),
+      },
+    });
   };
 
   return (
