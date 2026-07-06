@@ -151,11 +151,11 @@ export default function GiftcardAllocationScreen() {
                 style={[styles.input, { color: colors.foreground }]}
                 placeholder="0"
                 placeholderTextColor={colors.mutedForeground}
-                keyboardType="decimal-pad"
-                value={pctText}
-                onChangeText={onPctChange}
+                keyboardType="number-pad"
+                value={ptsText}
+                onChangeText={onPtsChange}
               />
-              <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>%</Text>
+              <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>pts</Text>
             </View>
             <Text style={[styles.orText, { color: colors.mutedForeground }]}>or</Text>
             <View style={[styles.inputWrap, { borderColor: allocationConfirmed ? colors.primary : colors.border }]}>
@@ -163,11 +163,11 @@ export default function GiftcardAllocationScreen() {
                 style={[styles.input, { color: colors.foreground }]}
                 placeholder="0"
                 placeholderTextColor={colors.mutedForeground}
-                keyboardType="number-pad"
-                value={ptsText}
-                onChangeText={onPtsChange}
+                keyboardType="decimal-pad"
+                value={pctText}
+                onChangeText={onPctChange}
               />
-              <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>pts</Text>
+              <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>%</Text>
             </View>
           </View>
           {error && (

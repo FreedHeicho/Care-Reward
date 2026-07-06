@@ -1,0 +1,35 @@
+## 🐛 Bug Fix Story: Points Redemption — Percentage & Points Allocation Logic Switched
+
+---
+
+### Story 1 — Fix Broken Allocation Logic: Percentage and Points Fields Are Swapped
+
+**As a** user redeeming points on any of the 4 redemption options,
+**I want** the percentage field and the points field to correctly calculate each other,
+**So that** entering a percentage shows the right number of points and entering a number of points shows the right percentage.
+
+**The Bug:**
+The last update introduced a breakage where the **percentage input and the points input have been switched**. The two fields are calculating against each other in reverse — entering a value in the percentage field is behaving like the points field and vice versa. This affects all 4 redemption options: Premium, HSA Contribution, Healthcare Savings Giftcards, and Copay/Deductible.
+
+**Acceptance Criteria:**
+
+* **Correct behavior for the percentage field:**
+  * When the user types a percentage (e.g. 50%), the points field must auto-calculate and display the corresponding number of points (e.g. if balance is 400 points → shows 200 points).
+  * Formula: `Points = (Percentage / 100) × Available Points Balance`
+
+* **Correct behavior for the points field:**
+  * When the user types a number of points (e.g. 200), the percentage field must auto-calculate and display the corresponding percentage (e.g. if balance is 400 points → shows 50%).
+  * Formula: `Percentage = (Points Entered / Available Points Balance) × 100`
+
+* The two fields must be **mutually reactive** — editing one always updates the other in real time.
+* Neither field should ever show a value that contradicts the other — both must always be mathematically consistent with each other at the same time.
+* The percentage field must never accept a value greater than 100.
+* The points field must never accept a value greater than the user's available points balance.
+* Both fields must be independently editable — the user can choose to fill either one first.
+* This fix must be applied consistently across **all 4 redemption option screens** — Premium, HSA Contribution, Healthcare Savings Giftcards, and Copay/Deductible.
+
+**How to verify the fix is correct:**
+
+* Set available points to 400. Type **25** in the percentage field → points field should show **100**. ✅
+* Set available points to 400. Type **100** in the points field → percentage field should show **25**. ✅
+* If the fields show the opposite of these results, the swap is still present and the fix is incomplete.
