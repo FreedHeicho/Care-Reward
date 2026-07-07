@@ -37,6 +37,13 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
+      #Restore DEBUG Keystore
+      # Add Signature
+      - name: Restore debug keystore
+        run: |
+           mkdir -p ~/.android
+           echo "${{ secrets.DEBUG_KEYSTORE_BASE64 }}" | base64 --decode > ~/.android/debug.keystore 
+           
    # 6. Generate Native Android Directories (The Expo Prebuild Step)
       - name: Expo Prebuild Android
         run: |
