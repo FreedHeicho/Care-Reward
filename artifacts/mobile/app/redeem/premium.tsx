@@ -96,31 +96,37 @@ export default function PremiumAllocationScreen() {
           <InfoRow label="Rate" value="1 point = $1" colors={colors} highlight />
         </View>
 
-        <View style={[styles.inputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={styles.inputSection}>
           <Text style={[styles.inputLabel, { color: colors.foreground }]}>Points to Allocate</Text>
           <View style={styles.inputRow}>
-            <View style={[styles.inputWrap, { borderColor: colors.border }]}>
-              <TextInput
-                style={[styles.input, { color: colors.foreground }]}
-                placeholder="0"
-                placeholderTextColor={colors.mutedForeground}
-                keyboardType="number-pad"
-                value={ptsText}
-                onChangeText={onPtsChange}
-              />
-              <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>pts</Text>
+            <View style={styles.inputColumn}>
+              <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Points</Text>
+              <View style={[styles.inputWrap, { borderColor: colors.border }]}>
+                <TextInput
+                  style={[styles.input, { color: colors.foreground }]}
+                  placeholder="0"
+                  placeholderTextColor={colors.mutedForeground}
+                  keyboardType="number-pad"
+                  value={ptsText}
+                  onChangeText={onPtsChange}
+                />
+                <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>pts</Text>
+              </View>
             </View>
             <Text style={[styles.orText, { color: colors.mutedForeground }]}>or</Text>
-            <View style={[styles.inputWrap, { borderColor: colors.border }]}>
-              <TextInput
-                style={[styles.input, { color: colors.foreground }]}
-                placeholder="0"
-                placeholderTextColor={colors.mutedForeground}
-                keyboardType="decimal-pad"
-                value={pctText}
-                onChangeText={onPctChange}
-              />
-              <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>%</Text>
+            <View style={styles.inputColumn}>
+              <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Percentage</Text>
+              <View style={[styles.inputWrap, { borderColor: colors.border }]}>
+                <TextInput
+                  style={[styles.input, { color: colors.foreground }]}
+                  placeholder="0"
+                  placeholderTextColor={colors.mutedForeground}
+                  keyboardType="decimal-pad"
+                  value={pctText}
+                  onChangeText={onPctChange}
+                />
+                <Text style={[styles.inputUnit, { color: colors.mutedForeground }]}>%</Text>
+              </View>
             </View>
           </View>
           {error && (
@@ -184,20 +190,26 @@ const styles = StyleSheet.create({
   infoLabel: { fontSize: 14, fontWeight: "500" },
   infoValue: { fontSize: 15, fontWeight: "700" },
   divider: { height: 1 },
-  inputCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 16,
-    gap: 14,
+  inputSection: {
+    gap: 12,
   },
   inputLabel: { fontSize: 16, fontWeight: "700" },
   inputRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
     gap: 10,
   },
-  inputWrap: {
+  inputColumn: {
     flex: 1,
+    gap: 6,
+  },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  inputWrap: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1.5,
@@ -208,7 +220,7 @@ const styles = StyleSheet.create({
   },
   input: { flex: 1, fontSize: 18, fontWeight: "700" },
   inputUnit: { fontSize: 14, fontWeight: "600" },
-  orText: { fontSize: 13, fontWeight: "600" },
+  orText: { fontSize: 13, fontWeight: "600", paddingBottom: 14 },
   errorRow: {
     flexDirection: "row",
     alignItems: "center",
