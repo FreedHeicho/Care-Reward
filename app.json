@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "c9c40e32-7eca-4e70-b762-e3666130b0f6"
+      }
+    },
+    "android": {
+      "package": "com.daym.workspace"
+    },
+    "ios": {
+      "bundleIdentifier": "com.daym.workspace",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}
