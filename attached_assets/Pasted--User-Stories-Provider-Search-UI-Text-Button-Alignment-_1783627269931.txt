@@ -1,0 +1,66 @@
+🧾 User Stories: Provider Search, UI Text, Button Alignment & Android Logo Fix
+
+CONNECT HEALTH DATA — TEXT CHANGE
+
+Story 1 — Rename "Add Health Systems" to "Add Your Health Care Provider"
+As a user on the Connect Health Data screen,
+ I want the button and page heading that currently reads "Add Health Systems" to read "Add Your Health Care Provider",
+ So that the language is friendlier, clearer, and more patient-facing.
+Acceptance Criteria:
+Every instance of the text "Add Health Systems" across the entire app is replaced with "Add Your Health Care Provider".
+This includes the button label, any page headings, navigation titles, and any confirmation or helper text that references this phrase.
+No other copy, layout, or functionality changes — text replacement only.
+
+SEARCH BY PROVIDER — ENHANCED SEARCH OPTIONS
+
+Story 2 — Allow Search by Doctor First Name, Last Name, or NPI Number
+As a user searching for my doctor by their Provider ID,
+ I want to be able to search by my doctor's first name, last name, or NPI number,
+ So that I can find my provider even if I do not know their NPI number off the top of my head.
+Acceptance Criteria:
+The "Search by Provider ID" screen displays two clearly labelled input fields:
+First name  Last name— text input, accepts letters only
+NPI number — numeric input, accepts 10-digit numbers only, with helper text: "The NPI is a unique 10-digit ID assigned to every licensed doctor."
+The user does not need to fill both fields — any one of the following combinations should trigger a valid search:
+First name , Last name
+NPI number alone
+First name + Last name + NPI number together for a more refined result
+A Search button below the fields submits the query.
+Search results display the matched provider's full name, specialty, and location for the user to confirm before connecting.
+If no results are found, display a clear message: "No provider found. Please check the details and try again."
+If the NPI field is filled but contains fewer or more than 10 digits, show an inline validation error before submitting: "NPI number must be exactly 10 digits."
+
+HOME DASHBOARD — BUTTON ALIGNMENT
+
+Story 3 — Align "Learn More" and "Benefits" Buttons on the Same Horizontal Line
+As a user viewing the Home Dashboard,
+ I want the "Learn More" button in the "How to Earn Points" box and the "Benefits" button in the "Explanation of Benefits" box to sit on the same horizontal line,
+ So that the dashboard looks visually balanced and intentional.
+Acceptance Criteria:
+The "How to Earn Points" card and the "Explanation of Benefits" card sit side by side on the dashboard.
+The "Learn More" button and the "Benefits" button must be vertically aligned — both buttons sit at the exact same vertical position regardless of how much text is above them in each card.
+If the two cards have different amounts of text content, the cards must stretch to equal height and the buttons must be pinned to the bottom of each card so they always align.
+This alignment must hold on all screen sizes — small phones and large phones alike.
+No other layout, text, or functionality changes to these two cards.
+
+ANDROID — LOGO DISPLAY FIX
+
+Story 4 — Fix Logos Not Displaying on Android
+As a user on an Android device,
+ I want all logos throughout the app to display correctly,
+ So that the app looks as polished and complete on Android as it does on iOS.
+Acceptance Criteria:
+Conduct a full audit of every screen in the app where logos appear — this includes but is not limited to:
+Health provider/hospital logos on the EMR Records screens
+Store logos on the Healthcare Savings Giftcards screen (Amazon FSA, CVS, FSA Store)
+Opportunity card logos on the Opportunities page
+Any partner or institution logos anywhere else in the app
+Every logo that displays correctly on iOS must display correctly on Android as well — no exceptions.
+The fix must address the root cause of why Android logos are failing. Common causes to investigate and resolve:
+Image format incompatibility — Android has stricter support for certain image formats. Convert any SVG images to PNG or use a React Native SVG renderer. Ensure all PNGs are valid and not corrupted.
+Incorrect file path casing — Android file paths are case-sensitive, iOS is not. Audit every image import and ensure the file name casing in the import exactly matches the actual file name on disk.
+Missing or incorrect resizeMode prop — ensure all <Image> components have an explicit resizeMode set (e.g. resizeMode="contain").
+Remote image URLs failing silently — if logos are loaded from remote URLs, add onError handlers to every <Image> component so failures are logged and a fallback placeholder is shown instead of a blank space.
+After the fix, test every logo on a physical Android device or Android emulator and confirm all logos render correctly before marking this story complete.
+iOS logo behavior must remain completely unchanged.
+

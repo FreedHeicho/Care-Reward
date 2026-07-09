@@ -45,7 +45,7 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="health-records/add-method"
-        options={{ title: "Add Health System", headerBackTitle: "Back" }}
+        options={{ title: "Add Your Health Care Provider", headerBackTitle: "Back" }}
       />
       <Stack.Screen
         name="health-records/search-npi"

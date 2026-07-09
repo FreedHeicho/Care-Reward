@@ -35,6 +35,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [logoError, setLogoError] = useState(false);
 
   const handleSignIn = async () => {
     if (!email.trim()) {
@@ -72,11 +73,16 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoRow}>
-            <Image
-              source={LOGO}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
+            {logoError ? (
+              <Text style={[styles.logoFallback, { color: colors.primary }]}>CareReward</Text>
+            ) : (
+              <Image
+                source={LOGO}
+                style={styles.logoImage}
+                resizeMode="contain"
+                onError={() => setLogoError(true)}
+              />
+            )}
           </View>
 
           <View style={styles.hero}>
@@ -228,6 +234,7 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 24, gap: 28 },
   logoRow: { alignItems: "flex-start", paddingVertical: 4 },
   logoImage: { width: 200, height: 52 },
+  logoFallback: { fontSize: 22, fontWeight: "800", height: 52, lineHeight: 52 },
   logoIcon: {
     width: 52,
     height: 52,

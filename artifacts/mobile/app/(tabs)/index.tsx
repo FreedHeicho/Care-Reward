@@ -413,12 +413,13 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     gap: 4,
+    justifyContent: "space-between",
   },
   getStartedCardTitle: { fontSize: 13, fontWeight: "800", lineHeight: 18 },
   getStartedCardDesc: {
     fontSize: 11,
     lineHeight: 15,
-    minHeight: 30,
+    flex: 1,
   },
   getStartedCardBtn: {
     borderRadius: 6,

@@ -53,7 +53,7 @@ export default function EmrAccessScreen() {
             activeOpacity={0.85}
           >
             <Feather name="plus" size={18} color="#fff" />
-            <Text style={styles.addBtnText}>Add Health System</Text>
+            <Text style={styles.addBtnText}>Add Your Health Care Provider</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -157,7 +157,7 @@ export default function EmrAccessScreen() {
             <View style={[styles.addAnotherIcon, { backgroundColor: colors.secondary }]}>
               <Feather name="plus" size={18} color={colors.primary} />
             </View>
-            <Text style={[styles.addAnotherText, { color: colors.foreground }]}>Add health system</Text>
+            <Text style={[styles.addAnotherText, { color: colors.foreground }]}>Add Your Health Care Provider</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   Image,
   Platform,
@@ -86,6 +86,7 @@ export default function MemberCardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
+  const [logoError, setLogoError] = useState(false);
 
   const memberId = user?.memberId ?? MOCK_USER_PLAN.memberId;
   const planName = user?.planName ?? MOCK_USER_PLAN.planName;
@@ -124,11 +125,16 @@ export default function MemberCardScreen() {
           <View style={styles.card}>
             {/* Card header bar */}
             <View style={[styles.cardHeader, { backgroundColor: "#05503C" }]}>
-              <Image
-                source={LOGO}
-                style={styles.cardLogo}
-                resizeMode="contain"
-              />
+              {logoError ? (
+                <Text style={styles.cardLogoFallback}>CareReward</Text>
+              ) : (
+                <Image
+                  source={LOGO}
+                  style={styles.cardLogo}
+                  resizeMode="contain"
+                  onError={() => setLogoError(true)}
+                />
+              )}
               <Text style={styles.cardHeaderLabel}>Member ID Card</Text>
             </View>
 
@@ -317,6 +323,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   cardLogo: { height: 28, width: 130 },
+  cardLogoFallback: { color: "#ffffff", fontSize: 14, fontWeight: "800", height: 28, lineHeight: 28 },
   cardHeaderLabel: { color: "#ffffff90", fontSize: 12, fontWeight: "600" },
   cardBackTitle: { color: "#fff", fontSize: 14, fontWeight: "700" },
   cardBody: { padding: 16, gap: 12 },

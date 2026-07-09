@@ -18,7 +18,7 @@ export default function AddMethodScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingBottom: insets.bottom + 32 }]}>
-      <Stack.Screen options={{ title: "Add Health System", headerBackTitle: "Back" }} />
+      <Stack.Screen options={{ title: "Add Your Health Care Provider", headerBackTitle: "Back" }} />
 
       <View style={styles.inner}>
         <Text style={[styles.title, { color: colors.foreground }]}>How would you like to search?</Text>

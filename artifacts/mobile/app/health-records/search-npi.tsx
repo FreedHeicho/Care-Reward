@@ -16,50 +16,72 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 
-const MOCK_NPI_DB: Record<string, { name: string; specialty: string }> = {
-  "1234567890": { name: "Dr. Sarah Johnson", specialty: "Internal Medicine" },
-  "0987654321": { name: "Dr. Michael Chen", specialty: "Dermatology" },
-  "1122334455": { name: "Dr. Lisa Williams", specialty: "Cardiology" },
-  "5544332211": { name: "Dr. Robert Davis", specialty: "Family Medicine" },
-  "9988776655": { name: "Dr. Amara Okafor", specialty: "Endocrinology" },
-};
+const MOCK_PROVIDERS = [
+  { npi: "1234567890", firstName: "Sarah",   lastName: "Johnson",  specialty: "Internal Medicine", location: "Chicago, IL" },
+  { npi: "0987654321", firstName: "Michael", lastName: "Chen",     specialty: "Dermatology",       location: "San Francisco, CA" },
+  { npi: "1122334455", firstName: "Lisa",    lastName: "Williams", specialty: "Cardiology",         location: "Houston, TX" },
+  { npi: "5544332211", firstName: "Robert",  lastName: "Davis",    specialty: "Family Medicine",    location: "Austin, TX" },
+  { npi: "9988776655", firstName: "Amara",   lastName: "Okafor",   specialty: "Endocrinology",      location: "Atlanta, GA" },
+];
+
+type Provider = (typeof MOCK_PROVIDERS)[number];
+
+function searchProviders(first: string, last: string, npi: string): Provider[] {
+  const f = first.trim().toLowerCase();
+  const l = last.trim().toLowerCase();
+  const n = npi.trim();
+  if (!f && !l && !n) return [];
+  return MOCK_PROVIDERS.filter((p) => {
+    const firstOk = f ? p.firstName.toLowerCase().startsWith(f) : true;
+    const lastOk  = l ? p.lastName.toLowerCase().startsWith(l)  : true;
+    if (n) return p.npi === n && firstOk && lastOk;
+    return firstOk && lastOk;
+  });
+}
 
 export default function SearchNpiScreen() {
-  const colors = useColors();
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
+  const colors  = useColors();
+  const insets  = useSafeAreaInsets();
+  const router  = useRouter();
 
-  const [npi, setNpi] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName,  setLastName]  = useState("");
+  const [npi,       setNpi]       = useState("");
+
   const [searching, setSearching] = useState(false);
-  const [result, setResult] = useState<{ name: string; specialty: string; npi: string } | null>(null);
-  const [notFound, setNotFound] = useState(false);
+  const [results,   setResults]   = useState<Provider[] | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  const npiInvalid = npi.length > 0 && npi.length !== 10;
+  const canSearch  =
+    !npiInvalid && ((firstName.trim() || lastName.trim()) || npi.length === 10);
 
   const handleSearch = async () => {
-    if (npi.length !== 10) return;
+    if (!canSearch) return;
     setSearching(true);
-    setResult(null);
-    setNotFound(false);
-    await new Promise((r) => setTimeout(r, 900));
-    const found = MOCK_NPI_DB[npi];
-    if (found) {
-      setResult({ ...found, npi });
-    } else {
-      setNotFound(true);
-    }
+    setResults(null);
+    setSubmitted(false);
+    await new Promise((r) => setTimeout(r, 800));
+    setResults(searchProviders(firstName, lastName, npi));
+    setSubmitted(true);
     setSearching(false);
   };
 
-  const handleConfirm = () => {
-    if (!result) return;
+  const handleConnect = (p: Provider) => {
     router.push({
       pathname: "/health-records/confirm",
       params: {
-        institutionId: `npi-${result.npi}`,
-        institutionName: result.name,
+        institutionId: `npi-${p.npi}`,
+        institutionName: `Dr. ${p.firstName} ${p.lastName}`,
         institutionType: "Provider",
-        institutionLocation: result.specialty,
+        institutionLocation: `${p.specialty} · ${p.location}`,
       },
     } as never);
+  };
+
+  const reset = () => {
+    setResults(null);
+    setSubmitted(false);
   };
 
   return (
@@ -67,84 +89,143 @@ export default function SearchNpiScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <Stack.Screen options={{ title: "Search by Provider ID", headerBackTitle: "Back" }} />
+      <Stack.Screen options={{ title: "Find Your Provider", headerBackTitle: "Back" }} />
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 40 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.title, { color: colors.foreground }]}>Enter Provider NPI Number</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>Find Your Provider</Text>
         <Text style={[styles.desc, { color: colors.mutedForeground }]}>
-          Enter the provider's 10-digit NPI Number — a unique ID assigned to every licensed doctor.
+          Search by your doctor's name, NPI number, or both for the most accurate results.
         </Text>
 
+        {/* Name row */}
+        <View style={styles.nameRow}>
+          <View style={[styles.inputGroup, styles.nameField]}>
+            <Text style={[styles.label, { color: colors.foreground }]}>First name</Text>
+            <TextInput
+              style={[styles.input, { borderColor: colors.border, backgroundColor: colors.card, color: colors.foreground }]}
+              value={firstName}
+              onChangeText={(t) => { setFirstName(t.replace(/[^a-zA-Z\s'-]/g, "")); reset(); }}
+              placeholder="e.g. Sarah"
+              placeholderTextColor={colors.mutedForeground}
+              keyboardType="default"
+              autoCapitalize="words"
+            />
+          </View>
+          <View style={[styles.inputGroup, styles.nameField]}>
+            <Text style={[styles.label, { color: colors.foreground }]}>Last name</Text>
+            <TextInput
+              style={[styles.input, { borderColor: colors.border, backgroundColor: colors.card, color: colors.foreground }]}
+              value={lastName}
+              onChangeText={(t) => { setLastName(t.replace(/[^a-zA-Z\s'-]/g, "")); reset(); }}
+              placeholder="e.g. Johnson"
+              placeholderTextColor={colors.mutedForeground}
+              keyboardType="default"
+              autoCapitalize="words"
+            />
+          </View>
+        </View>
+
+        {/* NPI field */}
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.foreground }]}>NPI Number</Text>
+          <Text style={[styles.label, { color: colors.foreground }]}>NPI number</Text>
           <TextInput
-            style={[styles.input, { borderColor: npi.length > 0 && npi.length !== 10 ? "#EF4444" : colors.border, backgroundColor: colors.card, color: colors.foreground }]}
+            style={[
+              styles.input,
+              styles.npiInput,
+              {
+                borderColor: npiInvalid ? "#EF4444" : colors.border,
+                backgroundColor: colors.card,
+                color: colors.foreground,
+              },
+            ]}
             value={npi}
-            onChangeText={(t) => {
-              setNpi(t.replace(/\D/g, "").slice(0, 10));
-              setResult(null);
-              setNotFound(false);
-            }}
+            onChangeText={(t) => { setNpi(t.replace(/\D/g, "").slice(0, 10)); reset(); }}
             placeholder="e.g. 1234567890"
             placeholderTextColor={colors.mutedForeground}
             keyboardType="numeric"
             maxLength={10}
           />
-          {npi.length > 0 && npi.length < 10 && (
-            <Text style={styles.fieldHint}>{10 - npi.length} more digits needed</Text>
+          {npiInvalid ? (
+            <Text style={styles.npiError}>NPI number must be exactly 10 digits.</Text>
+          ) : (
+            <Text style={[styles.npiHint, { color: colors.mutedForeground }]}>
+              The NPI is a unique 10-digit ID assigned to every licensed doctor.
+            </Text>
           )}
         </View>
 
+        {/* Search button */}
         <TouchableOpacity
           style={[
             styles.searchBtn,
-            { backgroundColor: npi.length === 10 ? colors.primary : colors.muted },
+            { backgroundColor: canSearch ? colors.primary : colors.muted },
           ]}
           onPress={handleSearch}
-          disabled={npi.length !== 10 || searching}
+          disabled={!canSearch || searching}
           activeOpacity={0.85}
         >
           {searching ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <>
-              <Feather name="search" size={18} color={npi.length === 10 ? "#fff" : colors.mutedForeground} />
-              <Text style={[styles.searchBtnText, { color: npi.length === 10 ? "#fff" : colors.mutedForeground }]}>
+              <Feather name="search" size={18} color={canSearch ? "#fff" : colors.mutedForeground} />
+              <Text style={[styles.searchBtnText, { color: canSearch ? "#fff" : colors.mutedForeground }]}>
                 Search
               </Text>
             </>
           )}
         </TouchableOpacity>
 
-        {notFound && (
+        {/* No results */}
+        {submitted && results !== null && results.length === 0 && (
           <View style={[styles.errorCard, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
             <Feather name="alert-circle" size={16} color="#EF4444" />
             <Text style={styles.errorText}>
-              No provider found with that NPI Number. Please check and try again.
+              No provider found. Please check the details and try again.
             </Text>
           </View>
         )}
 
-        {result && (
-          <View style={[styles.resultCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.resultIcon, { backgroundColor: colors.secondary }]}>
-              <Feather name="user" size={24} color={colors.primary} />
-            </View>
-            <View style={styles.resultInfo}>
-              <Text style={[styles.resultName, { color: colors.foreground }]}>{result.name}</Text>
-              <Text style={[styles.resultSpecialty, { color: colors.mutedForeground }]}>{result.specialty}</Text>
-              <Text style={[styles.resultNpi, { color: colors.mutedForeground }]}>NPI: {result.npi}</Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.connectBtn, { backgroundColor: colors.primary }]}
-              onPress={handleConfirm}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.connectBtnText}>Connect</Text>
-            </TouchableOpacity>
+        {/* Results */}
+        {results !== null && results.length > 0 && (
+          <View style={styles.resultsList}>
+            <Text style={[styles.resultsHeader, { color: colors.mutedForeground }]}>
+              {results.length} provider{results.length !== 1 ? "s" : ""} found
+            </Text>
+            {results.map((p) => (
+              <View
+                key={p.npi}
+                style={[styles.resultCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              >
+                <View style={[styles.resultIcon, { backgroundColor: colors.secondary }]}>
+                  <Feather name="user" size={22} color={colors.primary} />
+                </View>
+                <View style={styles.resultInfo}>
+                  <Text style={[styles.resultName, { color: colors.foreground }]}>
+                    Dr. {p.firstName} {p.lastName}
+                  </Text>
+                  <Text style={[styles.resultDetail, { color: colors.mutedForeground }]}>
+                    {p.specialty}
+                  </Text>
+                  <Text style={[styles.resultDetail, { color: colors.mutedForeground }]}>
+                    {p.location}
+                  </Text>
+                  <Text style={[styles.resultNpi, { color: colors.mutedForeground }]}>
+                    NPI: {p.npi}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.connectBtn, { backgroundColor: colors.primary }]}
+                  onPress={() => handleConnect(p)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.connectBtnText}>Connect</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
           </View>
         )}
       </ScrollView>
@@ -157,17 +238,23 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingTop: 24, gap: 20 },
   title: { fontSize: 22, fontWeight: "800" },
   desc: { fontSize: 14, lineHeight: 20, marginTop: -8 },
-  inputGroup: { gap: 8 },
-  label: { fontSize: 15, fontWeight: "600" },
+
+  nameRow: { flexDirection: "row", gap: 12 },
+  nameField: { flex: 1 },
+
+  inputGroup: { gap: 6 },
+  label: { fontSize: 14, fontWeight: "600" },
   input: {
     borderWidth: 1.5,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 18,
-    letterSpacing: 2,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    fontSize: 15,
   },
-  fieldHint: { fontSize: 12, color: "#EF4444" },
+  npiInput: { letterSpacing: 2 },
+  npiHint: { fontSize: 12, lineHeight: 16 },
+  npiError: { fontSize: 12, color: "#EF4444" },
+
   searchBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -177,6 +264,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   searchBtnText: { fontSize: 16, fontWeight: "700" },
+
   errorCard: {
     borderRadius: 12,
     borderWidth: 1,
@@ -186,28 +274,35 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   errorText: { flex: 1, fontSize: 14, color: "#EF4444", lineHeight: 20 },
+
+  resultsList: { gap: 10 },
+  resultsHeader: { fontSize: 13, fontWeight: "600" },
   resultCard: {
     borderRadius: 16,
     borderWidth: 1,
-    padding: 16,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   resultIcon: {
-    width: 52,
-    height: 52,
+    width: 44,
+    height: 44,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    alignSelf: "center",
+    flexShrink: 0,
   },
-  resultInfo: { gap: 4, alignItems: "center" },
-  resultName: { fontSize: 17, fontWeight: "700", textAlign: "center" },
-  resultSpecialty: { fontSize: 14, textAlign: "center" },
-  resultNpi: { fontSize: 12, textAlign: "center" },
+  resultInfo: { flex: 1, gap: 2 },
+  resultName: { fontSize: 15, fontWeight: "700", lineHeight: 20 },
+  resultDetail: { fontSize: 13, lineHeight: 18 },
+  resultNpi: { fontSize: 11, marginTop: 2 },
   connectBtn: {
-    borderRadius: 10,
-    paddingVertical: 14,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     alignItems: "center",
+    flexShrink: 0,
   },
-  connectBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  connectBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
 });
