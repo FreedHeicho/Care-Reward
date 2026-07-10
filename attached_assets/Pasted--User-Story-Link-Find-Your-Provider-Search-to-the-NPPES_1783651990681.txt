@@ -1,0 +1,106 @@
+🧾 User Story: Link "Find Your Provider" Search to the NPPES Registry
+
+Story 1 — Connect Provider Search to the Live NPPES Registry API
+As a user searching for my doctor in the "Search by Provider ID" section,
+I want my search results to come from the official NPPES (National Plan and Provider Enumeration System) registry,
+So that I can find any licensed US healthcare provider by their name or NPI number using real, verified government data.
+
+Background for the Code Generator
+The NPPES registry is the official US government database of every licensed healthcare provider, maintained by the Centers for Medicare & Medicaid Services (CMS). The API is completely free, requires no API key, and no account signup. The base URL for every request is:
+https://npiregistry.cms.hhs.gov/api/
+The version parameter version=2.1 must be included in every request.
+
+Acceptance Criteria
+API Integration:
+
+The "Search by Provider ID" section — specifically the "Find Your Provider" screen — must be connected to the live NPPES API.
+All search queries typed by the user must be sent to the NPPES API and return real live results.
+No mock data, dummy data, or hardcoded provider lists should be used — all results must come from the NPPES registry.
+The API base URL to use is: https://npiregistry.cms.hhs.gov/api/
+
+
+Search Input Fields:
+The search screen must support three input fields:
+
+First name — text input, letters only, optional
+Last name — text input, letters only, optional but required if NPI is not provided
+NPI number — numeric input, exactly 10 digits, optional but required if last name is not provided
+
+The following search combinations must all be supported and map to the NPPES API parameters as follows:
+User InputNPPES Parameter UsedNPI number only&number={npi}Last name only&last_name={lastName}First name + Last name&first_name={firstName}&last_name={lastName}First name + Last name + NPI&number={npi}&first_name={firstName}&last_name={lastName}
+Every request must also include &version=2.1 and &limit=20.
+
+Validation Rules (checked before any API call is made):
+
+If both the NPI field and the Last name field are empty, show inline error: "Please enter a last name or NPI number to search."
+If an NPI number is entered but is not exactly 10 digits, show inline error: "NPI number must be exactly 10 digits."
+The Search button must be disabled while a request is in progress.
+
+
+Search Results Display:
+Each result returned from the NPPES API must display the following fields in a provider result card:
+
+Full name: basic.first_name + basic.last_name + basic.credential (e.g. James Williams, M.D.)
+Specialty: the taxonomies entry where primary: true → use the desc field (e.g. Family Medicine)
+Location: from the addresses array where address_purpose is "LOCATION" → display city and state
+Phone number: from the same addresses entry → telephone_number
+NPI number: displayed in small muted text at the bottom of each card (e.g. NPI: 1003000207)
+A "Connect ›" button or tap action on the right side of each card
+
+
+Result States:
+
+Loading state — while the API call is in progress, show an activity/loading spinner and disable the search button.
+Results found — show a count label (e.g. "12 providers found") above the scrollable results list.
+No results — if result_count is 0, show message: "No providers found. Check the details and try again."
+API error / no connection — if the request fails, show message: "Could not reach the provider registry. Check your connection and try again." with a Retry button.
+
+
+On Selecting a Provider:
+
+When the user taps a provider card, they are taken to the existing confirmation screen where they confirm they have an account with that provider and consent to CareReward accessing their records.
+The selected provider's full name, NPI number, specialty, and location must be passed to the confirmation screen and displayed there.
+No changes to the confirmation screen itself — only the data flowing into it changes.
+
+
+Performance and Rate Limiting:
+
+Implement a 500ms throttle between consecutive API requests — do not allow the user to fire multiple requests in rapid succession.
+Do not implement live/auto-search as the user types — search only fires when the user explicitly taps the Search button.
+
+
+Create a reusable API service file at lib/services/nppesApi.ts (or equivalent path in the project) that contains:
+
+All NPPES API fetch logic
+TypeScript interfaces for NPPESProvider, NPPESSearchParams, and NPPESSearchResult
+Helper functions for extracting specialty, location, and phone from the API response
+The throttle logic
+Error handling
+
+This service file must be imported by the provider search screen component — no API logic should live directly inside the component.
+
+What Must NOT Change
+
+The visual design of the "Find Your Provider" screen remains the same — only the data source changes from static/dummy to live NPPES API.
+The confirmation screen that follows provider selection remains unchanged.
+The "Search by Hospital, Clinic, Health System or Pharmacy" path is a separate flow and must not be affected by this change.
+
+
+HIPAA Note for the Code Generator
+The NPPES registry data itself is public and not PHI. However the moment a user confirms and connects a provider to their account, that relationship becomes PHI. Ensure that:
+
+The confirmed provider connection is stored encrypted.
+The connection event is recorded in the audit log with user ID, provider NPI, and timestamp.
+Access to a user's connected providers is protected behind authentication.
+
+
+Quick Verification Test for the Code Generator
+After implementation, verify the integration is working by confirming these test cases pass:
+✓ Enter NPI: 1003000207 → returns a real provider
+✓ Enter Last name: "Smith" → returns a list of providers
+✓ Enter First: "James" + Last: "Williams" → returns refined list
+✓ Enter 9-digit NPI → shows validation error before API call
+✓ Leave all fields empty and tap Search → shows validation error
+✓ Simulate no internet → shows connection error message
+✓ Search with no matches → shows no results message
+✓ Tap a result card → navigates to confirmation screen with correct provider data

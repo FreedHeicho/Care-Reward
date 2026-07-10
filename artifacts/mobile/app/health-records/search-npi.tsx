@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -15,74 +15,87 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
-
-const MOCK_PROVIDERS = [
-  { npi: "1234567890", firstName: "Sarah",   lastName: "Johnson",  specialty: "Internal Medicine", location: "Chicago, IL" },
-  { npi: "0987654321", firstName: "Michael", lastName: "Chen",     specialty: "Dermatology",       location: "San Francisco, CA" },
-  { npi: "1122334455", firstName: "Lisa",    lastName: "Williams", specialty: "Cardiology",         location: "Houston, TX" },
-  { npi: "5544332211", firstName: "Robert",  lastName: "Davis",    specialty: "Family Medicine",    location: "Austin, TX" },
-  { npi: "9988776655", firstName: "Amara",   lastName: "Okafor",   specialty: "Endocrinology",      location: "Atlanta, GA" },
-];
-
-type Provider = (typeof MOCK_PROVIDERS)[number];
-
-function searchProviders(first: string, last: string, npi: string): Provider[] {
-  const f = first.trim().toLowerCase();
-  const l = last.trim().toLowerCase();
-  const n = npi.trim();
-  if (!f && !l && !n) return [];
-  return MOCK_PROVIDERS.filter((p) => {
-    const firstOk = f ? p.firstName.toLowerCase().startsWith(f) : true;
-    const lastOk  = l ? p.lastName.toLowerCase().startsWith(l)  : true;
-    if (n) return p.npi === n && firstOk && lastOk;
-    return firstOk && lastOk;
-  });
-}
+import { NPPESProvider, searchNPPES } from "@/services/nppesApi";
 
 export default function SearchNpiScreen() {
-  const colors  = useColors();
-  const insets  = useSafeAreaInsets();
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
   const router  = useRouter();
 
   const [firstName, setFirstName] = useState("");
   const [lastName,  setLastName]  = useState("");
   const [npi,       setNpi]       = useState("");
 
-  const [searching, setSearching] = useState(false);
-  const [results,   setResults]   = useState<Provider[] | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [searching,   setSearching]   = useState(false);
+  const [results,     setResults]     = useState<NPPESProvider[] | null>(null);
+  const [resultCount, setResultCount] = useState(0);
+  const [submitted,   setSubmitted]   = useState(false);
+  const [apiError,    setApiError]    = useState<string | null>(null);
+  const [formError,   setFormError]   = useState<string | null>(null);
+
+  const searchingRef = useRef(false);
 
   const npiInvalid = npi.length > 0 && npi.length !== 10;
-  const canSearch  =
-    !npiInvalid && ((firstName.trim() || lastName.trim()) || npi.length === 10);
+
+  const reset = () => {
+    setResults(null);
+    setSubmitted(false);
+    setApiError(null);
+    setFormError(null);
+  };
 
   const handleSearch = async () => {
-    if (!canSearch) return;
+    if (searchingRef.current) return;
+
+    setFormError(null);
+    setApiError(null);
+
+    if (npiInvalid) return;
+
+    const hasNpi      = npi.length === 10;
+    const hasLastName = lastName.trim().length > 0;
+
+    if (!hasNpi && !hasLastName) {
+      setFormError("Please enter a last name or NPI number to search.");
+      return;
+    }
+
+    searchingRef.current = true;
     setSearching(true);
     setResults(null);
     setSubmitted(false);
-    await new Promise((r) => setTimeout(r, 800));
-    setResults(searchProviders(firstName, lastName, npi));
-    setSubmitted(true);
-    setSearching(false);
+
+    try {
+      const data = await searchNPPES({
+        npi:       hasNpi                        ? npi : undefined,
+        lastName:  hasLastName                   ? lastName  : undefined,
+        firstName: firstName.trim() || undefined,
+      });
+      setResults(data.providers);
+      setResultCount(data.count);
+      setSubmitted(true);
+    } catch {
+      setApiError("Could not reach the provider registry. Check your connection and try again.");
+      setSubmitted(false);
+    } finally {
+      setSearching(false);
+      searchingRef.current = false;
+    }
   };
 
-  const handleConnect = (p: Provider) => {
+  const handleConnect = (p: NPPESProvider) => {
     router.push({
       pathname: "/health-records/confirm",
       params: {
-        institutionId: `npi-${p.npi}`,
-        institutionName: `Dr. ${p.firstName} ${p.lastName}`,
-        institutionType: "Provider",
+        institutionId:       `npi-${p.npi}`,
+        institutionName:     p.fullName,
+        institutionType:     "Provider",
         institutionLocation: `${p.specialty} · ${p.location}`,
       },
     } as never);
   };
 
-  const reset = () => {
-    setResults(null);
-    setSubmitted(false);
-  };
+  const canSearch = !npiInvalid && !searching;
 
   return (
     <KeyboardAvoidingView
@@ -108,9 +121,8 @@ export default function SearchNpiScreen() {
               style={[styles.input, { borderColor: colors.border, backgroundColor: colors.card, color: colors.foreground }]}
               value={firstName}
               onChangeText={(t) => { setFirstName(t.replace(/[^a-zA-Z\s'-]/g, "")); reset(); }}
-              placeholder="e.g. Sarah"
+              placeholder="e.g. James"
               placeholderTextColor={colors.mutedForeground}
-              keyboardType="default"
               autoCapitalize="words"
             />
           </View>
@@ -120,9 +132,8 @@ export default function SearchNpiScreen() {
               style={[styles.input, { borderColor: colors.border, backgroundColor: colors.card, color: colors.foreground }]}
               value={lastName}
               onChangeText={(t) => { setLastName(t.replace(/[^a-zA-Z\s'-]/g, "")); reset(); }}
-              placeholder="e.g. Johnson"
+              placeholder="e.g. Williams"
               placeholderTextColor={colors.mutedForeground}
-              keyboardType="default"
               autoCapitalize="words"
             />
           </View>
@@ -135,36 +146,37 @@ export default function SearchNpiScreen() {
             style={[
               styles.input,
               styles.npiInput,
-              {
-                borderColor: npiInvalid ? "#EF4444" : colors.border,
-                backgroundColor: colors.card,
-                color: colors.foreground,
-              },
+              { borderColor: npiInvalid ? "#EF4444" : colors.border, backgroundColor: colors.card, color: colors.foreground },
             ]}
             value={npi}
             onChangeText={(t) => { setNpi(t.replace(/\D/g, "").slice(0, 10)); reset(); }}
-            placeholder="e.g. 1234567890"
+            placeholder="e.g. 1003000207"
             placeholderTextColor={colors.mutedForeground}
             keyboardType="numeric"
             maxLength={10}
           />
           {npiInvalid ? (
-            <Text style={styles.npiError}>NPI number must be exactly 10 digits.</Text>
+            <Text style={styles.errorInline}>NPI number must be exactly 10 digits.</Text>
           ) : (
-            <Text style={[styles.npiHint, { color: colors.mutedForeground }]}>
-              The NPI is a unique 10-digit ID assigned to every licensed doctor.
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>
+              The NPI is a unique 10-digit ID assigned to every licensed provider.
             </Text>
           )}
         </View>
 
+        {/* Form validation error */}
+        {formError && (
+          <View style={[styles.alertCard, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
+            <Feather name="alert-circle" size={15} color="#EF4444" />
+            <Text style={styles.alertText}>{formError}</Text>
+          </View>
+        )}
+
         {/* Search button */}
         <TouchableOpacity
-          style={[
-            styles.searchBtn,
-            { backgroundColor: canSearch ? colors.primary : colors.muted },
-          ]}
+          style={[styles.searchBtn, { backgroundColor: canSearch ? colors.primary : colors.muted }]}
           onPress={handleSearch}
-          disabled={!canSearch || searching}
+          disabled={!canSearch}
           activeOpacity={0.85}
         >
           {searching ? (
@@ -179,52 +191,70 @@ export default function SearchNpiScreen() {
           )}
         </TouchableOpacity>
 
+        {/* API error */}
+        {apiError && (
+          <View style={[styles.alertCard, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
+            <Feather name="wifi-off" size={15} color="#EF4444" />
+            <View style={styles.alertBody}>
+              <Text style={styles.alertText}>{apiError}</Text>
+              <TouchableOpacity onPress={handleSearch} activeOpacity={0.75} style={styles.retryBtn}>
+                <Text style={[styles.retryText, { color: colors.primary }]}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         {/* No results */}
         {submitted && results !== null && results.length === 0 && (
-          <View style={[styles.errorCard, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
-            <Feather name="alert-circle" size={16} color="#EF4444" />
-            <Text style={styles.errorText}>
-              No provider found. Please check the details and try again.
+          <View style={[styles.alertCard, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
+            <Feather name="alert-circle" size={15} color="#EF4444" />
+            <Text style={styles.alertText}>
+              No providers found. Check the details and try again.
             </Text>
           </View>
         )}
 
         {/* Results */}
-        {results !== null && results.length > 0 && (
+        {submitted && results !== null && results.length > 0 && (
           <View style={styles.resultsList}>
             <Text style={[styles.resultsHeader, { color: colors.mutedForeground }]}>
-              {results.length} provider{results.length !== 1 ? "s" : ""} found
+              {resultCount} provider{resultCount !== 1 ? "s" : ""} found
+              {resultCount > results.length ? ` · showing first ${results.length}` : ""}
             </Text>
             {results.map((p) => (
-              <View
+              <TouchableOpacity
                 key={p.npi}
                 style={[styles.resultCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                onPress={() => handleConnect(p)}
+                activeOpacity={0.8}
               >
                 <View style={[styles.resultIcon, { backgroundColor: colors.secondary }]}>
                   <Feather name="user" size={22} color={colors.primary} />
                 </View>
                 <View style={styles.resultInfo}>
-                  <Text style={[styles.resultName, { color: colors.foreground }]}>
-                    Dr. {p.firstName} {p.lastName}
+                  <Text style={[styles.resultName, { color: colors.foreground }]} numberOfLines={2}>
+                    {p.fullName}
                   </Text>
-                  <Text style={[styles.resultDetail, { color: colors.mutedForeground }]}>
+                  <Text style={[styles.resultDetail, { color: colors.mutedForeground }]} numberOfLines={1}>
                     {p.specialty}
                   </Text>
-                  <Text style={[styles.resultDetail, { color: colors.mutedForeground }]}>
+                  <Text style={[styles.resultDetail, { color: colors.mutedForeground }]} numberOfLines={1}>
                     {p.location}
                   </Text>
+                  {p.phone ? (
+                    <Text style={[styles.resultDetail, { color: colors.mutedForeground }]} numberOfLines={1}>
+                      {p.phone}
+                    </Text>
+                  ) : null}
                   <Text style={[styles.resultNpi, { color: colors.mutedForeground }]}>
                     NPI: {p.npi}
                   </Text>
                 </View>
-                <TouchableOpacity
-                  style={[styles.connectBtn, { backgroundColor: colors.primary }]}
-                  onPress={() => handleConnect(p)}
-                  activeOpacity={0.85}
-                >
+                <View style={[styles.connectBtn, { backgroundColor: colors.primary }]}>
                   <Text style={styles.connectBtnText}>Connect</Text>
-                </TouchableOpacity>
-              </View>
+                  <Feather name="chevron-right" size={14} color="#fff" />
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -252,8 +282,21 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   npiInput: { letterSpacing: 2 },
-  npiHint: { fontSize: 12, lineHeight: 16 },
-  npiError: { fontSize: 12, color: "#EF4444" },
+  hint: { fontSize: 12, lineHeight: 16 },
+  errorInline: { fontSize: 12, color: "#EF4444" },
+
+  alertCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  alertBody: { flex: 1, gap: 6 },
+  alertText: { flex: 1, fontSize: 13, color: "#EF4444", lineHeight: 18 },
+  retryBtn: { alignSelf: "flex-start" },
+  retryText: { fontSize: 13, fontWeight: "700" },
 
   searchBtn: {
     flexDirection: "row",
@@ -264,16 +307,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   searchBtnText: { fontSize: 16, fontWeight: "700" },
-
-  errorCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  errorText: { flex: 1, fontSize: 14, color: "#EF4444", lineHeight: 20 },
 
   resultsList: { gap: 10 },
   resultsHeader: { fontSize: 13, fontWeight: "600" },
@@ -300,9 +333,11 @@ const styles = StyleSheet.create({
   connectBtn: {
     borderRadius: 8,
     paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     alignItems: "center",
     flexShrink: 0,
+    flexDirection: "row",
+    gap: 2,
   },
-  connectBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  connectBtnText: { color: "#fff", fontSize: 13, fontWeight: "700" },
 });
