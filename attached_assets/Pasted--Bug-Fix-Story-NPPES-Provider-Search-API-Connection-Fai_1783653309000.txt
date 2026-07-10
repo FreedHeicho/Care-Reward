@@ -1,0 +1,144 @@
+🐛 Bug Fix Story: NPPES Provider Search — API Connection Failing
+
+Story 1 — Fix NPPES Registry Connection Error on Provider Search
+As a user searching for my doctor in the "Find Your Provider" screen,
+I want my search to successfully connect to the NPPES registry and return real results,
+So that I can find and connect my healthcare provider without hitting a connection error.
+
+The Bug
+The Search button on the "Find Your Provider" screen is returning:
+"Could not reach the provider registry. Check your connection and try again."
+This means the API call to https://npiregistry.cms.hhs.gov/api/ is failing before returning any data. The NPPES registry is a live public API — the problem is in how the app is calling it, not the registry itself.
+
+Why This Is Most Likely Happening
+There are four common causes for this specific failure in a React Native / Expo app. The fix must investigate and resolve all four:
+
+Cause 1 — CORS Blocking the Request
+If any part of the app runs in a web or browser context (Expo web, in-app browser, or development mode), the browser blocks cross-origin requests to the NPPES API because the API does not return CORS headers. The request never leaves the device.
+Fix — Route the API call through a backend proxy instead of calling NPPES directly from the app:
+Create a backend proxy endpoint in your server at:
+GET /api/providers/search
+That endpoint accepts the search parameters from the app and forwards them to NPPES server-side, where CORS does not apply. The app never calls NPPES directly — it only calls your own backend.
+Example proxy route to add to your Express server:
+typescriptapp.get('/api/providers/search', async (req, res) => {
+  const { first_name, last_name, number, limit = 20 } = req.query;
+
+  const params = new URLSearchParams({ version: '2.1' });
+  if (number) params.append('number', String(number));
+  if (first_name) params.append('first_name', String(first_name));
+  if (last_name) params.append('last_name', String(last_name));
+  params.append('limit', String(limit));
+
+  const url = `https://npiregistry.cms.hhs.gov/api/?${params.toString()}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'CareReward/1.0'
+      }
+    });
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: 'NPPES API returned an error',
+        status: response.status
+      });
+    }
+
+    const data = await response.json();
+    return res.json(data);
+
+  } catch (error) {
+    console.error('NPPES proxy error:', error);
+    return res.status(500).json({ error: 'Failed to reach NPPES registry' });
+  }
+});
+Then update the app's nppesApi.ts service to call your own backend instead of NPPES directly:
+typescriptconst SEARCH_URL = '/api/providers/search';
+
+export async function searchProviders(
+  params: NPPESSearchParams
+): Promise<NPPESSearchResult> {
+  const query = new URLSearchParams();
+  if (params.npi) query.append('number', params.npi);
+  if (params.firstName) query.append('first_name', params.firstName);
+  if (params.lastName) query.append('last_name', params.lastName);
+  query.append('limit', String(params.limit ?? 20));
+
+  const response = await fetch(`${SEARCH_URL}?${query.toString()}`);
+
+  if (!response.ok) {
+    throw new Error(`Search failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+Cause 2 — Android Network Security Configuration Blocking the Request
+Android by default blocks certain outbound HTTPS connections that do not match its network security policy. Even though NPPES uses HTTPS, Android may still block it if the security config is too restrictive.
+Fix — Add or update the network security config in your Android manifest:
+In artifacts/mobile/android/app/src/main/res/xml/network_security_config.xml, ensure this exists:
+xml<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+  <domain-config cleartextTrafficPermitted="false">
+    <domain includeSubdomains="true">npiregistry.cms.hhs.gov</domain>
+  </domain-config>
+</network-security-config>
+And in AndroidManifest.xml, confirm this attribute is on the <application> tag:
+xml<application
+  android:networkSecurityConfig="@xml/network_security_config"
+  ...>
+
+Cause 3 — Missing or Wrong Headers on the Request
+The NPPES API requires the request to look like a standard browser or application request. A bare fetch() call with no headers can be silently rejected.
+Fix — Add explicit headers to every NPPES request:
+typescriptconst response = await fetch(url, {
+  method: 'GET',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'User-Agent': 'CareReward/1.0'
+  }
+});
+
+Cause 4 — The Error is Being Swallowed Without Logging
+The current error handler catches all errors and shows the same generic message regardless of what actually went wrong. This hides the real cause.
+Fix — Add detailed error logging before showing the user-facing message:
+typescripttry {
+  const data = await searchProviders(params);
+  setResults(data.results);
+} catch (err) {
+
+  // Log the actual error so we can see what is happening
+  console.error('NPPES search error details:', {
+    message: err instanceof Error ? err.message : 'Unknown error',
+    stack: err instanceof Error ? err.stack : null,
+    timestamp: new Date().toISOString()
+  });
+
+  // Show user-facing error
+  setError(
+    'Could not reach the provider registry. Check your connection and try again.'
+  );
+}
+After adding this logging, run the search again and check the console output. The actual error message will identify which of the four causes above is the real problem.
+
+Acceptance Criteria
+
+The "Find Your Provider" search successfully returns real provider results from the NPPES registry when a valid name or NPI is entered.
+The fix is implemented using a backend proxy route as the primary solution since this resolves CORS, Android network security, and header issues all at once.
+Detailed error logging is added to the catch block so any future failures produce a specific, readable error message in the console rather than a silent generic failure.
+The Android network security config is updated to explicitly permit outbound connections to npiregistry.cms.hhs.gov.
+The following test cases must all pass after the fix:
+
+✓ Search by NPI "1003000207" → returns Dr. result from NPPES
+✓ Search by last name "Smith" → returns list of providers
+✓ Search by first + last name → returns refined list
+✓ Results display name, specialty, location, phone and NPI
+✓ No connection error appears on a working internet connection
+✓ Tapping a result card proceeds to the confirmation screen
+✓ Console logs show specific error details if a failure does occur
+
+iOS behavior must remain unchanged.
+The NPPES API must never be called directly from the app client — all calls must go through the backend proxy.

@@ -30,3 +30,8 @@ externalPort = 80
 [[ports]]
 localPort = 18115
 externalPort = 3000
+
+[userenv]
+
+[userenv.development]
+EXPO_PUBLIC_DOMAIN = "1fe689e1-8629-448e-b73e-dc59d2c2aceb-00-3sk8tqrktvlir.riker.replit.dev"
