@@ -11,14 +11,19 @@
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0EA5E9"
+      "backgroundColor": "#05503C"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.carereward.mobile"
     },
     "android": {
-      "package": "com.carereward.mobile"
+      "package": "com.carereward.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#05503C"
+      },
+      "minSdkVersion": 24
     },
     "web": {
       "favicon": "./assets/images/icon.png"
