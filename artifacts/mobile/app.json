@@ -33,7 +33,9 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/Feather.ttf"]
+          "fonts": [
+            "./assets/fonts/Feather.ttf"
+          ]
         }
       ],
       "expo-web-browser"
@@ -41,6 +43,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6ee8c059-c1d2-4f3f-a20e-29d4fc838428"
+      }
+    },
+    "owner": "dayms-team"
   }
 }
