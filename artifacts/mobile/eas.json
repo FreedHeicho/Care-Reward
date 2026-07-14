@@ -6,8 +6,7 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk",
-        "credentialsSource": "remote"
+        "buildType": "apk"
       },
       "ios": {
         "simulator": true
@@ -15,11 +14,7 @@
     },
     "production": {
       "android": {
-        "buildType": "app-bundle",
-        "credentialsSource": "remote"
-      },
-      "ios": {
-        "credentialsSource": "remote"
+        "buildType": "app-bundle"
       }
     }
   }
