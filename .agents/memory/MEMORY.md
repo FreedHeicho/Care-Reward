@@ -1,0 +1,1 @@
+- [metro-runtime hoisting](metro-runtime-hoisting.md) — expo/cli crashes with 'Cannot find module metro-runtime/package.json' if metro* packages aren't hoisted in .npmrc

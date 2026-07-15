@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "expo-clipboard": "^8.0.8",
+    "metro-runtime": "0.83.3",
     "react-native-webview": "^13.15.0"
   }
 }
