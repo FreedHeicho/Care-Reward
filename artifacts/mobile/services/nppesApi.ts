@@ -107,32 +107,22 @@ function toProvider(raw: RawProvider): NPPESProvider {
 }
 
 // ── URL builder ─────────────────────────────────────────────────────────────
-// All provider search calls go through the backend proxy to avoid CORS issues
-// in web/browser contexts and Android network security restrictions.
-// Native builds need an absolute URL; web builds use a relative path (handled
-// by the Replit shared proxy automatically).
+// Web preview: route through the backend proxy to avoid browser CORS restrictions.
+// Native (iOS / Android APK): call NPPES directly — native apps have no CORS
+// restrictions, and the Replit dev-domain proxy is unreachable from a real device.
 
-function buildProxyUrl(queryString: string): string {
-  const path = `/api/providers/search?${queryString}`;
+const NPPES_DIRECT = "https://npiregistry.cms.hhs.gov/api/";
 
+function buildSearchUrl(queryString: string): string {
   if (Platform.OS === "web") {
-    // Relative URL: works in Replit web preview via the shared proxy
-    return path;
+    // Relative URL — goes through the Replit shared proxy → backend → NPPES
+    return `/api/providers/search?${queryString}`;
   }
 
-  // Native (iOS / Android): need an absolute URL
-  const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (!domain) {
-    console.error(
-      "[nppesApi] EXPO_PUBLIC_DOMAIN is not set. " +
-        "Set it to your deployed backend domain (e.g. yourapp.replit.app) " +
-        "before building a standalone APK."
-    );
-    // Best-effort fallback — will fail with a clear network error
-    return `https://missing-domain.invalid${path}`;
-  }
-
-  return `https://${domain}${path}`;
+  // Native: call NPPES registry directly (no proxy needed, no CORS on native)
+  const params = new URLSearchParams(queryString);
+  params.set("version", "2.1");
+  return `${NPPES_DIRECT}?${params.toString()}`;
 }
 
 // ── Main export ─────────────────────────────────────────────────────────────
@@ -151,7 +141,7 @@ export async function searchNPPES(
   if (params.lastName)  query.set("last_name",  params.lastName.trim());
   if (params.firstName) query.set("first_name", params.firstName.trim());
 
-  const url = buildProxyUrl(query.toString());
+  const url = buildSearchUrl(query.toString());
 
   let res: Response;
   try {

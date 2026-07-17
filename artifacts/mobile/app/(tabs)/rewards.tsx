@@ -22,13 +22,20 @@ const ENABLE_TEST_RESET = __DEV__;
 const WINDOW_OPEN_DAY = 1;
 const WINDOW_CLOSE_DAY = 15;
 
+// ── Beta override ────────────────────────────────────────────────────────────
+// Set to true during beta / testing so the redemption window is always open.
+// Flip to false before production launch to enforce the monthly schedule.
+const BETA_WINDOW_ALWAYS_OPEN = true;
+
 function getWindowState() {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
   const date = now.getDate();
 
-  const isOpen = date >= WINDOW_OPEN_DAY && date <= WINDOW_CLOSE_DAY;
+  const isOpen =
+    BETA_WINDOW_ALWAYS_OPEN ||
+    (date >= WINDOW_OPEN_DAY && date <= WINDOW_CLOSE_DAY);
 
   let nextOpen: Date;
   if (isOpen) {
