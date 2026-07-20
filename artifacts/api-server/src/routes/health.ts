@@ -1,11 +1,20 @@
 import { Router, type IRouter } from "express";
-import { HealthCheckResponse } from "@workspace/api-zod";
+import { pool } from "@workspace/db";
 
 const router: IRouter = Router();
 
-router.get("/healthz", (_req, res) => {
-  const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
+router.get("/healthz", async (_req, res) => {
+  const t0 = Date.now();
+  let dbOk = false;
+  try {
+    await pool.query("SELECT 1");
+    dbOk = true;
+  } catch {
+    dbOk = false;
+  }
+  const responseTimeMs = Date.now() - t0;
+  const status = dbOk ? "healthy" : "degraded";
+  res.status(dbOk ? 200 : 503).json({ status, db: dbOk, responseTimeMs });
 });
 
 export default router;

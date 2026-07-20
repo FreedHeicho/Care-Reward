@@ -1,0 +1,705 @@
+I am building the CareReward mobile health rewards app. It is a 
+pnpm monorepo on Replit. I have already have PostgreSQL 
+database via the Replit Database tab and DATABASE_URL is in my 
+App environment  automatically.
+
+The mobile app is in artifacts/mobile (Expo / React Native).
+Shared backend code lives in lib/.
+The server is Express + Node.js.
+
+I also have these secrets already set:
+  JWT_SECRET = (a long random string)
+  TESTING_MODE = true
+  NODE_ENV = development
+
+Please implement the complete data architecture below.
+Complete every part before stopping.
+
+════════════════════════════════════════════════════════════════
+PART 1: INSTALL ALL PACKAGES
+════════════════════════════════════════════════════════════════
+
+At the monorepo root run:
+  pnpm add drizzle-orm pg compression csv-parse 
+    jsonwebtoken bcryptjs node-cron multer
+  pnpm add -D drizzle-kit @types/pg @types/compression
+    @types/jsonwebtoken @types/bcryptjs @types/multer 
+    @types/node-cron tsx
+
+In artifacts/mobile only:
+  cd artifacts/mobile
+  pnpm add @tanstack/react-query axios
+  cd ../..
+
+════════════════════════════════════════════════════════════════
+PART 2: DATABASE CONNECTION WITH CONNECTION POOLING
+════════════════════════════════════════════════════════════════
+
+Create file: lib/db/index.ts
+
+Use pg Pool connected to Drizzle ORM.
+Import all schema tables from lib/db/schema/index.ts
+
+Pool config:
+  connectionString: process.env.DATABASE_URL
+  max: 10
+  min: 2
+  idleTimeoutMillis: 600000
+  connectionTimeoutMillis: 5000
+  ssl: false  (Replit dev environment does not need SSL)
+
+Export: const db = drizzle(pool, { schema })
+Export: pool itself for the health check endpoint.
+Log a message on new connection.
+Log errors without crashing.
+
+════════════════════════════════════════════════════════════════
+PART 3: COMPLETE DATABASE SCHEMA — ALL 8 TABLE GROUPS
+════════════════════════════════════════════════════════════════
+
+Create file: lib/db/schema/index.ts
+
+One PostgreSQL database, all tables defined here.
+Every table that stores user data must have user_id
+referencing users.id so every query can be filtered
+to return only one person's records.
+
+First define these pgEnums:
+  userRoleEnum: 'user' | 'admin' | 'employer_admin'
+  transactionTypeEnum: 'EARN' | 'REDEEM' | 'REVERSAL' | 'RESET'
+  transactionSourceEnum: 'OPPORTUNITY' | 'MANUAL_RESET' | 'YEAR_RESET'
+  redemptionTypeEnum: 'PREMIUM' | 'HSA' | 'GIFTCARD' | 'COPAY'
+  redemptionStatusEnum: 'PENDING' | 'FIRST_CONFIRMED' | 'FINAL_CONFIRMED' | 'REVERSED'
+  opportunityCategoryEnum: 'CARE_SITE_ALTERNATIVE' | 'CARE_PROTOCOL' | 
+    'PREVENTATIVE_CARE' | 'CARE_QUALITY'
+  opportunityStatusEnum: 'AVAILABLE' | 'UPCOMING' | 'COMPLETED' | 'MISSED'
+  healthSystemTypeEnum: 'HOSPITAL' | 'CLINIC' | 'PHARMACY' | 'PROVIDER'
+  connectionStatusEnum: 'CONNECTED' | 'DISCONNECTED' | 'PENDING' | 'ERROR'
+  emrRecordTypeEnum: 'IMMUNIZATION' | 'VISIT' | 'LAB_RESULT' | 'MEDICATION'
+  deviceTypeEnum: 'BLOOD_PRESSURE' | 'GLUCOSE' | 'OXYGEN' | 'HEART_RATE' | 'STRESS'
+  connectionTypeEnum: 'BLUETOOTH' | 'WIFI' | 'NFC'
+  platformEnum: 'IOS' | 'ANDROID'
+  notificationTypeEnum: 'OPPORTUNITY_AVAILABLE' | 'OPPORTUNITY_EXPIRING' |
+    'REDEMPTION_WINDOW_OPEN' | 'REDEMPTION_WINDOW_CLOSING' |
+    'DEVICE_READING_ALERT' | 'POINTS_EARNED' | 'SYNC_COMPLETE'
+  auditOutcomeEnum: 'SUCCESS' | 'FAILURE' | 'BLOCKED'
+
+Then define these tables:
+
+TABLE GROUP 1 — USERS:
+
+  employers: 
+    id (uuid PK defaultRandom)
+    name (varchar 255 NOT NULL)
+    planType (varchar 100)
+    createdAt (timestamp defaultNow)
+
+  users:
+    id (uuid PK defaultRandom)
+    email (varchar 255 UNIQUE NOT NULL)
+    passwordHash (varchar 255 NOT NULL)
+    firstName (varchar 100 NOT NULL)
+    lastName (varchar 100 NOT NULL)
+    phone (varchar 20 nullable)
+    employerId (uuid FK→employers.id nullable)
+    role (userRoleEnum default 'user')
+    isActive (boolean default true)
+    createdAt (timestamp defaultNow)
+    lastLoginAt (timestamp nullable)
+    Add unique index on email
+
+  sessions:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id CASCADE DELETE NOT NULL)
+    jwtTokenHash (varchar 255 NOT NULL)
+    expiresAt (timestamp NOT NULL)
+    deviceInfo (jsonb nullable)
+    createdAt (timestamp defaultNow)
+    Add index on userId
+
+TABLE GROUP 2 — POINTS:
+
+  pointsAccounts:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id UNIQUE NOT NULL)
+    currentBalance (integer default 0 NOT NULL)
+    earnedThisYear (integer default 0 NOT NULL)
+    yearResetDate (date NOT NULL)
+    lastUpdatedAt (timestamp defaultNow)
+    Note: currentBalance can never exceed earnedThisYear — enforced in app layer
+
+  pointsTransactions:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    type (transactionTypeEnum NOT NULL)
+    amount (integer NOT NULL — positive for earn, negative for spend)
+    source (transactionSourceEnum NOT NULL)
+    opportunityId (uuid nullable)
+    redemptionId (uuid nullable)
+    description (text nullable)
+    balanceAfter (integer NOT NULL)
+    createdAt (timestamp defaultNow)
+    Add index on userId
+    Add index on createdAt
+
+  redemptionWindows:
+    id (uuid PK defaultRandom)
+    windowStart (date NOT NULL)
+    windowEnd (date NOT NULL)
+    isActive (boolean default false)
+    createdAt (timestamp defaultNow)
+
+  redemptions:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    type (redemptionTypeEnum NOT NULL)
+    pointsRedeemed (integer NOT NULL)
+    dollarValue (decimal 10,2 NOT NULL)
+    status (redemptionStatusEnum default 'PENDING')
+    storeUrl (text nullable)
+    redemptionWindowId (uuid FK→redemptionWindows.id nullable)
+    firstConfirmedAt (timestamp nullable)
+    finalConfirmedAt (timestamp nullable)
+    createdAt (timestamp defaultNow)
+    Add index on userId
+
+TABLE GROUP 3 — OPPORTUNITIES:
+
+  opportunities:
+    id (uuid PK defaultRandom)
+    title (varchar 255 NOT NULL)
+    description (text NOT NULL)
+    category (opportunityCategoryEnum NOT NULL)
+    subCategory (varchar 100 nullable)
+    pointsValue (integer NOT NULL)
+    logoUrl (text nullable)
+    isActive (boolean default true)
+    createdAt (timestamp defaultNow)
+
+  userOpportunities:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    opportunityId (uuid FK→opportunities.id NOT NULL)
+    status (opportunityStatusEnum default 'AVAILABLE')
+    assignedAt (timestamp defaultNow)
+    windowStart (date nullable)
+    windowEnd (date nullable)
+    completedAt (timestamp nullable)
+    missedAt (timestamp nullable)
+    pointsAwarded (integer nullable)
+    Add index on userId
+    Add index on status
+
+TABLE GROUP 4 — EMR (PHI — HIPAA Protected):
+
+  connectedHealthSystems:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    systemName (varchar 255 NOT NULL)
+    systemType (healthSystemTypeEnum NOT NULL)
+    npi (varchar 10 nullable)
+    fhirBaseUrl (text nullable)
+    connectionStatus (connectionStatusEnum default 'PENDING')
+    accessToken (text nullable)
+    tokenExpiresAt (timestamp nullable)
+    lastSyncedAt (timestamp nullable)
+    createdAt (timestamp defaultNow)
+    Add index on userId
+
+  emrRecords:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    healthSystemId (uuid FK→connectedHealthSystems.id NOT NULL)
+    recordType (emrRecordTypeEnum NOT NULL)
+    fhirResourceType (varchar 100 NOT NULL)
+    fhirResourceId (varchar 255 NOT NULL)
+    loincCode (varchar 50 nullable)
+    icd10Code (varchar 20 nullable)
+    cvxCode (varchar 10 nullable)
+    rawData (jsonb NOT NULL)
+    displayData (jsonb NOT NULL)
+    recordDate (date NOT NULL)
+    createdAt (timestamp defaultNow)
+    updatedAt (timestamp defaultNow)
+    Add index on userId
+    Add index on recordType
+
+TABLE GROUP 5 — DEVICES:
+
+  connectedDevices:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    deviceType (deviceTypeEnum NOT NULL)
+    deviceName (varchar 255 NOT NULL)
+    deviceModel (varchar 255 nullable)
+    manufacturer (varchar 255 nullable)
+    connectionType (connectionTypeEnum NOT NULL)
+    macAddress (varchar 50 nullable)
+    isActive (boolean default true)
+    lastConnectedAt (timestamp nullable)
+    createdAt (timestamp defaultNow)
+    Add index on userId
+
+  deviceReadings:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    deviceId (uuid FK→connectedDevices.id NOT NULL)
+    metricType (varchar 100 NOT NULL)
+    value (decimal 10,3 NOT NULL)
+    unit (varchar 50 NOT NULL)
+    recordedAt (timestamp NOT NULL)
+    syncedAt (timestamp defaultNow)
+    isFlagged (boolean default false)
+    Add index on userId
+    Add index on recordedAt
+
+TABLE GROUP 6 — INSURANCE:
+
+  insurancePlans:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    planName (varchar 255 NOT NULL)
+    monthlyPremium (decimal 10,2 NOT NULL)
+    employerId (uuid FK→employers.id nullable)
+    deductible (decimal 10,2 nullable)
+    effectiveDate (date NOT NULL)
+    expirationDate (date NOT NULL)
+    isActive (boolean default true)
+    lastUpdatedAt (timestamp defaultNow)
+
+  hsaAccounts:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id UNIQUE NOT NULL)
+    yearlyLimit (decimal 10,2 default '4400.00')
+    ytdContribution (decimal 10,2 default '0.00')
+    currentBalance (decimal 10,2 default '0.00')
+    lastUpdatedAt (timestamp defaultNow)
+    Note: ytdContribution can never exceed yearlyLimit — enforced in app
+
+  copayRecords:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    providerName (varchar 255 nullable)
+    amountDue (decimal 10,2 NOT NULL)
+    visitDate (date NOT NULL)
+    status (varchar 50 default 'PENDING')
+    emrRecordId (uuid nullable)
+    createdAt (timestamp defaultNow)
+
+TABLE GROUP 7 — NOTIFICATIONS:
+
+  notifications:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    type (notificationTypeEnum NOT NULL)
+    title (varchar 255 NOT NULL)
+    message (text NOT NULL)
+    deepLink (text nullable)
+    isRead (boolean default false)
+    createdAt (timestamp defaultNow)
+    readAt (timestamp nullable)
+    Add index on userId
+    Add index on isRead
+
+  pushTokens:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id NOT NULL)
+    token (text NOT NULL)
+    platform (platformEnum NOT NULL)
+    isActive (boolean default true)
+    createdAt (timestamp defaultNow)
+    Add index on userId
+
+  notificationPreferences:
+    id (uuid PK defaultRandom)
+    userId (uuid FK→users.id UNIQUE NOT NULL)
+    opportunitiesEnabled (boolean default true)
+    redemptionWindowEnabled (boolean default true)
+    deviceAlertsEnabled (boolean default true)
+    pointsUpdatesEnabled (boolean default true)
+
+TABLE GROUP 8 — AUDIT (HIPAA Required — INSERT ONLY — No UPDATE or DELETE ever):
+
+  auditLogs:
+    id (uuid PK defaultRandom)
+    userId (varchar 255 NOT NULL — plain varchar, NOT a FK
+      so audit records survive if user is deleted)
+    action (varchar 100 NOT NULL)
+    resourceType (varchar 100 NOT NULL)
+    resourceId (uuid nullable)
+    ipAddress (varchar 50 nullable)
+    deviceInfo (jsonb nullable)
+    outcome (auditOutcomeEnum NOT NULL)
+    failureReason (text nullable)
+    timestamp (timestamp defaultNow NOT NULL)
+    Add index on userId
+    Add index on timestamp
+    Add index on action
+
+Export all tables.
+Define these relations:
+  users has one employer
+  users has one pointsAccount
+  users has one hsaAccount
+  users has one notificationPreferences
+  users has many sessions, transactions, redemptions,
+    userOpportunities, connectedHealthSystems, emrRecords,
+    connectedDevices, deviceReadings, insurancePlans,
+    copayRecords, notifications, pushTokens
+  connectedHealthSystems has many emrRecords
+  connectedDevices has many deviceReadings
+  userOpportunities belongs to one opportunity
+
+════════════════════════════════════════════════════════════════
+PART 4: DRIZZLE CONFIG
+════════════════════════════════════════════════════════════════
+
+Create file: drizzle.config.ts at the monorepo root:
+
+  import type { Config } from 'drizzle-kit'
+  export default {
+    schema: './lib/db/schema/index.ts',
+    out: './lib/db/migrations',
+    dialect: 'postgresql',
+    dbCredentials: { url: process.env.DATABASE_URL! },
+  } satisfies Config
+
+════════════════════════════════════════════════════════════════
+PART 5: CREATE ALL DATABASE TABLES
+════════════════════════════════════════════════════════════════
+
+Run this command to create all tables in the Replit database:
+  npx drizzle-kit push
+
+If it asks to confirm any destructive changes, say yes.
+After it finishes, print the list of tables created.
+If it fails, try: npx drizzle-kit generate then npx drizzle-kit migrate
+
+════════════════════════════════════════════════════════════════
+PART 6: SEED THE DATABASE
+════════════════════════════════════════════════════════════════
+
+Create file: lib/db/seed.ts
+
+Seed this exact data (safe to run multiple times — 
+check before inserting, skip if already exists):
+
+OPPORTUNITIES TO EARN POINTS (users complete these):
+  1. title: 'Switch to Mail Delivery Pharmacy'
+     description: 'Get maintenance medications delivered instead of retail pickup.'
+     category: 'CARE_SITE_ALTERNATIVE'
+     subCategory: 'Mail Delivery'
+     pointsValue: 50, isActive: true
+
+  2. title: 'Schedule Annual Wellness Visit'
+     description: 'Book and complete your annual preventative care checkup.'
+     category: 'PREVENTATIVE_CARE'
+     pointsValue: 100, isActive: true
+
+  3. title: 'Complete Health Risk Assessment'
+     description: 'Fill out your annual health risk questionnaire.'
+     category: 'CARE_QUALITY'
+     pointsValue: 75, isActive: true
+
+  4. title: 'Choose a Primary Care Provider'
+     description: 'Establish care with an in-network primary care doctor.'
+     category: 'CARE_PROTOCOL'
+     pointsValue: 60, isActive: true
+
+  5. title: 'Generic Medication Switch'
+     description: 'Switch from brand-name to a generic equivalent.'
+     category: 'CARE_SITE_ALTERNATIVE'
+     pointsValue: 40, isActive: true
+
+FIRST REDEMPTION WINDOW:
+  windowStart: first day of current month
+  windowEnd: last day of current month
+  isActive: true
+  Skip if an active window already exists
+
+TEST EMPLOYER:
+  name: 'CareReward Test Employer'
+  planType: '2026 HDHP'
+  Skip if already exists
+
+TEST USER (only if TESTING_MODE env = 'true'):
+  email: 'test@carereward.com'
+  password: hash 'Test1234!' with bcrypt rounds 10
+  firstName: 'Test', lastName: 'User'
+  role: 'user', isActive: true
+  Skip if email already exists
+
+  After creating test user, also create:
+  - pointsAccounts: currentBalance=1000, earnedThisYear=1000,
+    yearResetDate=Dec 31 of current year
+  - hsaAccounts: yearlyLimit=4400, ytdContribution=0, currentBalance=0
+  - insurancePlans: planName='Aetna HDHP Gold',
+    monthlyPremium=450.00, deductible=1500.00,
+    effectiveDate=Jan 1 current year,
+    expirationDate=Dec 31 current year, isActive=true
+  - notificationPreferences: all enabled=true
+
+Add main() function, wrap every step in try/catch,
+log success or failure per step, log "Seed complete" at end.
+
+Add these scripts to root package.json:
+  "db:push": "drizzle-kit push"
+  "db:seed": "tsx lib/db/seed.ts"
+  "db:studio": "drizzle-kit studio"
+
+Then run: pnpm db:seed
+Print each step result as it runs.
+
+════════════════════════════════════════════════════════════════
+PART 7: AUTH MIDDLEWARE
+════════════════════════════════════════════════════════════════
+
+Create file: lib/api/middleware/auth.ts
+
+Extend Express Request type:
+  declare global { namespace Express { interface Request {
+    userId: string; userRole: string; } } }
+
+requireAuth middleware:
+  1. Read Authorization: Bearer {token} header
+  2. Verify with jwt.verify using process.env.JWT_SECRET
+  3. Attach req.userId and req.userRole
+  4. On TokenExpiredError: 401 with 'Your session has expired'
+  5. On any other error: 401 with 'Invalid token'
+  6. On success: write to auditLogs (non-blocking, fire and forget)
+
+generateToken(userId, role):
+  accessToken: 15 min expiry signed with JWT_SECRET
+  refreshToken: 7 day expiry signed with JWT_SECRET
+  Return both
+
+════════════════════════════════════════════════════════════════
+PART 8: API ROUTES
+════════════════════════════════════════════════════════════════
+
+Create file: lib/api/routes/auth.ts
+
+POST /api/auth/register
+  Body: { email, password, firstName, lastName }
+  Hash password with bcrypt rounds 10
+  Insert user, pointsAccounts (balance 0), notificationPreferences
+  Return { user: { id, email, firstName, lastName }, accessToken, refreshToken }
+  Return 409 if email already taken
+
+POST /api/auth/login
+  Body: { email, password }
+  Compare password with bcrypt
+  Update lastLoginAt
+  Return { user, accessToken, refreshToken }
+  Return 401 if credentials wrong
+
+POST /api/auth/logout (requireAuth)
+  Return { success: true }
+
+─────────────────────────────────────────────────────────
+
+Create file: lib/api/routes/userContext.ts
+
+GET /api/user/context (requireAuth)
+  Run all queries in Promise.all() in parallel:
+    - user profile (id, firstName, lastName, email)
+    - points account + last 5 transactions
+    - opportunity counts grouped by status
+    - connected health systems
+    - active connected devices
+    - active insurance plan
+    - HSA account
+    - active redemption window
+    - unread notifications (limit 10)
+  Build and return userContext object.
+  Include meta.queryTimeMs field.
+
+GET /api/user/opportunities (requireAuth)
+  Support ?status= filter
+  Join userOpportunities with opportunities
+  Return full list with opportunity details
+
+GET /api/user/emr/:recordType (requireAuth)
+  recordType: IMMUNIZATION | VISIT | LAB_RESULT
+  Join with connectedHealthSystems for system name
+  Write PHI access to auditLogs
+
+─────────────────────────────────────────────────────────
+
+Create file: lib/api/routes/points.ts
+
+All routes use requireAuth.
+
+GET /api/points/balance
+  Return pointsAccounts + last 20 transactions
+
+POST /api/points/allocate
+  Body: { type, pointsAmount?, percentage?, storeUrl? }
+  Calculate points from percentage OR direct amount
+  Validate: type valid, balance sufficient,
+    for HSA: ytdContribution + amount <= yearlyLimit ($4,400),
+    active redemption window exists
+  Create PENDING redemption — do NOT deduct points yet
+  Return { redemptionId, summary: { type, pointsToRedeem, 
+    dollarValue, currentBalance, balanceAfterRedemption } }
+
+POST /api/points/confirm/first
+  Body: { redemptionId }
+  Verify redemption is PENDING and belongs to this user
+  Update status to FIRST_CONFIRMED
+  Return { redemptionId, nextStep: 'FINAL_ACKNOWLEDGMENT' }
+
+POST /api/points/confirm/final
+  Body: { redemptionId }
+  Verify FIRST_CONFIRMED and belongs to this user
+  Deduct points from pointsAccounts
+  Insert REDEEM row in pointsTransactions with balanceAfter
+  Update redemption to FINAL_CONFIRMED
+  For HSA: add to ytdContribution in hsaAccounts
+  Insert POINTS_EARNED notification
+  Write to auditLogs
+  Return { success: true, newBalance, pointsRedeemed, redemptionType }
+
+POST /api/points/reset-test
+  Only if process.env.TESTING_MODE === 'true', else 403
+  Set currentBalance=1000, earnedThisYear=1000
+  Insert RESET transaction
+  Return { success: true, newBalance: 1000 }
+
+─────────────────────────────────────────────────────────
+
+Create file: lib/api/routes/insurance.ts
+
+POST /api/admin/insurance/import (requireAuth)
+  Accept multipart/form-data with:
+    file (JSON or CSV)
+    fileType ('json' or 'csv')
+    For CSV: employerName, effectiveDate, expirationDate, planYear
+  
+  For each employee row:
+    Find user by email in users table
+    If not found: add to errors array, skip
+    Deactivate existing active plans for that userId
+    Insert new insurancePlans row
+    If hsaEligible: upsert hsaAccounts row
+  Return { success, totalRecords, imported, skipped, errors[] }
+
+GET /api/admin/insurance/template/json
+  Return a filled example JSON with one employee
+
+GET /api/admin/insurance/template/csv
+  Return CSV with headers and one example row
+
+════════════════════════════════════════════════════════════════
+PART 9: BACKGROUND JOB SCHEDULER
+════════════════════════════════════════════════════════════════
+
+Create file: lib/jobs/scheduler.ts using node-cron.
+
+JOB 1 — Nightly at 2 AM: Opportunities Engine
+  For every active user:
+    Mark userOpportunities as MISSED where windowEnd < today
+      and status is still AVAILABLE
+    Find opportunities not yet assigned to this user
+    Assign them with 30-day window
+    Insert OPPORTUNITY_AVAILABLE notification for new ones
+
+JOB 2 — Monthly on 1st at midnight: Redemption Window
+  Set all existing windows isActive=false
+  Insert new window: windowStart=first day of month,
+    windowEnd=last day of month, isActive=true
+  Insert REDEMPTION_WINDOW_OPEN notification for all active users
+
+JOB 3 — Daily at 9 AM: Closing Warning
+  Check if active window ends tomorrow
+  If yes: insert REDEMPTION_WINDOW_CLOSING notification for all users
+
+JOB 4 — Jan 1 at midnight: Annual Points Reset
+  For every user:
+    Log a RESET transaction for their current balance
+    Set currentBalance=0, earnedThisYear=0
+  Set all hsaAccounts ytdContribution='0.00'
+
+Export startScheduler() that starts all 4 jobs and
+logs which jobs are running.
+
+════════════════════════════════════════════════════════════════
+PART 10: MAIN EXPRESS SERVER
+════════════════════════════════════════════════════════════════
+
+Update the main server entry point.
+
+Add middleware in this order:
+  1. helmet()
+  2. cors() — allow process.env.ALLOWED_ORIGINS or localhost:8081
+  3. compression() — threshold 1024, level 6
+  4. express.json({ limit: '1mb' })
+
+Mount routes:
+  /api/auth → authRouter
+  /api/user → userContextRouter
+  /api/points → pointsRouter
+  /api/admin → insuranceRouter
+
+GET /api/health (no auth):
+  Try: pool.query('SELECT 1') — set db=true on success
+  Return: { status: 'healthy'|'degraded'|'unhealthy', 
+    db: boolean, responseTimeMs: number }
+  Note: no Redis check since we are not using Redis
+
+Call startScheduler() when server starts.
+
+On SIGTERM: close pool gracefully then process.exit(0)
+
+════════════════════════════════════════════════════════════════
+PART 11: VERIFY EVERYTHING WORKS
+════════════════════════════════════════════════════════════════
+
+After implementing all parts, do these checks in order:
+
+1. Run: npx drizzle-kit push
+   Confirm all tables exist. Print table names.
+
+2. Run: pnpm db:seed
+   Confirm seed output shows each step as success.
+
+3. Start the server. Call GET /api/health
+   Verify: { status: "healthy", db: true }
+
+4. Call POST /api/auth/login
+   Body: { email: "test@carereward.com", password: "Test1234!" }
+   Verify you receive accessToken and user object.
+
+5. Call GET /api/user/context with that token
+   Verify response includes points.balance of 1000
+   and opportunities array is not empty.
+
+6. Call POST /api/points/reset-test with that token
+   Verify { success: true, newBalance: 1000 }
+
+Fix any failures before completing.
+
+════════════════════════════════════════════════════════════════
+REPLIT-SPECIFIC NOTES — READ THESE
+════════════════════════════════════════════════════════════════
+
+1. No Redis in this implementation. All data comes directly
+   from PostgreSQL. Do not install ioredis or @upstash/redis.
+   Performance is fine without it at this stage.
+
+2. This is a pnpm monorepo. Install mobile-only packages
+   (react-native-mmkv etc) from inside artifacts/mobile.
+   Install backend packages at the monorepo root.
+
+3. DATABASE_URL is already in Replit Secrets. Never hardcode it.
+
+4. Set ssl: false on the pg Pool — Replit dev does not need SSL.
+
+5. Run drizzle-kit push from the monorepo root, not from inside
+   a subfolder.
+
+6. The seed file must be safe to run multiple times.
+   Always check before inserting — skip if already exists.
+
+7. tsx is required to run TypeScript files directly.
+   Use tsx lib/db/seed.ts not ts-node.
