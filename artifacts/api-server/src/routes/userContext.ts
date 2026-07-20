@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { and, count, eq, isNull, or } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   users,
@@ -16,7 +16,6 @@ import {
   auditLogs,
 } from "@workspace/db/schema";
 import { requireAuth } from "../middlewares/auth.js";
-import { desc, limit as drizzleLimit } from "drizzle-orm";
 
 const router = Router();
 

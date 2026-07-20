@@ -1,1 +1,3 @@
 - [metro-runtime hoisting](metro-runtime-hoisting.md) — expo/cli crashes with 'Cannot find module metro-runtime/package.json' if metro* packages aren't hoisted in .npmrc
+- [db-lib-typecheck-order](db-lib-typecheck-order.md) — always run typecheck:libs before leaf artifact typecheck; stale lib .d.ts causes false "no exported member" on @workspace/db/schema
+- [seed-script-deps](seed-script-deps.md) — seed.ts runs from workspace root via tsx; any package it imports must be in lib/db/package.json, not just api-server
