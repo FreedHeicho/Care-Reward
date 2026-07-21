@@ -11,12 +11,30 @@ import { pool } from "@workspace/db";
 const app: Express = express();
 
 app.use(helmet());
+const ALLOWED_ORIGIN_PATTERNS = [
+  /^https?:\/\/localhost(:\d+)?$/,
+  /\.replit\.dev$/,
+  /\.replit\.app$/,
+  /\.riker\.replit\.dev$/,
+];
+
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return true;
+  if (process.env.ALLOWED_ORIGINS) {
+    return process.env.ALLOWED_ORIGINS.split(",").includes(origin);
+  }
+  return ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin));
+}
+
 app.use(
   cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(",") ?? [
-      "http://localhost:8081",
-      "http://localhost:3000",
-    ],
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin not allowed — ${origin}`));
+      }
+    },
     credentials: true,
   }),
 );
