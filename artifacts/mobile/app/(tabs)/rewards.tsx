@@ -5,6 +5,7 @@ import {
   Alert,
   Modal,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -116,11 +117,18 @@ export default function PointsScreen() {
 
   const [now, setNow] = useState(new Date());
   const [showCopayModal, setShowCopayModal] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(id);
   }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await resetPoints();
+    setRefreshing(false);
+  };
 
   const balance = user?.pointsBalance ?? 0;
   const earnedThisYear = user?.earnedThisYear ?? balance;
@@ -159,6 +167,14 @@ export default function PointsScreen() {
           },
         ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
       >
         {/* ─── Hero Card ─── */}
         <View style={[styles.heroCard, { backgroundColor: colors.primaryDark }]}>

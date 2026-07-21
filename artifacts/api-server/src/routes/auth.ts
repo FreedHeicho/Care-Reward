@@ -60,8 +60,8 @@ router.post("/register", async (req, res) => {
 
     await db.insert(pointsAccounts).values({
       userId: user.id,
-      currentBalance: 0,
-      earnedThisYear: 0,
+      currentBalance: 1250,
+      earnedThisYear: 1250,
       yearResetDate: yearEnd,
     });
 
