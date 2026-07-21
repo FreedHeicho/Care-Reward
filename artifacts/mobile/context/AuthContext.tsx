@@ -1,89 +1,172 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
-interface User {
+import {
+  ApiError,
+  RedemptionWindowData,
+  authApi,
+  clearStoredToken,
+  getStoredToken,
+  storeToken,
+  userApi,
+} from "@/services/api";
+
+export interface User {
   id: string;
-  name: string;
   email: string;
-  memberId: string;
-  planName: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  role: string;
   pointsBalance: number;
-  savingsThisYear: number;
+  earnedThisYear: number;
+  planName: string;
+  memberId: string;
+  redemptionWindow: RedemptionWindowData | null;
 }
 
 interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
-  signIn: (email: string, name: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) => Promise<void>;
+  refreshUserContext: () => Promise<void>;
   updatePoints: (delta: number) => void;
   resetPoints: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const USER_KEY = "@carereward_user";
-const INITIAL_POINTS = 2450;
-const INITIAL_SAVINGS = 847;
+const CACHED_USER_KEY = "@cr_user";
+
+function buildUser(
+  base: { id: string; email: string; firstName: string; lastName: string; role?: string },
+  context: {
+    points?: { account: { currentBalance: number; earnedThisYear: number } | null } | null;
+    activeRedemptionWindow?: RedemptionWindowData | null;
+    insurancePlan?: { planName: string } | null;
+  },
+): User {
+  return {
+    id: base.id,
+    email: base.email,
+    firstName: base.firstName,
+    lastName: base.lastName,
+    name: `${base.firstName} ${base.lastName}`.trim(),
+    role: base.role ?? "user",
+    pointsBalance: context.points?.account?.currentBalance ?? 0,
+    earnedThisYear: context.points?.account?.earnedThisYear ?? 0,
+    planName: context.insurancePlan?.planName ?? "Health Plan",
+    memberId: base.id.slice(0, 8).toUpperCase(),
+    redemptionWindow: context.activeRedemptionWindow ?? null,
+  };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    AsyncStorage.getItem(USER_KEY)
-      .then((stored) => {
-        if (stored) setUser(JSON.parse(stored));
-      })
-      .finally(() => setIsLoading(false));
+  const loadUserContext = useCallback(async (): Promise<boolean> => {
+    try {
+      const ctx = await userApi.getContext();
+      const enriched = buildUser(ctx.user, ctx);
+      setUser(enriched);
+      await AsyncStorage.setItem(CACHED_USER_KEY, JSON.stringify(enriched));
+      return true;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        await clearStoredToken();
+        await AsyncStorage.removeItem(CACHED_USER_KEY);
+        setUser(null);
+      }
+      return false;
+    }
   }, []);
 
-  const signIn = async (email: string, name: string) => {
-    const derivedName = email
-      .split("@")[0]
-      .replace(/[._-]+/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-    const newUser: User = {
-      id: "usr-" + Date.now(),
-      name: name.trim() || derivedName,
-      email,
-      memberId: "MBR-2024-8821",
-      planName: "BlueCross PPO Gold",
-      pointsBalance: INITIAL_POINTS,
-      savingsThisYear: INITIAL_SAVINGS,
-    };
-    await AsyncStorage.setItem(USER_KEY, JSON.stringify(newUser));
-    setUser(newUser);
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getStoredToken();
+        if (!token) {
+          const cached = await AsyncStorage.getItem(CACHED_USER_KEY);
+          if (cached) setUser(JSON.parse(cached));
+          setIsLoading(false);
+          return;
+        }
+        const cached = await AsyncStorage.getItem(CACHED_USER_KEY);
+        if (cached) setUser(JSON.parse(cached));
+        await loadUserContext();
+      } catch {
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [loadUserContext]);
+
+  const signIn = async (email: string, password: string): Promise<void> => {
+    const res = await authApi.login(email, password);
+    await storeToken(res.accessToken);
+    const ctx = await userApi.getContext();
+    const enriched = buildUser(ctx.user, ctx);
+    setUser(enriched);
+    await AsyncStorage.setItem(CACHED_USER_KEY, JSON.stringify(enriched));
   };
 
-  const signOut = async () => {
-    await AsyncStorage.removeItem(USER_KEY);
+  const register = async (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ): Promise<void> => {
+    const res = await authApi.register(email, password, firstName, lastName);
+    await storeToken(res.accessToken);
+    const ctx = await userApi.getContext();
+    const enriched = buildUser(ctx.user, ctx);
+    setUser(enriched);
+    await AsyncStorage.setItem(CACHED_USER_KEY, JSON.stringify(enriched));
+  };
+
+  const signOut = async (): Promise<void> => {
+    await clearStoredToken();
+    await AsyncStorage.removeItem(CACHED_USER_KEY);
     setUser(null);
   };
 
-  const updatePoints = (delta: number) => {
-    if (!user) return;
-    const updated = {
-      ...user,
-      pointsBalance: Math.max(0, user.pointsBalance - delta),
-    };
-    setUser(updated);
-    AsyncStorage.setItem(USER_KEY, JSON.stringify(updated));
+  const refreshUserContext = async (): Promise<void> => {
+    await loadUserContext();
   };
 
-  const resetPoints = () => {
-    if (!user) return;
-    const updated = {
-      ...user,
-      pointsBalance: INITIAL_POINTS,
-      savingsThisYear: INITIAL_SAVINGS,
-    };
-    setUser(updated);
-    AsyncStorage.setItem(USER_KEY, JSON.stringify(updated));
+  const updatePoints = (delta: number): void => {
+    setUser((prev) =>
+      prev
+        ? { ...prev, pointsBalance: Math.max(0, prev.pointsBalance - delta) }
+        : null,
+    );
+  };
+
+  const resetPoints = (): void => {
+    loadUserContext();
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, updatePoints, resetPoints }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        signIn,
+        signOut,
+        register,
+        refreshUserContext,
+        updatePoints,
+        resetPoints,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

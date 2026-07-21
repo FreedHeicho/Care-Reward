@@ -15,7 +15,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
-import { MOCK_USER_PLAN } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
 interface SettingRowProps {
@@ -29,7 +28,16 @@ interface SettingRowProps {
   danger?: boolean;
 }
 
-function SettingRow({ icon, label, value, toggle, toggleValue, onToggle, onPress, danger }: SettingRowProps) {
+function SettingRow({
+  icon,
+  label,
+  value,
+  toggle,
+  toggleValue,
+  onToggle,
+  onPress,
+  danger,
+}: SettingRowProps) {
   const colors = useColors();
   return (
     <TouchableOpacity
@@ -38,14 +46,30 @@ function SettingRow({ icon, label, value, toggle, toggleValue, onToggle, onPress
       disabled={toggle}
       activeOpacity={0.7}
     >
-      <View style={[styles.settingIcon, { backgroundColor: danger ? "#EF444415" : colors.primary + "15" }]}>
-        <Feather name={icon} size={16} color={danger ? "#EF4444" : colors.primary} />
+      <View
+        style={[
+          styles.settingIcon,
+          { backgroundColor: danger ? "#EF444415" : colors.primary + "15" },
+        ]}
+      >
+        <Feather
+          name={icon}
+          size={16}
+          color={danger ? "#EF4444" : colors.primary}
+        />
       </View>
-      <Text style={[styles.settingLabel, { color: danger ? "#EF4444" : colors.foreground }]}>
+      <Text
+        style={[
+          styles.settingLabel,
+          { color: danger ? "#EF4444" : colors.foreground },
+        ]}
+      >
         {label}
       </Text>
       {value && (
-        <Text style={[styles.settingValue, { color: colors.mutedForeground }]}>{value}</Text>
+        <Text style={[styles.settingValue, { color: colors.mutedForeground }]}>
+          {value}
+        </Text>
       )}
       {toggle ? (
         <Switch
@@ -89,54 +113,109 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
-    : "?";
+  const displayName = user?.name ?? "Member";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  const planName = user?.planName ?? "Health Plan";
+  const memberId = user?.memberId ?? "—";
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
-          { paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0) + 100 },
+          {
+            paddingBottom:
+              insets.bottom + (Platform.OS === "web" ? 34 : 0) + 100,
+          },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View
+          style={[
+            styles.profileCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
           <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: colors.foreground }]}>{user?.name ?? "Member"}</Text>
-            <Text style={[styles.profileEmail, { color: colors.mutedForeground }]}>{user?.email ?? ""}</Text>
+            <Text style={[styles.profileName, { color: colors.foreground }]}>
+              {displayName}
+            </Text>
+            <Text
+              style={[styles.profileEmail, { color: colors.mutedForeground }]}
+            >
+              {user?.email ?? ""}
+            </Text>
           </View>
-          <View style={[styles.memberBadge, { backgroundColor: colors.secondary }]}>
-            <Text style={[styles.memberBadgeText, { color: colors.secondaryForeground }]}>
+          <View
+            style={[
+              styles.memberBadge,
+              { backgroundColor: colors.secondary },
+            ]}
+          >
+            <Text
+              style={[
+                styles.memberBadgeText,
+                { color: colors.secondaryForeground },
+              ]}
+            >
               Member
             </Text>
           </View>
         </View>
 
-        <View style={[styles.planCard, { backgroundColor: colors.primary + "15", borderColor: colors.primary + "30" }]}>
+        <View
+          style={[
+            styles.planCard,
+            {
+              backgroundColor: colors.primary + "15",
+              borderColor: colors.primary + "30",
+            },
+          ]}
+        >
           <View style={styles.planRow}>
             <Feather name="shield" size={16} color={colors.primary} />
-            <Text style={[styles.planName, { color: colors.primary }]}>{MOCK_USER_PLAN.planName}</Text>
+            <Text style={[styles.planName, { color: colors.primary }]}>
+              {planName}
+            </Text>
           </View>
           <Text style={[styles.memberId, { color: colors.mutedForeground }]}>
-            Member ID: {user?.memberId ?? MOCK_USER_PLAN.memberId}
+            Member ID: {memberId}
           </Text>
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>ACCOUNT</Text>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+            ACCOUNT
+          </Text>
           <SettingRow icon="user" label="Personal Information" onPress={() => {}} />
           <SettingRow icon="credit-card" label="Plan & Coverage" onPress={() => {}} />
           <SettingRow icon="file-text" label="Explanation of Benefits" onPress={() => {}} />
           <SettingRow icon="download" label="Download My Data" onPress={() => {}} />
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>NOTIFICATIONS</Text>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+            NOTIFICATIONS
+          </Text>
           <SettingRow
             icon="bell"
             label="Push Notifications"
@@ -152,31 +231,88 @@ export default function ProfileScreen() {
           />
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>MEMBER CARD</Text>
-          <SettingRow icon="credit-card" label="View Member ID Card" onPress={() => router.push("/member-card" as never)} />
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+            MEMBER CARD
+          </Text>
+          <SettingRow
+            icon="credit-card"
+            label="View Member ID Card"
+            onPress={() => router.push("/member-card" as never)}
+          />
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>HEALTH RECORDS</Text>
-          <SettingRow icon="search" label="Find a Provider" onPress={() => router.push("/find-provider" as never)} />
-          <SettingRow icon="activity" label="Connect EMR / Health Records" onPress={() => router.push("/emr-access" as never)} />
-          <SettingRow icon="plus-circle" label="Log Upcoming Care" onPress={() => router.push("/log-upcoming-care" as never)} />
-          <SettingRow icon="award" label="How to Earn Points" onPress={() => router.push("/how-to-earn" as never)} />
-          <SettingRow icon="heart" label="Health Assessment" onPress={() => router.push("/health-assessment" as never)} />
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+            HEALTH RECORDS
+          </Text>
+          <SettingRow
+            icon="search"
+            label="Find a Provider"
+            onPress={() => router.push("/find-provider" as never)}
+          />
+          <SettingRow
+            icon="activity"
+            label="Connect EMR / Health Records"
+            onPress={() => router.push("/emr-access" as never)}
+          />
+          <SettingRow
+            icon="plus-circle"
+            label="Log Upcoming Care"
+            onPress={() => router.push("/log-upcoming-care" as never)}
+          />
+          <SettingRow
+            icon="award"
+            label="How to Earn Points"
+            onPress={() => router.push("/how-to-earn" as never)}
+          />
+          <SettingRow
+            icon="heart"
+            label="Health Assessment"
+            onPress={() => router.push("/health-assessment" as never)}
+          />
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>SUPPORT</Text>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+            SUPPORT
+          </Text>
           <SettingRow icon="help-circle" label="Help Center" onPress={() => {}} />
           <SettingRow icon="message-circle" label="Contact Support" onPress={() => {}} />
           <SettingRow icon="lock" label="Privacy Policy" onPress={() => {}} />
           <SettingRow icon="info" label="Terms of Service" onPress={() => {}} />
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>ACCOUNT ACTIONS</Text>
-          <SettingRow icon="log-out" label="Sign Out" onPress={handleSignOut} danger />
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+            ACCOUNT ACTIONS
+          </Text>
+          <SettingRow
+            icon="log-out"
+            label="Sign Out"
+            onPress={handleSignOut}
+            danger
+          />
         </View>
 
         <Text style={[styles.version, { color: colors.mutedForeground }]}>
@@ -211,21 +347,11 @@ const styles = StyleSheet.create({
   profileEmail: { fontSize: 13, marginTop: 2 },
   memberBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   memberBadgeText: { fontSize: 12, fontWeight: "600" },
-  planCard: {
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    gap: 4,
-  },
+  planCard: { borderRadius: 14, padding: 14, borderWidth: 1, gap: 4 },
   planRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   planName: { fontSize: 14, fontWeight: "600" },
   memberId: { fontSize: 13, marginLeft: 24 },
-  section: {
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: "hidden",
-    paddingTop: 4,
-  },
+  section: { borderRadius: 16, borderWidth: 1, overflow: "hidden", paddingTop: 4 },
   sectionTitle: {
     fontSize: 11,
     fontWeight: "600",

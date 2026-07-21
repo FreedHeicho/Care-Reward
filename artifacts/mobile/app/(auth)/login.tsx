@@ -29,7 +29,6 @@ export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -42,13 +41,22 @@ export default function LoginScreen() {
       setError("Please enter your email address");
       return;
     }
+    if (!password) {
+      setError("Please enter your password");
+      return;
+    }
     setError("");
     setLoading(true);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await new Promise((r) => setTimeout(r, 800));
-    await signIn(email, name);
-    setLoading(false);
-    router.replace("/(tabs)");
+    try {
+      await signIn(email.trim().toLowerCase(), password);
+      router.replace("/(tabs)");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Sign in failed";
+      setError(msg === "HTTP 401" || msg.includes("401") ? "Invalid email or password" : msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -95,27 +103,6 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.form}>
-            <View style={styles.field}>
-              <Text style={[styles.label, { color: colors.foreground }]}>Your Name</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  { borderColor: colors.border, backgroundColor: colors.card },
-                ]}
-              >
-                <Feather name="user" size={18} color={colors.mutedForeground} />
-                <TextInput
-                  style={[styles.input, { color: colors.foreground }]}
-                  value={name}
-                  onChangeText={setName}
-                  placeholder="First and last name"
-                  placeholderTextColor={colors.mutedForeground}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                />
-              </View>
-            </View>
-
             <View style={styles.field}>
               <Text style={[styles.label, { color: colors.foreground }]}>Email</Text>
               <View
@@ -235,15 +222,6 @@ const styles = StyleSheet.create({
   logoRow: { alignItems: "flex-start", paddingVertical: 4 },
   logoImage: { width: 200, height: 52 },
   logoFallback: { fontSize: 22, fontWeight: "800", height: 52, lineHeight: 52 },
-  logoIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoTitle: { fontSize: 22, fontWeight: "800", letterSpacing: -0.5 },
-  logoSub: { fontSize: 12 },
   hero: { gap: 8 },
   headline: { fontSize: 32, fontWeight: "800", letterSpacing: -0.5 },
   subheadline: { fontSize: 16, lineHeight: 24 },

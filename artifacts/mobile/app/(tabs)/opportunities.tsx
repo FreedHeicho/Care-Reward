@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   ScrollView,
   StyleSheet,
@@ -18,32 +19,80 @@ import {
   OpportunityFilterCategory,
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
+import { ApiOpportunity, userApi } from "@/services/api";
 
 type FilterKey = Exclude<OpportunityFilterCategory, "mail-delivery"> | null;
 
-const FILTER_OPTIONS: { key: Exclude<OpportunityFilterCategory, "mail-delivery">; label: string }[] = [
+const FILTER_OPTIONS: {
+  key: Exclude<OpportunityFilterCategory, "mail-delivery">;
+  label: string;
+}[] = [
   { key: "care-site-alternative", label: "Care Site Alternative" },
-  { key: "care-protocol",         label: "Care Protocol" },
-  { key: "preventative-care",     label: "Preventative Care" },
-  { key: "care-quality",          label: "Care Quality" },
+  { key: "care-protocol", label: "Care Protocol" },
+  { key: "preventative-care", label: "Preventative Care" },
+  { key: "care-quality", label: "Care Quality" },
 ];
 
 const ICON_EMOJI: Record<string, string> = {
-  pill:            "💊",
-  package:         "📦",
-  calendar:        "📅",
-  medication:      "💊",
-  preventive:      "🛡️",
+  pill: "💊",
+  package: "📦",
+  calendar: "📅",
+  medication: "💊",
+  preventive: "🛡️",
   "mail-delivery": "📦",
-  specialist:      "🩺",
-  upcoming:        "📅",
+  specialist: "🩺",
+  upcoming: "📅",
+  CARE_SITE_ALTERNATIVE: "💊",
+  PREVENTATIVE_CARE: "🛡️",
+  CARE_QUALITY: "📋",
+  CARE_PROTOCOL: "🩺",
 };
+
+const CATEGORY_TO_FILTER: Record<string, OpportunityFilterCategory> = {
+  CARE_SITE_ALTERNATIVE: "care-site-alternative",
+  PREVENTATIVE_CARE: "preventative-care",
+  CARE_QUALITY: "care-quality",
+  CARE_PROTOCOL: "care-protocol",
+  MAIL_DELIVERY: "mail-delivery",
+};
+
+const CATEGORY_TO_GROUP: Record<string, string> = {
+  CARE_SITE_ALTERNATIVE: "Care Site Alternative",
+  PREVENTATIVE_CARE: "Preventative Care",
+  CARE_QUALITY: "Care Quality",
+  CARE_PROTOCOL: "Care Protocol",
+  MAIL_DELIVERY: "Mail Delivery Opportunities",
+};
+
+function mapApiOpportunity(api: ApiOpportunity): Opportunity {
+  const opp = api.opportunity;
+  return {
+    id: api.id,
+    title: opp.title,
+    description: opp.description,
+    category: "preventive",
+    filterCategory: CATEGORY_TO_FILTER[opp.category] ?? "preventative-care",
+    group: CATEGORY_TO_GROUP[opp.category] ?? "Opportunities",
+    points: opp.pointsValue,
+    pointsMonthly: 0,
+    savings: 0,
+    actionLabel: "How To Earn",
+    frequency: "one-time",
+    icon: "calendar",
+    iconBg: "#EDE9FE",
+    benefits: [opp.description],
+    status: "active",
+    priority: "medium",
+    steps: ["Ask your doctor", "Complete the action", "Claim your points"],
+    why: opp.description,
+  };
+}
 
 function OppCard({ opp }: { opp: Opportunity }) {
   const colors = useColors();
   const router = useRouter();
-  const barColor = opp.filterCategory === "care-site-alternative" ? "#9333EA"
-    : "#3B82F6";
+  const barColor =
+    opp.filterCategory === "care-site-alternative" ? "#9333EA" : "#3B82F6";
 
   const icon = opp.icon ? ICON_EMOJI[opp.icon] ?? "💊" : ICON_EMOJI[opp.category] ?? "💊";
   const bg = opp.iconBg ?? "#EDE9FE";
@@ -51,9 +100,6 @@ function OppCard({ opp }: { opp: Opportunity }) {
   const handleAction = () => {
     router.push(`/opportunity-variants/${opp.id}` as never);
   };
-
-  const isOneTime = opp.frequency === "one-time";
-  const isMonthly = opp.pointsMonthly > 0;
 
   return (
     <TouchableOpacity
@@ -68,10 +114,16 @@ function OppCard({ opp }: { opp: Opportunity }) {
             <Text style={styles.cardEmoji}>{icon}</Text>
           </View>
           <View style={styles.cardTitles}>
-            <Text style={[styles.cardTitle, { color: colors.foreground }]} numberOfLines={2}>
+            <Text
+              style={[styles.cardTitle, { color: colors.foreground }]}
+              numberOfLines={2}
+            >
               {opp.title}
             </Text>
-            <Text style={[styles.cardSub, { color: colors.mutedForeground }]} numberOfLines={2}>
+            <Text
+              style={[styles.cardSub, { color: colors.mutedForeground }]}
+              numberOfLines={2}
+            >
               {opp.description}
             </Text>
           </View>
@@ -80,7 +132,7 @@ function OppCard({ opp }: { opp: Opportunity }) {
         <View style={styles.earnRow}>
           <View style={[styles.earnBadge, { backgroundColor: "#05C5B6" }]}>
             <Text style={styles.earnBadgeText}>
-              {isMonthly
+              {opp.pointsMonthly > 0
                 ? `${opp.points} points + ${opp.pointsMonthly} points monthly`
                 : `Earn ${opp.points} points`}
             </Text>
@@ -120,6 +172,28 @@ export default function OpportunitiesScreen() {
 
   const [filter, setFilter] = useState<FilterKey>(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>(MOCK_OPPORTUNITIES);
+  const [loadingOpps, setLoadingOpps] = useState(true);
+
+  const fetchOpportunities = useCallback(async () => {
+    try {
+      setLoadingOpps(true);
+      const apiOpps = await userApi.getOpportunities();
+      if (apiOpps && apiOpps.length > 0) {
+        setOpportunities(apiOpps.map(mapApiOpportunity));
+      } else {
+        setOpportunities(MOCK_OPPORTUNITIES);
+      }
+    } catch {
+      setOpportunities(MOCK_OPPORTUNITIES);
+    } finally {
+      setLoadingOpps(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOpportunities();
+  }, [fetchOpportunities]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -138,15 +212,15 @@ export default function OpportunitiesScreen() {
 
   const filtered = useMemo(() => {
     if (filter === null) {
-      return MOCK_OPPORTUNITIES.filter((o) => !!o.filterCategory);
+      return opportunities.filter((o) => !!o.filterCategory);
     }
     if (filter === "care-site-alternative") {
-      return MOCK_OPPORTUNITIES.filter(
-        (o) => o.filterCategory === "care-site-alternative"
+      return opportunities.filter(
+        (o) => o.filterCategory === "care-site-alternative",
       );
     }
-    return MOCK_OPPORTUNITIES.filter((o) => o.filterCategory === filter);
-  }, [filter]);
+    return opportunities.filter((o) => o.filterCategory === filter);
+  }, [filter, opportunities]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, Opportunity[]>();
@@ -189,26 +263,43 @@ export default function OpportunitiesScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
-          { paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0) + 100 },
+          {
+            paddingBottom:
+              insets.bottom + (Platform.OS === "web" ? 34 : 0) + 100,
+          },
         ]}
         showsVerticalScrollIndicator={false}
       >
         <TouchableOpacity
-          style={[styles.missedBanner, { backgroundColor: "#FEE2E2", borderLeftColor: "#DC2626" }]}
+          style={[
+            styles.missedBanner,
+            { backgroundColor: "#FEE2E2", borderLeftColor: "#DC2626" },
+          ]}
           onPress={() => router.push("/missed-opportunities" as never)}
         >
           <Feather name="bell" size={18} color="#DC2626" />
           <Text style={[styles.missedText, { color: colors.foreground }]}>
-            You have {MISSED_OPPORTUNITIES_COUNT} missed opportunities. Review them to learn and improve your health journey.
+            You have {MISSED_OPPORTUNITIES_COUNT} missed opportunities. Review
+            them to learn and improve your health journey.
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.filterDropdown, { backgroundColor: colors.card, borderColor: colors.border }]}
+          style={[
+            styles.filterDropdown,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
           onPress={() => setShowDropdown((v) => !v)}
           activeOpacity={0.8}
         >
-          <Text style={[styles.filterDropdownText, { color: activeLabel ? colors.primary : colors.foreground }]}>
+          <Text
+            style={[
+              styles.filterDropdownText,
+              {
+                color: activeLabel ? colors.primary : colors.foreground,
+              },
+            ]}
+          >
             {activeLabel ?? "Filter opportunities by category"}
           </Text>
           <Feather
@@ -219,7 +310,12 @@ export default function OpportunitiesScreen() {
         </TouchableOpacity>
 
         {showDropdown && (
-          <View style={[styles.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View
+            style={[
+              styles.dropdown,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
             {FILTER_OPTIONS.map((c, idx) => {
               const isActive = filter === c.key;
               return (
@@ -235,10 +331,12 @@ export default function OpportunitiesScreen() {
                     setShowDropdown(false);
                   }}
                 >
-                  <Text style={[
-                    styles.dropdownItemText,
-                    { color: isActive ? colors.primary : colors.foreground },
-                  ]}>
+                  <Text
+                    style={[
+                      styles.dropdownItemText,
+                      { color: isActive ? colors.primary : colors.foreground },
+                    ]}
+                  >
                     {c.label}
                   </Text>
                   {isActive && (
@@ -250,7 +348,14 @@ export default function OpportunitiesScreen() {
           </View>
         )}
 
-        {hierarchical.length === 0 ? (
+        {loadingOpps ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
+              Loading your opportunities…
+            </Text>
+          </View>
+        ) : hierarchical.length === 0 ? (
           <View style={styles.empty}>
             <Feather name="check-circle" size={40} color={colors.mutedForeground} />
             <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
@@ -263,7 +368,9 @@ export default function OpportunitiesScreen() {
         ) : (
           hierarchical.map(({ name, opps, sub }) => (
             <View key={name} style={styles.group}>
-              <Text style={[styles.groupTitle, { color: colors.foreground }]}>{name}</Text>
+              <Text style={[styles.groupTitle, { color: colors.foreground }]}>
+                {name}
+              </Text>
               <View style={styles.groupCards}>
                 {opps.map((opp) => (
                   <OppCard key={opp.id} opp={opp} />
@@ -324,23 +431,16 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: { fontSize: 14, fontWeight: "500" },
 
+  loadingContainer: {
+    paddingVertical: 60,
+    alignItems: "center",
+    gap: 12,
+  },
+  loadingText: { fontSize: 14 },
+
   group: { gap: 10 },
   groupTitle: { fontSize: 18, fontWeight: "800", marginTop: 4 },
   groupCards: { gap: 14 },
-
-  subGroup: {
-    marginTop: 12,
-    paddingLeft: 14,
-    borderLeftWidth: 2,
-    gap: 8,
-  },
-  subGroupTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
 
   card: {
     borderRadius: 14,
@@ -364,11 +464,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 15, fontWeight: "700", lineHeight: 20 },
   cardSub: { fontSize: 13, lineHeight: 17, marginTop: 2 },
 
-  earnRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
+  earnRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   earnBadge: {
     flex: 1,
     borderRadius: 8,
@@ -377,30 +473,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   earnBadgeText: { color: "#fff", fontSize: 13, fontWeight: "700" },
-  oneTimeBadge: {
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderWidth: 1.5,
-  },
-  oneTimeBadgeText: { fontSize: 11, fontWeight: "800" },
 
   benefit: { flexDirection: "row", alignItems: "center", gap: 8 },
   benefitText: { fontSize: 13, flex: 1, lineHeight: 18 },
 
-  actionBtn: {
-    borderRadius: 8,
-    paddingVertical: 13,
-    alignItems: "center",
-    marginTop: 2,
-  },
+  actionBtn: { borderRadius: 8, paddingVertical: 13, alignItems: "center", marginTop: 2 },
   actionBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
 
-  empty: {
-    alignItems: "center",
-    paddingVertical: 60,
-    gap: 12,
-  },
+  empty: { alignItems: "center", paddingVertical: 60, gap: 12 },
   emptyTitle: { fontSize: 18, fontWeight: "700" },
   emptyText: { fontSize: 14, textAlign: "center", maxWidth: 260 },
 });

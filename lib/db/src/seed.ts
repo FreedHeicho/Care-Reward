@@ -10,6 +10,7 @@ import {
   hsaAccounts,
   insurancePlans,
   notificationPreferences,
+  userOpportunities,
 } from "./schema/index.js";
 
 async function main() {
@@ -58,6 +59,8 @@ async function main() {
     },
   ];
 
+  const seededOppIds: string[] = [];
+
   for (const opp of oppDefs) {
     try {
       const existing = await db
@@ -67,9 +70,14 @@ async function main() {
         .limit(1);
       if (existing.length > 0) {
         console.log(`  ⏭  Opportunity already exists: "${opp.title}"`);
+        seededOppIds.push(existing[0].id);
         continue;
       }
-      await db.insert(opportunities).values({ ...opp, isActive: true });
+      const [created] = await db
+        .insert(opportunities)
+        .values({ ...opp, isActive: true })
+        .returning();
+      seededOppIds.push(created.id);
       console.log(`  ✓  Opportunity created: "${opp.title}" (${opp.pointsValue} pts)`);
     } catch (err) {
       console.error(`  ✗  Opportunity "${opp.title}":`, err);
@@ -137,6 +145,24 @@ async function main() {
 
       if (existingUser.length > 0) {
         console.log("  ⏭  Test user already exists");
+
+        // Ensure user_opportunities exist even if user was already seeded
+        const userId = existingUser[0].id;
+        for (const oppId of seededOppIds) {
+          const existingAssignment = await db
+            .select()
+            .from(userOpportunities)
+            .where(eq(userOpportunities.opportunityId, oppId))
+            .limit(1);
+          if (existingAssignment.length === 0) {
+            await db.insert(userOpportunities).values({
+              userId,
+              opportunityId: oppId,
+              status: "AVAILABLE",
+            });
+            console.log(`  ✓  Assigned opportunity ${oppId} to existing test user`);
+          }
+        }
       } else {
         const passwordHash = await bcrypt.hash("Test1234!", 10);
         const [user] = await db
@@ -196,6 +222,16 @@ async function main() {
           pointsUpdatesEnabled: true,
         });
         console.log("  ✓  Notification preferences created");
+
+        // Assign all active opportunities to the test user
+        for (const oppId of seededOppIds) {
+          await db.insert(userOpportunities).values({
+            userId: user.id,
+            opportunityId: oppId,
+            status: "AVAILABLE",
+          });
+        }
+        console.log(`  ✓  Assigned ${seededOppIds.length} opportunities to test user`);
       }
     } catch (err) {
       console.error("  ✗  Test user:", err);

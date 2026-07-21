@@ -16,49 +16,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { MOCK_POINTS_HISTORY } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
+import { RedemptionWindowData } from "@/services/api";
 
 const ENABLE_TEST_RESET = __DEV__;
-
-const WINDOW_OPEN_DAY = 1;
-const WINDOW_CLOSE_DAY = 15;
-
-// ── Beta override ────────────────────────────────────────────────────────────
-// Set to true during beta / testing so the redemption window is always open.
-// Flip to false before production launch to enforce the monthly schedule.
-const BETA_WINDOW_ALWAYS_OPEN = true;
-
-function getWindowState() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const date = now.getDate();
-
-  const isOpen =
-    BETA_WINDOW_ALWAYS_OPEN ||
-    (date >= WINDOW_OPEN_DAY && date <= WINDOW_CLOSE_DAY);
-
-  let nextOpen: Date;
-  if (isOpen) {
-    nextOpen = new Date(year, month + 1, WINDOW_OPEN_DAY);
-  } else if (date < WINDOW_OPEN_DAY) {
-    nextOpen = new Date(year, month, WINDOW_OPEN_DAY);
-  } else {
-    nextOpen = new Date(year, month + 1, WINDOW_OPEN_DAY);
-  }
-
-  const nextOpenStr = nextOpen.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  const diffMs = Math.max(0, nextOpen.getTime() - now.getTime());
-  const daysUntil = Math.floor(diffMs / 86400000);
-  const hoursUntil = Math.floor((diffMs % 86400000) / 3600000);
-  const minsUntil = Math.floor((diffMs % 3600000) / 60000);
-
-  return { isOpen, nextOpen, nextOpenStr, daysUntil, hoursUntil, minsUntil };
-}
 
 const REDEMPTION_OPTIONS = [
   {
@@ -99,15 +59,60 @@ const REDEMPTION_OPTIONS = [
   },
 ];
 
+function getWindowState(
+  redemptionWindow: RedemptionWindowData | null | undefined,
+  now: Date,
+): {
+  isOpen: boolean;
+  nextOpenStr: string;
+  daysUntil: number;
+  hoursUntil: number;
+  minsUntil: number;
+} {
+  let isOpen: boolean;
+  let targetDate: Date;
+
+  if (redemptionWindow) {
+    isOpen = redemptionWindow.isActive;
+    if (isOpen) {
+      targetDate = new Date(redemptionWindow.windowEnd);
+    } else {
+      const end = new Date(redemptionWindow.windowEnd);
+      targetDate = new Date(end.getFullYear(), end.getMonth() + 1, 1);
+    }
+  } else {
+    const date = now.getDate();
+    isOpen = date >= 1 && date <= 15;
+    if (isOpen) {
+      targetDate = new Date(now.getFullYear(), now.getMonth(), 16);
+    } else {
+      targetDate = new Date(
+        now.getFullYear(),
+        now.getMonth() + (date > 15 ? 1 : 0),
+        1,
+      );
+    }
+  }
+
+  const nextOpenStr = targetDate.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const diffMs = Math.max(0, targetDate.getTime() - now.getTime());
+  const daysUntil = Math.floor(diffMs / 86400000);
+  const hoursUntil = Math.floor((diffMs % 86400000) / 3600000);
+  const minsUntil = Math.floor((diffMs % 3600000) / 60000);
+
+  return { isOpen, nextOpenStr, daysUntil, hoursUntil, minsUntil };
+}
+
 export default function PointsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, resetPoints } = useAuth();
-  const { isOpen, nextOpenStr, daysUntil, hoursUntil, minsUntil } = useMemo(
-    () => getWindowState(),
-    []
-  );
 
   const [now, setNow] = useState(new Date());
   const [showCopayModal, setShowCopayModal] = useState(false);
@@ -117,23 +122,16 @@ export default function PointsScreen() {
     return () => clearInterval(id);
   }, []);
 
-  const rawBalance = user?.pointsBalance ?? 245;
+  const balance = user?.pointsBalance ?? 0;
+  const earnedThisYear = user?.earnedThisYear ?? balance;
 
-  const earnedThisYear = useMemo(() => {
-    const yearStart = new Date(now.getFullYear(), 0, 1);
-    return (
-      MOCK_POINTS_HISTORY.filter(
-        (tx) => tx.type === "earned" && new Date(tx.date) >= yearStart
-      ).reduce((sum, tx) => sum + tx.amount, 0) || rawBalance
-    );
-  }, [now, rawBalance]);
-
-  // Story 1: balance can never exceed earnedThisYear
-  const balance = Math.min(rawBalance, earnedThisYear);
+  const { isOpen, nextOpenStr, daysUntil, hoursUntil, minsUntil } = useMemo(
+    () => getWindowState(user?.redemptionWindow, now),
+    [user?.redemptionWindow, now],
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Copay placeholder modal — Story 6 */}
       <Modal
         visible={showCopayModal}
         transparent
@@ -162,15 +160,13 @@ export default function PointsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ─── Hero Card: Points Balance (top) + Earned This Year (below) ─── */}
+        {/* ─── Hero Card ─── */}
         <View style={[styles.heroCard, { backgroundColor: colors.primaryDark }]}>
-          {/* Story 2: Points Balance is the primary top figure */}
           <Text style={styles.heroLabel}>Points Balance</Text>
           <Text style={styles.heroValue}>{balance.toLocaleString()}</Text>
           <Text style={styles.heroUnit}>Points</Text>
           <Text style={styles.heroDollar}>${balance.toLocaleString()}</Text>
           <View style={[styles.heroDivider, { backgroundColor: "#ffffff30" }]} />
-          {/* Story 2: Earned This Year moves below as secondary */}
           <Text style={styles.heroSecondaryLabel}>Earned This Year</Text>
           <Text style={styles.heroSecondaryValue}>
             {earnedThisYear.toLocaleString()} Points
@@ -216,9 +212,7 @@ export default function PointsScreen() {
             </View>
           </View>
           <Text style={[styles.countdownDate, { color: colors.foreground }]}>
-            {isOpen
-              ? `Window closes on the ${WINDOW_CLOSE_DAY}th`
-              : `Opens ${nextOpenStr}`}
+            {isOpen ? `Window closes ${nextOpenStr}` : `Opens ${nextOpenStr}`}
           </Text>
         </View>
 
@@ -232,10 +226,7 @@ export default function PointsScreen() {
           >
             <View style={styles.windowBannerLeft}>
               <View
-                style={[
-                  styles.windowBannerIcon,
-                  { backgroundColor: "#16A34A20" },
-                ]}
+                style={[styles.windowBannerIcon, { backgroundColor: "#16A34A20" }]}
               >
                 <Feather name="unlock" size={18} color="#16A34A" />
               </View>
@@ -244,7 +235,7 @@ export default function PointsScreen() {
                   Redemption Window Open
                 </Text>
                 <Text style={[styles.windowBannerSub, { color: "#15803D" }]}>
-                  Redeem your points before the 15th
+                  Redeem your points before the window closes
                 </Text>
               </View>
             </View>
@@ -257,9 +248,7 @@ export default function PointsScreen() {
             ]}
           >
             <View style={styles.windowBannerLeft}>
-              <View
-                style={[styles.windowBannerIcon, { backgroundColor: "#FFFBEB" }]}
-              >
+              <View style={[styles.windowBannerIcon, { backgroundColor: "#FFFBEB" }]}>
                 <Feather name="clock" size={18} color="#F59E0B" />
               </View>
               <View style={styles.windowBannerText}>
@@ -267,8 +256,7 @@ export default function PointsScreen() {
                   Redemption Window Closed
                 </Text>
                 <Text style={[styles.windowBannerSub, { color: "#78350F" }]}>
-                  The redemption window for this month has closed. Your next
-                  window opens on {nextOpenStr}.
+                  Your next window opens on {nextOpenStr}.
                 </Text>
               </View>
             </View>
@@ -276,9 +264,7 @@ export default function PointsScreen() {
               <Text style={[styles.windowDaysValue, { color: "#F59E0B" }]}>
                 {daysUntil}
               </Text>
-              <Text style={[styles.windowDaysLabel, { color: "#92400E" }]}>
-                days
-              </Text>
+              <Text style={[styles.windowDaysLabel, { color: "#92400E" }]}>days</Text>
             </View>
           </View>
         )}
@@ -308,7 +294,7 @@ export default function PointsScreen() {
                       if (Platform.OS !== "web") {
                         Alert.alert(
                           "Window Closed",
-                          `The redemption window is currently closed. Next window opens ${nextOpenStr}.`
+                          `The redemption window is currently closed. Next window opens ${nextOpenStr}.`,
                         );
                       }
                       return;
@@ -317,7 +303,7 @@ export default function PointsScreen() {
                       if (Platform.OS !== "web") {
                         Alert.alert(
                           "Insufficient Points",
-                          `You need at least ${opt.minPoints} points for this option.`
+                          `You need at least ${opt.minPoints} points for this option.`,
                         );
                       }
                       return;
@@ -332,11 +318,7 @@ export default function PointsScreen() {
                   <View
                     style={[
                       styles.optionIcon,
-                      {
-                        backgroundColor: canRedeem
-                          ? colors.secondary
-                          : "#F0F2F5",
-                      },
+                      { backgroundColor: canRedeem ? colors.secondary : "#F0F2F5" },
                     ]}
                   >
                     <Feather
@@ -355,35 +337,15 @@ export default function PointsScreen() {
                     {opt.value}
                   </Text>
                   {!isOpen && (
-                    <View
-                      style={[
-                        styles.optionLocked,
-                        { backgroundColor: "#FEF3C7" },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.optionLockedText,
-                          { color: "#92400E" },
-                        ]}
-                      >
+                    <View style={[styles.optionLocked, { backgroundColor: "#FEF3C7" }]}>
+                      <Text style={[styles.optionLockedText, { color: "#92400E" }]}>
                         Window Closed
                       </Text>
                     </View>
                   )}
                   {isOpen && balance < opt.minPoints && (
-                    <View
-                      style={[
-                        styles.optionLocked,
-                        { backgroundColor: "#F0F2F5" },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.optionLockedText,
-                          { color: "#7A8699" },
-                        ]}
-                      >
+                    <View style={[styles.optionLocked, { backgroundColor: "#F0F2F5" }]}>
+                      <Text style={[styles.optionLockedText, { color: "#7A8699" }]}>
                         Need {opt.minPoints} pts
                       </Text>
                     </View>
@@ -403,10 +365,10 @@ export default function PointsScreen() {
               activeOpacity={0.75}
             >
               <Feather name="refresh-cw" size={14} color="#6B7280" />
-              <Text style={styles.testResetBtnText}>Reset points (testing only)</Text>
+              <Text style={styles.testResetBtnText}>Refresh points (testing only)</Text>
             </TouchableOpacity>
             <Text style={styles.testResetNote}>
-              For testing purposes only. Will be removed before launch.
+              Reloads your live balance from the server.
             </Text>
           </View>
         )}
@@ -416,49 +378,48 @@ export default function PointsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             Recent Activity
           </Text>
-          {MOCK_POINTS_HISTORY.map((tx) => (
-            <View
-              key={tx.id}
-              style={[
-                styles.txRow,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              <View style={styles.txDateCol}>
-                <Text style={[styles.txDate, { color: colors.foreground }]}>
-                  {tx.dateLabel}
-                </Text>
-              </View>
+          {MOCK_POINTS_HISTORY.length > 0 ? (
+            MOCK_POINTS_HISTORY.map((tx) => (
               <View
+                key={tx.id}
                 style={[
-                  styles.txIcon,
-                  { backgroundColor: colors.secondary },
+                  styles.txRow,
+                  { backgroundColor: colors.card, borderColor: colors.border },
                 ]}
               >
-                <Feather name="activity" size={16} color={colors.primary} />
-              </View>
-              <View style={styles.txContent}>
-                <Text
-                  style={[styles.txTitle, { color: colors.foreground }]}
-                  numberOfLines={2}
-                >
-                  {tx.description}
+                <View style={styles.txDateCol}>
+                  <Text style={[styles.txDate, { color: colors.foreground }]}>
+                    {tx.dateLabel}
+                  </Text>
+                </View>
+                <View style={[styles.txIcon, { backgroundColor: colors.secondary }]}>
+                  <Feather name="activity" size={16} color={colors.primary} />
+                </View>
+                <View style={styles.txContent}>
+                  <Text
+                    style={[styles.txTitle, { color: colors.foreground }]}
+                    numberOfLines={2}
+                  >
+                    {tx.description}
+                  </Text>
+                  <Text style={[styles.txCategory, { color: colors.foreground }]}>
+                    {tx.category}
+                  </Text>
+                </View>
+                <Text style={[styles.txAmount, { color: colors.primary }]}>
+                  {tx.type === "earned" ? "+" : "-"}
+                  {tx.amount}
                 </Text>
-                <Text
-                  style={[styles.txCategory, { color: colors.foreground }]}
-                >
-                  {tx.category}
-                </Text>
               </View>
-              <Text style={[styles.txAmount, { color: colors.primary }]}>
-                {tx.type === "earned" ? "+" : "-"}
-                {tx.amount}
+            ))
+          ) : (
+            <View style={[styles.emptyActivity, { borderColor: colors.border }]}>
+              <Feather name="inbox" size={28} color={colors.mutedForeground} />
+              <Text style={[styles.emptyActivityText, { color: colors.mutedForeground }]}>
+                No activity yet. Earn points by completing health opportunities!
               </Text>
             </View>
-          ))}
+          )}
         </View>
       </ScrollView>
     </View>
@@ -469,19 +430,13 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { paddingHorizontal: 16, paddingTop: 12, gap: 16 },
 
-  // Hero Card (Points Balance on top, Earned This Year below)
   heroCard: {
     borderRadius: 16,
     padding: 24,
     alignItems: "center",
     gap: 4,
   },
-  heroLabel: {
-    color: "#fff",
-    fontSize: 15,
-    opacity: 0.85,
-    fontWeight: "600",
-  },
+  heroLabel: { color: "#fff", fontSize: 15, opacity: 0.85, fontWeight: "600" },
   heroValue: {
     color: "#fff",
     fontSize: 60,
@@ -489,19 +444,8 @@ const styles = StyleSheet.create({
     lineHeight: 64,
     marginTop: 2,
   },
-  heroUnit: {
-    color: "#fff",
-    fontSize: 16,
-    opacity: 0.85,
-    fontWeight: "600",
-  },
-  heroDollar: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-    opacity: 0.9,
-    marginTop: 2,
-  },
+  heroUnit: { color: "#fff", fontSize: 16, opacity: 0.85, fontWeight: "600" },
+  heroDollar: { color: "#fff", fontSize: 18, fontWeight: "700", opacity: 0.9, marginTop: 2 },
   heroDivider: { width: "100%", height: 1, marginVertical: 10 },
   heroSecondaryLabel: {
     color: "#fff",
@@ -510,14 +454,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     letterSpacing: 0.3,
   },
-  heroSecondaryValue: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-    opacity: 0.8,
-  },
+  heroSecondaryValue: { color: "#fff", fontSize: 18, fontWeight: "700", opacity: 0.8 },
 
-  // Window Banner
   windowBanner: {
     flexDirection: "row",
     alignItems: "center",
@@ -526,12 +464,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 10,
   },
-  windowBannerLeft: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    flex: 1,
-  },
+  windowBannerLeft: { flexDirection: "row", alignItems: "flex-start", gap: 10, flex: 1 },
   windowBannerIcon: {
     width: 36,
     height: 36,
@@ -546,7 +479,6 @@ const styles = StyleSheet.create({
   windowDaysValue: { fontSize: 20, fontWeight: "900" },
   windowDaysLabel: { fontSize: 11 },
 
-  // Countdown Card
   countdownCard: {
     borderRadius: 16,
     padding: 24,
@@ -562,16 +494,10 @@ const styles = StyleSheet.create({
   countdownDot: { fontSize: 32, fontWeight: "900", marginBottom: 10 },
   countdownDate: { fontSize: 13 },
 
-  // Section
   section: { gap: 12 },
   sectionTitle: { fontSize: 18, fontWeight: "800" },
 
-  // 2×2 Grid
-  optionsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
+  optionsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   optionCard: {
     width: "47%",
     borderRadius: 14,
@@ -590,15 +516,9 @@ const styles = StyleSheet.create({
   optionTitle: { fontSize: 14, fontWeight: "700" },
   optionDesc: { fontSize: 12, lineHeight: 16 },
   optionValue: { fontSize: 13, fontWeight: "600" },
-  optionLocked: {
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginTop: 2,
-  },
+  optionLocked: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, marginTop: 2 },
   optionLockedText: { fontSize: 11, fontWeight: "700" },
 
-  // Testing Reset
   testResetSection: { alignItems: "center", gap: 6 },
   testResetBtn: {
     flexDirection: "row",
@@ -611,14 +531,8 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
   },
   testResetBtnText: { color: "#6B7280", fontSize: 13, fontWeight: "600" },
-  testResetNote: {
-    color: "#9CA3AF",
-    fontSize: 11,
-    textAlign: "center",
-    lineHeight: 15,
-  },
+  testResetNote: { color: "#9CA3AF", fontSize: 11, textAlign: "center", lineHeight: 15 },
 
-  // Transaction Rows
   txRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -642,7 +556,16 @@ const styles = StyleSheet.create({
   txCategory: { fontSize: 12, marginTop: 2 },
   txAmount: { fontSize: 15, fontWeight: "800" },
 
-  // Copay Modal
+  emptyActivity: {
+    alignItems: "center",
+    padding: 32,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    gap: 10,
+  },
+  emptyActivityText: { fontSize: 13, textAlign: "center", lineHeight: 18, maxWidth: 240 },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -650,12 +573,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 32,
   },
-  modalBox: {
-    borderRadius: 20,
-    padding: 32,
-    width: "100%",
-    alignItems: "center",
-  },
+  modalBox: { borderRadius: 20, padding: 32, width: "100%", alignItems: "center" },
   modalOkBtn: {
     borderRadius: 12,
     paddingVertical: 14,

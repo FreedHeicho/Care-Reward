@@ -22,26 +22,46 @@ export default function RegisterScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { register } = useAuth();
 
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [memberId, setMemberId] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleRegister = async () => {
-    if (!name.trim() || !email.trim()) {
+    if (!firstName.trim() || !email.trim() || !password) {
       setError("Please fill in all required fields");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
       return;
     }
     setError("");
     setLoading(true);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await new Promise((r) => setTimeout(r, 900));
-    await signIn(email, name);
-    setLoading(false);
-    router.replace("/(tabs)");
+    try {
+      await register(
+        email.trim().toLowerCase(),
+        password,
+        firstName.trim(),
+        lastName.trim() || firstName.trim(),
+      );
+      router.replace("/(tabs)");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Registration failed";
+      setError(
+        msg.toLowerCase().includes("already") || msg.includes("409")
+          ? "An account with this email already exists"
+          : msg,
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -75,10 +95,58 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.form}>
+            <View style={styles.nameRow}>
+              <View style={[styles.field, styles.halfField]}>
+                <Text style={[styles.label, { color: colors.foreground }]}>First Name</Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    { borderColor: colors.border, backgroundColor: colors.card },
+                  ]}
+                >
+                  <TextInput
+                    style={[styles.input, { color: colors.foreground }]}
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    placeholder="Jane"
+                    placeholderTextColor={colors.mutedForeground}
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                  />
+                </View>
+              </View>
+
+              <View style={[styles.field, styles.halfField]}>
+                <Text style={[styles.label, { color: colors.foreground }]}>Last Name</Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    { borderColor: colors.border, backgroundColor: colors.card },
+                  ]}
+                >
+                  <TextInput
+                    style={[styles.input, { color: colors.foreground }]}
+                    value={lastName}
+                    onChangeText={setLastName}
+                    placeholder="Smith"
+                    placeholderTextColor={colors.mutedForeground}
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                  />
+                </View>
+              </View>
+            </View>
+
             {[
-              { label: "Full Name", value: name, onChange: setName, placeholder: "Jane Smith", icon: "user" as const, keyboard: "default" as const },
-              { label: "Email Address", value: email, onChange: setEmail, placeholder: "jane@example.com", icon: "mail" as const, keyboard: "email-address" as const },
-              { label: "Member ID (optional)", value: memberId, onChange: setMemberId, placeholder: "MBR-XXXX-XXXX", icon: "credit-card" as const, keyboard: "default" as const },
+              {
+                label: "Email Address",
+                value: email,
+                onChange: setEmail,
+                placeholder: "jane@example.com",
+                icon: "mail" as const,
+                keyboard: "email-address" as const,
+                secure: false,
+              },
             ].map((field) => (
               <View key={field.label} style={styles.field}>
                 <Text style={[styles.label, { color: colors.foreground }]}>{field.label}</Text>
@@ -96,12 +164,39 @@ export default function RegisterScreen() {
                     placeholder={field.placeholder}
                     placeholderTextColor={colors.mutedForeground}
                     keyboardType={field.keyboard}
-                    autoCapitalize={field.keyboard === "email-address" ? "none" : "words"}
+                    autoCapitalize="none"
                     autoCorrect={false}
                   />
                 </View>
               </View>
             ))}
+
+            <View style={styles.field}>
+              <Text style={[styles.label, { color: colors.foreground }]}>Password</Text>
+              <View
+                style={[
+                  styles.inputWrapper,
+                  { borderColor: colors.border, backgroundColor: colors.card },
+                ]}
+              >
+                <Feather name="lock" size={18} color={colors.mutedForeground} />
+                <TextInput
+                  style={[styles.input, { color: colors.foreground }]}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Min. 8 characters"
+                  placeholderTextColor={colors.mutedForeground}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Feather
+                    name={showPassword ? "eye-off" : "eye"}
+                    size={18}
+                    color={colors.mutedForeground}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
 
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
@@ -147,6 +242,8 @@ const styles = StyleSheet.create({
   headline: { fontSize: 30, fontWeight: "800", letterSpacing: -0.5 },
   subheadline: { fontSize: 16, lineHeight: 24 },
   form: { gap: 16 },
+  nameRow: { flexDirection: "row", gap: 10 },
+  halfField: { flex: 1 },
   field: { gap: 8 },
   label: { fontSize: 14, fontWeight: "600" },
   inputWrapper: {
