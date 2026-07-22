@@ -5,6 +5,7 @@ import authRouter from "./auth.js";
 import userContextRouter from "./userContext.js";
 import pointsRouter from "./points.js";
 import insuranceRouter from "./insurance.js";
+import healthSystemsRouter from "./healthSystems.js";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use("/auth", authRouter);
 router.use("/user", userContextRouter);
 router.use("/points", pointsRouter);
 router.use("/admin", insuranceRouter);
+router.use(healthSystemsRouter);
 
 export default router;

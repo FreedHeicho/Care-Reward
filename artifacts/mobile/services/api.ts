@@ -84,6 +84,38 @@ export const authApi = {
     ),
 };
 
+export interface ConnectedHealthSystem {
+  id: string;
+  userId: string;
+  systemName: string;
+  systemType: "HOSPITAL" | "CLINIC" | "PHARMACY" | "PROVIDER";
+  npi: string | null;
+  fhirBaseUrl: string | null;
+  connectionStatus: "CONNECTED" | "DISCONNECTED" | "PENDING" | "ERROR";
+  lastSyncedAt: string | null;
+  createdAt: string;
+}
+
+export const healthSystemsApi = {
+  list: () => request<ConnectedHealthSystem[]>("/health-systems"),
+
+  connect: (params: {
+    systemName: string;
+    systemType: string;
+    npi?: string;
+    fhirBaseUrl?: string;
+  }) =>
+    request<ConnectedHealthSystem>("/health-systems", {
+      method: "POST",
+      body: JSON.stringify(params),
+    }),
+
+  remove: (id: string) =>
+    request<{ success: boolean }>(`/health-systems/${id}`, {
+      method: "DELETE",
+    }),
+};
+
 export const userApi = {
   getContext: () => request<UserContextResponse>("/user/context"),
   getOpportunities: (status?: string) =>

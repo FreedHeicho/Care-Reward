@@ -43,25 +43,27 @@ export default function PortalLoginScreen() {
   const handleLogin = async () => {
     if (!canSubmit) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
 
-    const now = new Date();
-    const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    const newSystem: HealthSystem = {
-      id: institutionId ?? `sys-${Date.now()}`,
-      name: institutionName ?? "Unknown",
-      type: (institutionType as HealthSystem["type"]) ?? "Hospital",
-      location: institutionLocation ?? "",
-      connectedAt: dateStr,
-      lastSynced: dateStr,
-      status: "connected",
-    };
-    addSystem(newSystem);
-    setLoading(false);
-    setSuccess(true);
+    try {
+      // Extract NPI from institutionId (format: "npi-<10digits>")
+      const npi = institutionId?.startsWith("npi-")
+        ? institutionId.replace("npi-", "")
+        : undefined;
 
-    await new Promise((r) => setTimeout(r, 1200));
-    router.push("/emr-access" as never);
+      await addSystem({
+        systemName: institutionName ?? "Unknown",
+        systemType: institutionType ?? "Provider",
+        npi,
+      });
+
+      setSuccess(true);
+      await new Promise((r) => setTimeout(r, 1200));
+      router.push("/emr-access" as never);
+    } catch {
+      // fall through — show error inline
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
