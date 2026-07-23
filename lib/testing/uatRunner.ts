@@ -445,7 +445,7 @@ async function runAllTests(): Promise<void> {
   await runTest('UAT-016', 'Audit logs exist and are populated', async () => {
     const rows = await query<{ count: string; outcomes: string }>(
       `SELECT COUNT(*) as count,
-              STRING_AGG(DISTINCT outcome, ', ') as outcomes
+              STRING_AGG(DISTINCT outcome::text, ', ') as outcomes
        FROM audit_logs`
     );
     const count = parseInt(rows[0]?.count ?? '0', 10);
