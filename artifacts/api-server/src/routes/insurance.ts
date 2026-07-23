@@ -3,7 +3,7 @@ import multer from "multer";
 import { parse } from "csv-parse/sync";
 import { eq, and } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { users, insurancePlans, hsaAccounts } from "@workspace/db/schema";
+import { users, insurancePlans, hsaAccounts, auditLogs } from "@workspace/db/schema";
 import { requireAuth } from "../middlewares/auth.js";
 
 const router = Router();
@@ -24,6 +24,22 @@ router.post(
   requireAuth,
   upload.single("file"),
   async (req, res) => {
+    // CRIT-001: only admin and employer_admin roles may import insurance data
+    if (req.userRole !== "admin" && req.userRole !== "employer_admin") {
+      db.insert(auditLogs)
+        .values({
+          userId: req.userId,
+          action: "POST /insurance/import",
+          resourceType: "api",
+          ipAddress: String(req.ip ?? ""),
+          outcome: "BLOCKED",
+          failureReason: `Insufficient role: ${req.userRole}`,
+        })
+        .catch(() => {});
+      res.status(403).json({ error: "Admin or employer_admin role required" });
+      return;
+    }
+
     const { fileType, effectiveDate, expirationDate } = req.body as {
       fileType?: string;
       effectiveDate?: string;

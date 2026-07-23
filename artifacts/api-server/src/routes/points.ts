@@ -15,7 +15,8 @@ import { desc } from "drizzle-orm";
 
 const router = Router();
 
-const POINTS_PER_DOLLAR = 100;
+// 1 point = $1 (HIGH-001 resolved: business rule confirmed 1pt = $1)
+const POINTS_PER_DOLLAR = 1;
 
 // GET /api/points/balance
 router.get("/balance", requireAuth, async (req, res) => {

@@ -6,10 +6,19 @@ import {
   users,
   pointsAccounts,
   notificationPreferences,
+  sessions,
 } from "@workspace/db/schema";
-import { generateToken, requireAuth } from "../middlewares/auth.js";
+import { generateToken, hashToken, requireAuth } from "../middlewares/auth.js";
 
 const router = Router();
+
+/** Persist a server-side session so the token can be revoked on logout. */
+async function createSession(userId: string, accessToken: string): Promise<void> {
+  const tokenHash = hashToken(accessToken);
+  // Access tokens expire in 15 minutes
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+  await db.insert(sessions).values({ userId, jwtTokenHash: tokenHash, expiresAt });
+}
 
 // POST /api/auth/register
 router.post("/register", async (req, res) => {
@@ -74,6 +83,8 @@ router.post("/register", async (req, res) => {
     });
 
     const { accessToken, refreshToken } = generateToken(user.id, "user");
+    await createSession(user.id, accessToken);
+
     res.status(201).json({ user, accessToken, refreshToken });
   } catch (err) {
     req.log.error({ err }, "register error");
@@ -117,6 +128,8 @@ router.post("/login", async (req, res) => {
       .where(eq(users.id, user.id));
 
     const { accessToken, refreshToken } = generateToken(user.id, user.role ?? "user");
+    await createSession(user.id, accessToken);
+
     res.json({
       user: {
         id: user.id,
@@ -135,7 +148,17 @@ router.post("/login", async (req, res) => {
 });
 
 // POST /api/auth/logout
-router.post("/logout", requireAuth, (_req, res) => {
+// Deletes the server-side session so the token is immediately revoked (CRIT-003)
+router.post("/logout", requireAuth, async (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.slice(7) ?? "";
+  if (token) {
+    const tokenHash = hashToken(token);
+    await db
+      .delete(sessions)
+      .where(eq(sessions.jwtTokenHash, tokenHash))
+      .catch(() => {});
+  }
   res.json({ success: true });
 });
 

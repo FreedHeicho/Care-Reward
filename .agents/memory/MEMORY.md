@@ -1,2 +1,5 @@
 - [API response shapes](api-response-shapes.md) — login returns `accessToken`, context uses `points.account` + `activeRedemptionWindow`, opps nested under `opportunity`
 - [Seed and user_opportunities](seed-user-opps.md) — nightly scheduler populates user_opportunities; re-run seed to backfill existing users; status enum is UPPERCASE ("AVAILABLE" not "available")
+- [Points exchange rate](points-exchange-rate.md) — 1 pt = $1 (POINTS_PER_DOLLAR = 1); confirmed by user; prior code had 100 which was wrong
+- [Session tracking](session-tracking.md) — server-side sessions stored in `sessions` table (jwtTokenHash = SHA-256 of access token); requireAuth checks DB; logout deletes row; existing users must re-login after this change
+- [Security fixes applied](security-fixes.md) — CRIT-001: insurance import role-gated; CRIT-002: PHI audit logs in all health-systems handlers; HIGH-002: FAILURE/BLOCKED outcomes now logged in auth middleware and role checks
