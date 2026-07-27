@@ -9,6 +9,7 @@ import healthSystemsRouter from "./healthSystems.js";
 import notificationsRouter from "./notifications.js";
 import adminOpportunitiesRouter from "./adminOpportunities.js";
 import adminEmployersRouter from "./adminEmployers.js";
+import adminSchedulerRouter from "./adminScheduler.js";
 
 const router: IRouter = Router();
 
@@ -23,5 +24,6 @@ router.use(notificationsRouter);
 // Opportunity Builder admin routes — mounted directly (paths include /admin/ prefix)
 router.use(adminOpportunitiesRouter);
 router.use(adminEmployersRouter);
+router.use(adminSchedulerRouter);
 
 export default router;

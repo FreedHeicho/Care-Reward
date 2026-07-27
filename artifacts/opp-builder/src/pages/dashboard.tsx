@@ -1,14 +1,48 @@
+import { useState } from "react";
 import { useGetOpportunityStats } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryBadge } from "@/components/category-badge";
-import { Target, Building2, Plus, TrendingUp, Activity as ActivityIcon } from "lucide-react";
+import { Target, Building2, Plus, TrendingUp, Activity as ActivityIcon, Play, CheckCircle2, AlertCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DashboardPage() {
   const { data: stats, isLoading } = useGetOpportunityStats();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [schedulerRunning, setSchedulerRunning] = useState(false);
+
+  const handleRunScheduler = async () => {
+    setSchedulerRunning(true);
+    try {
+      const res = await fetch("/opp-builder/api/admin/scheduler/run", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken") ?? ""}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Unknown error");
+      toast({
+        title: "Scheduler ran successfully",
+        description: data.message,
+      });
+      // Refresh stats so the dashboard reflects any new assignments
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities/stats"] });
+    } catch (err: any) {
+      toast({
+        title: "Scheduler failed",
+        description: err.message ?? "Could not run the opportunities engine.",
+        variant: "destructive",
+      });
+    } finally {
+      setSchedulerRunning(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -41,6 +75,15 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={handleRunScheduler}
+            disabled={schedulerRunning}
+            data-testid="button-run-scheduler"
+          >
+            <Play className="w-4 h-4 mr-2" />
+            {schedulerRunning ? "Running…" : "Run Scheduler Now"}
+          </Button>
           <Link href="/employers">
             <Button variant="outline" data-testid="button-configure-employers">
               <Building2 className="w-4 h-4 mr-2" />

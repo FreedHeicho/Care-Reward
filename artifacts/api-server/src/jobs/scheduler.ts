@@ -13,112 +13,117 @@ import {
   notifications,
 } from "@workspace/db/schema";
 
+// ── Opportunities engine — extracted so it can be triggered on-demand ────────
+export async function runOpportunitiesEngine(): Promise<{ assigned: number; usersProcessed: number }> {
+  console.log("[scheduler] Running opportunities engine");
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Mark overdue AVAILABLE as MISSED
+  await db
+    .update(userOpportunities)
+    .set({ status: "MISSED", missedAt: new Date() })
+    .where(
+      and(
+        eq(userOpportunities.status, "AVAILABLE"),
+        lt(userOpportunities.windowEnd, today),
+      ),
+    );
+
+  // Get all active users with their employer
+  const activeUsers = await db
+    .select({ id: users.id, employerId: users.employerId })
+    .from(users)
+    .where(eq(users.isActive, true));
+
+  // Get all ACTIVE opportunities (oppStatus = ACTIVE keeps in sync with isActive)
+  const allOpps = await db
+    .select()
+    .from(opportunities)
+    .where(
+      and(
+        eq(opportunities.isActive, true),
+        eq(opportunities.oppStatus, "ACTIVE"),
+      ),
+    );
+
+  // Pre-load all employer configs in one query to avoid N+1
+  const allConfigs = await db
+    .select({
+      employerId: employerOpportunityConfigs.employerId,
+      opportunityId: employerOpportunityConfigs.opportunityId,
+      isEnabled: employerOpportunityConfigs.isEnabled,
+      customPointsValue: employerOpportunityConfigs.customPointsValue,
+    })
+    .from(employerOpportunityConfigs);
+
+  // Build a lookup: employerId → opportunityId → config
+  const configMap = new Map<string, Map<string, typeof allConfigs[0]>>();
+  for (const cfg of allConfigs) {
+    if (!configMap.has(cfg.employerId)) {
+      configMap.set(cfg.employerId, new Map());
+    }
+    configMap.get(cfg.employerId)!.set(cfg.opportunityId, cfg);
+  }
+
+  const defaultWindowEnd = new Date(Date.now() + 30 * 86400_000)
+    .toISOString()
+    .slice(0, 10);
+
+  let assigned = 0;
+
+  for (const user of activeUsers) {
+    const existing = await db
+      .select({ opportunityId: userOpportunities.opportunityId })
+      .from(userOpportunities)
+      .where(eq(userOpportunities.userId, user.id));
+
+    const assignedIds = new Set(existing.map((r) => r.opportunityId));
+    const employerCfgs = user.employerId
+      ? configMap.get(user.employerId)
+      : undefined;
+
+    for (const opp of allOpps) {
+      if (assignedIds.has(opp.id)) continue;
+
+      if (employerCfgs) {
+        const cfg = employerCfgs.get(opp.id);
+        if (cfg && !cfg.isEnabled) continue;
+      }
+
+      const windowStart = opp.windowStart ?? today;
+      const windowEnd = opp.windowEnd ?? defaultWindowEnd;
+      const pointsValue =
+        employerCfgs?.get(opp.id)?.customPointsValue ?? opp.pointsValue;
+
+      await db.insert(userOpportunities).values({
+        userId: user.id,
+        opportunityId: opp.id,
+        status: "AVAILABLE",
+        windowStart,
+        windowEnd,
+      });
+
+      await db.insert(notifications).values({
+        userId: user.id,
+        type: "OPPORTUNITY_AVAILABLE",
+        title: "New Opportunity Available",
+        message: `Earn ${pointsValue} points: ${opp.title}`,
+      });
+
+      assigned++;
+    }
+  }
+
+  console.log(`[scheduler] Opportunities engine complete — ${assigned} assignments across ${activeUsers.length} users`);
+  return { assigned, usersProcessed: activeUsers.length };
+}
+
 export function startScheduler() {
   // ── Job 1: Nightly at 2 AM — Opportunities Engine ────────────────────────
   cron.schedule("0 2 * * *", async () => {
     console.log("[scheduler] Job 1: Running opportunities engine");
     try {
-      const today = new Date().toISOString().slice(0, 10);
-
-      // Mark overdue AVAILABLE as MISSED
-      await db
-        .update(userOpportunities)
-        .set({ status: "MISSED", missedAt: new Date() })
-        .where(
-          and(
-            eq(userOpportunities.status, "AVAILABLE"),
-            lt(userOpportunities.windowEnd, today),
-          ),
-        );
-
-      // Get all active users with their employer
-      const activeUsers = await db
-        .select({ id: users.id, employerId: users.employerId })
-        .from(users)
-        .where(eq(users.isActive, true));
-
-      // Get all ACTIVE opportunities (oppStatus = ACTIVE keeps in sync with isActive)
-      const allOpps = await db
-        .select()
-        .from(opportunities)
-        .where(
-          and(
-            eq(opportunities.isActive, true),
-            eq(opportunities.oppStatus, "ACTIVE"),
-          ),
-        );
-
-      // Pre-load all employer configs in one query to avoid N+1
-      const allConfigs = await db
-        .select({
-          employerId: employerOpportunityConfigs.employerId,
-          opportunityId: employerOpportunityConfigs.opportunityId,
-          isEnabled: employerOpportunityConfigs.isEnabled,
-          customPointsValue: employerOpportunityConfigs.customPointsValue,
-        })
-        .from(employerOpportunityConfigs);
-
-      // Build a lookup: employerId → opportunityId → config
-      const configMap = new Map<string, Map<string, typeof allConfigs[0]>>();
-      for (const cfg of allConfigs) {
-        if (!configMap.has(cfg.employerId)) {
-          configMap.set(cfg.employerId, new Map());
-        }
-        configMap.get(cfg.employerId)!.set(cfg.opportunityId, cfg);
-      }
-
-      const defaultWindowEnd = new Date(Date.now() + 30 * 86400_000)
-        .toISOString()
-        .slice(0, 10);
-
-      for (const user of activeUsers) {
-        // Get this user's already-assigned opportunity IDs
-        const existing = await db
-          .select({ opportunityId: userOpportunities.opportunityId })
-          .from(userOpportunities)
-          .where(eq(userOpportunities.userId, user.id));
-
-        const assignedIds = new Set(existing.map((r) => r.opportunityId));
-
-        // Get employer-level config map for this user (if they have an employer)
-        const employerCfgs = user.employerId
-          ? configMap.get(user.employerId)
-          : undefined;
-
-        for (const opp of allOpps) {
-          if (assignedIds.has(opp.id)) continue;
-
-          // Check employer config — if the employer has explicitly disabled this opp, skip it
-          if (employerCfgs) {
-            const cfg = employerCfgs.get(opp.id);
-            if (cfg && !cfg.isEnabled) continue;
-          }
-
-          // Use opportunity's own window if defined, else fall back to 30-day default
-          const windowStart = opp.windowStart ?? today;
-          const windowEnd = opp.windowEnd ?? defaultWindowEnd;
-
-          // Use employer's custom points value if configured, otherwise use master value
-          const pointsValue =
-            employerCfgs?.get(opp.id)?.customPointsValue ?? opp.pointsValue;
-
-          await db.insert(userOpportunities).values({
-            userId: user.id,
-            opportunityId: opp.id,
-            status: "AVAILABLE",
-            windowStart,
-            windowEnd,
-          });
-
-          await db.insert(notifications).values({
-            userId: user.id,
-            type: "OPPORTUNITY_AVAILABLE",
-            title: "New Opportunity Available",
-            message: `Earn ${pointsValue} points: ${opp.title}`,
-          });
-        }
-      }
-      console.log("[scheduler] Job 1: Opportunities engine complete");
+      await runOpportunitiesEngine();
     } catch (err) {
       console.error("[scheduler] Job 1 error:", err);
     }
