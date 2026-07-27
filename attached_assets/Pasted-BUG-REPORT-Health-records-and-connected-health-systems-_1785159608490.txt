@@ -1,0 +1,249 @@
+BUG REPORT: Health records and connected health systems 
+from previous sessions are not being fetched and displayed 
+when a user logs back into the app. Data added in the 
+CURRENT session shows correctly, but data added in a 
+PREVIOUS session does not appear even though it exists 
+in the database.
+
+════════════════════════════════════════════════════════
+THE EXACT PROBLEM
+════════════════════════════════════════════════════════
+
+Test user: Fred
+Observed behaviour:
+  - Fred connected a health system and records 
+    were visible on July 24th (previous session)
+  - Fred logs back in today (new session)
+  - The health records Fred added on July 24th 
+    do NOT show up on screen
+  - The connected health system record for July 24th 
+    IS confirmed to exist in the connected_health_systems 
+    database table
+  - Health records added in TODAY's session show 
+    correctly
+
+Expected behaviour:
+  - When Fred logs in, the app should query the 
+    database for ALL of his connected health systems
+  - For each connected system, ALL previously synced 
+    EMR records should be fetched and displayed
+  - Fred should see everything he has ever added 
+    regardless of which session it was added in
+  - Session end should never cause data loss or 
+    data invisibility
+
+════════════════════════════════════════════════════════
+WHAT TO INVESTIGATE AND FIX
+════════════════════════════════════════════════════════
+
+Investigate these four areas in this exact order:
+
+────────────────────────────────────────────────────────
+AREA 1: The user context API endpoint on login
+────────────────────────────────────────────────────────
+
+Check GET /api/user/context.
+
+When this endpoint runs, it queries 
+connected_health_systems WHERE user_id = userId.
+
+Verify the query does NOT have any of these 
+accidental filters that would exclude old records:
+  - WHERE created_at = TODAY (date filter)
+  - WHERE last_synced_at IS NOT NULL
+  - WHERE connection_status = 'ACTIVE' 
+    (old records might have a different status)
+  - LIMIT 1 (would only return the most recent)
+  - Any filter that only returns the most recently 
+    created connection
+
+The query must return ALL connected health systems 
+for this user regardless of when they were added.
+
+Fix any unintended filter found.
+
+────────────────────────────────────────────────────────
+AREA 2: The EMR records fetch on app load
+────────────────────────────────────────────────────────
+
+Check GET /api/user/emr/:recordType 
+(IMMUNIZATION, VISIT, LAB_RESULT).
+
+Verify the query is:
+  SELECT * FROM emr_records 
+  WHERE user_id = userId
+  AND record_type = recordType
+  ORDER BY record_date DESC
+
+Make sure it is NOT:
+  - Filtering by created_at to only show 
+    records from the current day
+  - Only returning records where 
+    health_system_id matches the most 
+    recently connected system
+  - Using a session variable or in-memory 
+    list of health system IDs instead of 
+    querying from the database
+
+If the EMR records query joins to 
+connected_health_systems, verify the JOIN 
+does not accidentally filter to only 
+recently connected systems.
+
+────────────────────────────────────────────────────────
+AREA 3: The mobile app local cache (MMKV)
+────────────────────────────────────────────────────────
+
+Check artifacts/mobile/lib/cache/localCache.ts 
+and anywhere MMKV is written to.
+
+The problem could be that on login the app 
+reads from the MMKV local cache instead of 
+fetching fresh data from the API.
+
+If the cache is empty (new phone session, 
+cache cleared, or TTL expired) the app would 
+show nothing even though the database has data.
+
+Fix:
+  When the MMKV cache is empty or stale for 
+  a given key, the app MUST fetch from the API 
+  before rendering the screen.
+
+  The stale-while-revalidate pattern in 
+  useUserContext.ts should:
+  1. Show cached data immediately if available
+  2. ALWAYS fire a background API call on mount
+  3. Update the screen with fresh API data 
+     when it arrives
+
+  If the hook only calls the API when cache 
+  is empty but not when cache is stale, 
+  old cached data (from today) overwrites 
+  what should be a fresh fetch.
+
+  Verify the useEffect in useUserContext.ts 
+  always calls refresh() on mount regardless 
+  of whether cache data exists.
+
+────────────────────────────────────────────────────────
+AREA 4: React state not reinitialised on login
+────────────────────────────────────────────────────────
+
+Check the EMR records screen component.
+
+If the component stores connected health 
+systems or EMR records in React local state 
+(useState) and that state is only populated 
+when the user connects a new system in the 
+CURRENT session, then previous sessions' 
+data would never appear.
+
+The fix:
+  The EMR records screen must call the API 
+  to load data on every mount — not rely on 
+  state set during the connection flow.
+
+  useEffect with an API call must fire 
+  every time the EMR screen mounts, like:
+
+  useEffect(() => {
+    fetchConnectedSystems();   // from API
+    fetchEMRRecords();         // from API
+  }, [userId]);                // runs on mount
+
+  NOT like:
+  
+  useEffect(() => {
+    if (connectedSystems.length === 0) {
+      fetchConnectedSystems(); // only runs if empty
+    }
+  }, []);
+
+════════════════════════════════════════════════════════
+THE DATABASE VERIFICATION
+════════════════════════════════════════════════════════
+
+Before touching any code, run these SQL queries 
+to confirm the data definitely exists for Fred 
+in the database:
+
+-- Check 1: Fred's connected health systems
+SELECT id, system_name, connection_status, 
+       created_at, last_synced_at
+FROM connected_health_systems
+WHERE user_id = (SELECT id FROM users 
+                 WHERE email = 'fred@email.com')
+ORDER BY created_at ASC;
+
+-- Check 2: EMR records for Fred
+SELECT id, record_type, record_date, 
+       health_system_id, created_at
+FROM emr_records
+WHERE user_id = (SELECT id FROM users 
+                 WHERE email = 'fred@email.com')
+ORDER BY created_at ASC;
+
+-- Check 3: Are the July 24th records there?
+SELECT COUNT(*) as records_from_july_24
+FROM emr_records
+WHERE user_id = (SELECT id FROM users 
+                 WHERE email = 'fred@email.com')
+AND DATE(created_at) = '2026-07-24';
+
+If these queries return the correct data 
+then the database is fine and the bug is 
+in the API query, cache layer, or the 
+mobile app data fetch logic.
+
+If these queries return 0 rows for July 24th 
+then the data was never saved to the database 
+in the first place and the fix is in the 
+EMR connection/sync write logic.
+
+Report what these queries return before 
+making any code changes.
+
+════════════════════════════════════════════════════════
+ACCEPTANCE CRITERIA — HOW TO VERIFY THE FIX
+════════════════════════════════════════════════════════
+
+After fixing, verify all of these pass:
+
+1. Fred logs out completely (clear all local 
+   cache with clearAllLocalCache() on logout).
+
+2. Fred logs back in fresh.
+
+3. GET /api/user/context returns a 
+   connectedSystemsCount greater than 0 
+   and includes the July 24th system.
+
+4. GET /api/user/emr/IMMUNIZATION returns 
+   records from July 24th in the array.
+
+5. The EMR screen on the mobile app shows 
+   all connected health systems including 
+   the one added July 24th without requiring 
+   Fred to reconnect it.
+
+6. Repeat test: connect a new health system 
+   today, log out, log back in — both the 
+   old and new system must appear.
+
+════════════════════════════════════════════════════════
+IMPORTANT NOTE
+════════════════════════════════════════════════════════
+
+This is a data persistence bug, not a new 
+feature. Do not add new tables or change 
+the database schema. The fix should only 
+touch:
+  - API query filters in route files
+  - Cache read/write logic in localCache.ts
+  - useEffect hooks in EMR screen components
+  - The useUserContext hook fetch behaviour
+
+The data is in the database. The problem is 
+in how the app retrieves and displays it 
+after a new session begins.

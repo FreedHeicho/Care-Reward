@@ -19,6 +19,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
+import { useHealthRecords } from "@/context/HealthRecordsContext";
 import { useColors } from "@/hooks/useColors";
 
 const LOGO = require("../../assets/carealign-logo.png");
@@ -28,6 +29,7 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signIn } = useAuth();
+  const { refresh: refreshHealthRecords } = useHealthRecords();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,6 +52,10 @@ export default function LoginScreen() {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await signIn(email.trim().toLowerCase(), password);
+      // Trigger health records fetch now that a valid token is stored.
+      // The context's initial fetch ran before login (no token), so it
+      // returned early and left connectedSystems empty.
+      refreshHealthRecords();
       router.replace("/(tabs)");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign in failed";

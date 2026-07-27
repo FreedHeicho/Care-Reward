@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React from "react";
 import {
+  ActivityIndicator,
   Platform,
   ScrollView,
   StyleSheet,
@@ -126,7 +127,7 @@ export default function VisitsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { connectedSystems } = useHealthRecords();
+  const { connectedSystems, loading } = useHealthRecords();
   const hasConnected = connectedSystems.length > 0;
 
   const institutionName = (idx: number) =>
@@ -138,7 +139,11 @@ export default function VisitsScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Stack.Screen options={{ title: "Visits", headerBackTitle: "Back" }} />
 
-      {!hasConnected ? (
+      {loading ? (
+        <View style={[styles.emptyWrap, { paddingBottom: insets.bottom + 40 }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : !hasConnected ? (
         <View style={[styles.emptyWrap, { paddingBottom: insets.bottom + 40 }]}>
           <View style={[styles.emptyIcon, { backgroundColor: colors.secondary }]}>
             <Feather name="map-pin" size={36} color={colors.primary} />
