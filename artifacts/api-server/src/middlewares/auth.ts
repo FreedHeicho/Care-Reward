@@ -113,6 +113,30 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   next();
 }
 
+/**
+ * requireRole(...roles) — use AFTER requireAuth.
+ * Returns 403 + BLOCKED audit entry if the authenticated user's role is not in the list.
+ */
+export function requireRole(...roles: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!roles.includes(req.userRole)) {
+      db.insert(auditLogs)
+        .values({
+          userId: req.userId,
+          action: `${req.method} ${req.path}`,
+          resourceType: "api",
+          ipAddress: String(req.ip ?? ""),
+          outcome: "BLOCKED",
+          failureReason: `Role '${req.userRole}' not in required [${roles.join(", ")}]`,
+        })
+        .catch(() => {});
+      res.status(403).json({ error: `Requires role: ${roles.join(" or ")}` });
+      return;
+    }
+    next();
+  };
+}
+
 export function generateToken(userId: string, role: string) {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT_SECRET is not set");

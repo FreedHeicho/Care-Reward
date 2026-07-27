@@ -102,6 +102,12 @@ export const auditOutcomeEnum = pgEnum("audit_outcome", [
   "FAILURE",
   "BLOCKED",
 ]);
+export const opportunityAuthorActionEnum = pgEnum("opportunity_author_action", [
+  "CREATED",
+  "UPDATED",
+  "DEACTIVATED",
+  "REACTIVATED",
+]);
 
 // ─── Group 1: Users ───────────────────────────────────────────────────────────
 
@@ -222,6 +228,7 @@ export const opportunities = pgTable("opportunities", {
   pointsValue: integer("points_value").notNull(),
   logoUrl: text("logo_url"),
   isActive: boolean("is_active").default(true),
+  createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -246,6 +253,49 @@ export const userOpportunities = pgTable(
   (t) => [
     index("user_opp_user_id_idx").on(t.userId),
     index("user_opp_status_idx").on(t.status),
+  ],
+);
+
+// ─── Group 3b: Opportunity Authoring ─────────────────────────────────────────
+
+export const opportunityAuthors = pgTable(
+  "opportunity_authors",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    opportunityId: uuid("opportunity_id")
+      .references(() => opportunities.id)
+      .notNull(),
+    userId: uuid("user_id")
+      .references(() => users.id)
+      .notNull(),
+    action: opportunityAuthorActionEnum("action").notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => [index("opp_authors_opp_id_idx").on(t.opportunityId)],
+);
+
+export const employerOpportunityConfigs = pgTable(
+  "employer_opportunity_configs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    employerId: uuid("employer_id")
+      .references(() => employers.id)
+      .notNull(),
+    opportunityId: uuid("opportunity_id")
+      .references(() => opportunities.id)
+      .notNull(),
+    isEnabled: boolean("is_enabled").default(true).notNull(),
+    customPointsValue: integer("custom_points_value"),
+    customTitle: varchar("custom_title", { length: 255 }),
+    updatedBy: uuid("updated_by").references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (t) => [
+    index("emp_opp_cfg_employer_idx").on(t.employerId),
+    index("emp_opp_cfg_opp_idx").on(t.opportunityId),
+    uniqueIndex("emp_opp_cfg_unique_idx").on(t.employerId, t.opportunityId),
   ],
 );
 
