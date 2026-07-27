@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/opp-builder/"
-title = "Opportunity Builder"
+title = "Implementator App"
 version = "1.0.0"
 id = "artifacts/opp-builder"
 router = "path"

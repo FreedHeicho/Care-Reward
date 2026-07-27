@@ -37,7 +37,7 @@ export default function LoginPage() {
             <Activity className="w-9 h-9 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            CareReward Admin
+            Implementator App
           </h1>
           <p className="text-muted-foreground">
             Sign in to manage wellness opportunities
