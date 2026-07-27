@@ -83,6 +83,11 @@ paths:
           name: isActive
           schema:
             type: boolean
+        - in: query
+          name: oppStatus
+          schema:
+            type: string
+            enum: [ACTIVE, DRAFT, ARCHIVED]
       responses:
         "200":
           description: OK
@@ -298,7 +303,7 @@ components:
 
     Opportunity:
       type: object
-      required: [id, title, description, category, pointsValue, isActive, createdAt]
+      required: [id, title, description, category, pointsValue, isActive, oppStatus, createdAt]
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
@@ -310,6 +315,19 @@ components:
         pointsValue: { type: integer }
         logoUrl: { type: ["string", "null"] }
         isActive: { type: boolean }
+        oppStatus:
+          type: string
+          enum: [ACTIVE, DRAFT, ARCHIVED]
+        audience:
+          type: string
+          enum: [ALL_USERS, EMPLOYER_SPECIFIC, INDIVIDUAL_ONLY]
+          nullable: true
+        completionType:
+          type: string
+          enum: [SELF_REPORTED, EMR_VERIFIED, ADMIN_VERIFIED]
+          nullable: true
+        windowStart: { type: ["string", "null"], format: date }
+        windowEnd: { type: ["string", "null"], format: date }
         createdBy: { type: ["string", "null"] }
         createdByName: { type: ["string", "null"] }
         createdAt: { type: string, format: date-time }
@@ -317,7 +335,7 @@ components:
 
     OpportunityDetail:
       type: object
-      required: [id, title, description, category, pointsValue, isActive, createdAt, authors]
+      required: [id, title, description, category, pointsValue, isActive, oppStatus, createdAt, authors]
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
@@ -329,6 +347,19 @@ components:
         pointsValue: { type: integer }
         logoUrl: { type: ["string", "null"] }
         isActive: { type: boolean }
+        oppStatus:
+          type: string
+          enum: [ACTIVE, DRAFT, ARCHIVED]
+        audience:
+          type: string
+          enum: [ALL_USERS, EMPLOYER_SPECIFIC, INDIVIDUAL_ONLY]
+          nullable: true
+        completionType:
+          type: string
+          enum: [SELF_REPORTED, EMR_VERIFIED, ADMIN_VERIFIED]
+          nullable: true
+        windowStart: { type: ["string", "null"], format: date }
+        windowEnd: { type: ["string", "null"], format: date }
         createdBy: { type: ["string", "null"] }
         createdByName: { type: ["string", "null"] }
         createdAt: { type: string, format: date-time }
@@ -362,6 +393,17 @@ components:
         subCategory: { type: string }
         pointsValue: { type: integer, minimum: 1 }
         logoUrl: { type: string }
+        oppStatus:
+          type: string
+          enum: [ACTIVE, DRAFT, ARCHIVED]
+        audience:
+          type: string
+          enum: [ALL_USERS, EMPLOYER_SPECIFIC, INDIVIDUAL_ONLY]
+        completionType:
+          type: string
+          enum: [SELF_REPORTED, EMR_VERIFIED, ADMIN_VERIFIED]
+        windowStart: { type: string, format: date }
+        windowEnd: { type: string, format: date }
 
     OpportunityUpdate:
       type: object
@@ -375,6 +417,17 @@ components:
         pointsValue: { type: integer, minimum: 1 }
         logoUrl: { type: string }
         isActive: { type: boolean }
+        oppStatus:
+          type: string
+          enum: [ACTIVE, DRAFT, ARCHIVED]
+        audience:
+          type: string
+          enum: [ALL_USERS, EMPLOYER_SPECIFIC, INDIVIDUAL_ONLY]
+        completionType:
+          type: string
+          enum: [SELF_REPORTED, EMR_VERIFIED, ADMIN_VERIFIED]
+        windowStart: { type: string, format: date }
+        windowEnd: { type: string, format: date }
         notes: { type: string }
 
     CategoryCount:

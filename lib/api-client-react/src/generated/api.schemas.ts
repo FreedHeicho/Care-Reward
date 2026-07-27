@@ -38,6 +38,33 @@ export const OpportunityCategory = {
   CARE_QUALITY: 'CARE_QUALITY',
 } as const;
 
+export type OpportunityOppStatus = typeof OpportunityOppStatus[keyof typeof OpportunityOppStatus];
+
+
+export const OpportunityOppStatus = {
+  ACTIVE: 'ACTIVE',
+  DRAFT: 'DRAFT',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type OpportunityAudience = typeof OpportunityAudience[keyof typeof OpportunityAudience] | null;
+
+
+export const OpportunityAudience = {
+  ALL_USERS: 'ALL_USERS',
+  EMPLOYER_SPECIFIC: 'EMPLOYER_SPECIFIC',
+  INDIVIDUAL_ONLY: 'INDIVIDUAL_ONLY',
+} as const;
+
+export type OpportunityCompletionType = typeof OpportunityCompletionType[keyof typeof OpportunityCompletionType] | null;
+
+
+export const OpportunityCompletionType = {
+  SELF_REPORTED: 'SELF_REPORTED',
+  EMR_VERIFIED: 'EMR_VERIFIED',
+  ADMIN_VERIFIED: 'ADMIN_VERIFIED',
+} as const;
+
 export interface Opportunity {
   id: string;
   title: string;
@@ -49,6 +76,13 @@ export interface Opportunity {
   /** @nullable */
   logoUrl?: string | null;
   isActive: boolean;
+  oppStatus: OpportunityOppStatus;
+  audience?: OpportunityAudience;
+  completionType?: OpportunityCompletionType;
+  /** @nullable */
+  windowStart?: string | null;
+  /** @nullable */
+  windowEnd?: string | null;
   /** @nullable */
   createdBy?: string | null;
   /** @nullable */
@@ -65,6 +99,33 @@ export const OpportunityDetailCategory = {
   CARE_PROTOCOL: 'CARE_PROTOCOL',
   PREVENTATIVE_CARE: 'PREVENTATIVE_CARE',
   CARE_QUALITY: 'CARE_QUALITY',
+} as const;
+
+export type OpportunityDetailOppStatus = typeof OpportunityDetailOppStatus[keyof typeof OpportunityDetailOppStatus];
+
+
+export const OpportunityDetailOppStatus = {
+  ACTIVE: 'ACTIVE',
+  DRAFT: 'DRAFT',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type OpportunityDetailAudience = typeof OpportunityDetailAudience[keyof typeof OpportunityDetailAudience] | null;
+
+
+export const OpportunityDetailAudience = {
+  ALL_USERS: 'ALL_USERS',
+  EMPLOYER_SPECIFIC: 'EMPLOYER_SPECIFIC',
+  INDIVIDUAL_ONLY: 'INDIVIDUAL_ONLY',
+} as const;
+
+export type OpportunityDetailCompletionType = typeof OpportunityDetailCompletionType[keyof typeof OpportunityDetailCompletionType] | null;
+
+
+export const OpportunityDetailCompletionType = {
+  SELF_REPORTED: 'SELF_REPORTED',
+  EMR_VERIFIED: 'EMR_VERIFIED',
+  ADMIN_VERIFIED: 'ADMIN_VERIFIED',
 } as const;
 
 export type OpportunityAuthorEntryAction = typeof OpportunityAuthorEntryAction[keyof typeof OpportunityAuthorEntryAction];
@@ -99,6 +160,13 @@ export interface OpportunityDetail {
   /** @nullable */
   logoUrl?: string | null;
   isActive: boolean;
+  oppStatus: OpportunityDetailOppStatus;
+  audience?: OpportunityDetailAudience;
+  completionType?: OpportunityDetailCompletionType;
+  /** @nullable */
+  windowStart?: string | null;
+  /** @nullable */
+  windowEnd?: string | null;
   /** @nullable */
   createdBy?: string | null;
   /** @nullable */
@@ -117,6 +185,33 @@ export const OpportunityInputCategory = {
   CARE_QUALITY: 'CARE_QUALITY',
 } as const;
 
+export type OpportunityInputOppStatus = typeof OpportunityInputOppStatus[keyof typeof OpportunityInputOppStatus];
+
+
+export const OpportunityInputOppStatus = {
+  ACTIVE: 'ACTIVE',
+  DRAFT: 'DRAFT',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type OpportunityInputAudience = typeof OpportunityInputAudience[keyof typeof OpportunityInputAudience];
+
+
+export const OpportunityInputAudience = {
+  ALL_USERS: 'ALL_USERS',
+  EMPLOYER_SPECIFIC: 'EMPLOYER_SPECIFIC',
+  INDIVIDUAL_ONLY: 'INDIVIDUAL_ONLY',
+} as const;
+
+export type OpportunityInputCompletionType = typeof OpportunityInputCompletionType[keyof typeof OpportunityInputCompletionType];
+
+
+export const OpportunityInputCompletionType = {
+  SELF_REPORTED: 'SELF_REPORTED',
+  EMR_VERIFIED: 'EMR_VERIFIED',
+  ADMIN_VERIFIED: 'ADMIN_VERIFIED',
+} as const;
+
 export interface OpportunityInput {
   /** @minLength 1 */
   title: string;
@@ -126,6 +221,11 @@ export interface OpportunityInput {
   /** @minimum 1 */
   pointsValue: number;
   logoUrl?: string;
+  oppStatus?: OpportunityInputOppStatus;
+  audience?: OpportunityInputAudience;
+  completionType?: OpportunityInputCompletionType;
+  windowStart?: string;
+  windowEnd?: string;
 }
 
 export type OpportunityUpdateCategory = typeof OpportunityUpdateCategory[keyof typeof OpportunityUpdateCategory];
@@ -138,6 +238,33 @@ export const OpportunityUpdateCategory = {
   CARE_QUALITY: 'CARE_QUALITY',
 } as const;
 
+export type OpportunityUpdateOppStatus = typeof OpportunityUpdateOppStatus[keyof typeof OpportunityUpdateOppStatus];
+
+
+export const OpportunityUpdateOppStatus = {
+  ACTIVE: 'ACTIVE',
+  DRAFT: 'DRAFT',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type OpportunityUpdateAudience = typeof OpportunityUpdateAudience[keyof typeof OpportunityUpdateAudience];
+
+
+export const OpportunityUpdateAudience = {
+  ALL_USERS: 'ALL_USERS',
+  EMPLOYER_SPECIFIC: 'EMPLOYER_SPECIFIC',
+  INDIVIDUAL_ONLY: 'INDIVIDUAL_ONLY',
+} as const;
+
+export type OpportunityUpdateCompletionType = typeof OpportunityUpdateCompletionType[keyof typeof OpportunityUpdateCompletionType];
+
+
+export const OpportunityUpdateCompletionType = {
+  SELF_REPORTED: 'SELF_REPORTED',
+  EMR_VERIFIED: 'EMR_VERIFIED',
+  ADMIN_VERIFIED: 'ADMIN_VERIFIED',
+} as const;
+
 export interface OpportunityUpdate {
   /** @minLength 1 */
   title?: string;
@@ -148,6 +275,11 @@ export interface OpportunityUpdate {
   pointsValue?: number;
   logoUrl?: string;
   isActive?: boolean;
+  oppStatus?: OpportunityUpdateOppStatus;
+  audience?: OpportunityUpdateAudience;
+  completionType?: OpportunityUpdateCompletionType;
+  windowStart?: string;
+  windowEnd?: string;
   notes?: string;
 }
 
@@ -203,6 +335,7 @@ export type Logout200 = {
 export type ListAdminOpportunitiesParams = {
 category?: ListAdminOpportunitiesCategory;
 isActive?: boolean;
+oppStatus?: ListAdminOpportunitiesOppStatus;
 };
 
 export type ListAdminOpportunitiesCategory = typeof ListAdminOpportunitiesCategory[keyof typeof ListAdminOpportunitiesCategory];
@@ -213,6 +346,15 @@ export const ListAdminOpportunitiesCategory = {
   CARE_PROTOCOL: 'CARE_PROTOCOL',
   PREVENTATIVE_CARE: 'PREVENTATIVE_CARE',
   CARE_QUALITY: 'CARE_QUALITY',
+} as const;
+
+export type ListAdminOpportunitiesOppStatus = typeof ListAdminOpportunitiesOppStatus[keyof typeof ListAdminOpportunitiesOppStatus];
+
+
+export const ListAdminOpportunitiesOppStatus = {
+  ACTIVE: 'ACTIVE',
+  DRAFT: 'DRAFT',
+  ARCHIVED: 'ARCHIVED',
 } as const;
 
 export type DeactivateOpportunity200 = {

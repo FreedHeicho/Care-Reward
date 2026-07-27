@@ -5,6 +5,7 @@ import {
   users,
   userOpportunities,
   opportunities,
+  employerOpportunityConfigs,
   redemptionWindows,
   pointsAccounts,
   pointsTransactions,
@@ -30,23 +31,48 @@ export function startScheduler() {
           ),
         );
 
-      // Get all active users
+      // Get all active users with their employer
       const activeUsers = await db
-        .select({ id: users.id })
+        .select({ id: users.id, employerId: users.employerId })
         .from(users)
         .where(eq(users.isActive, true));
 
+      // Get all ACTIVE opportunities (oppStatus = ACTIVE keeps in sync with isActive)
       const allOpps = await db
         .select()
         .from(opportunities)
-        .where(eq(opportunities.isActive, true));
+        .where(
+          and(
+            eq(opportunities.isActive, true),
+            eq(opportunities.oppStatus, "ACTIVE"),
+          ),
+        );
 
-      const windowStart = today;
-      const windowEnd = new Date(Date.now() + 30 * 86400_000)
+      // Pre-load all employer configs in one query to avoid N+1
+      const allConfigs = await db
+        .select({
+          employerId: employerOpportunityConfigs.employerId,
+          opportunityId: employerOpportunityConfigs.opportunityId,
+          isEnabled: employerOpportunityConfigs.isEnabled,
+          customPointsValue: employerOpportunityConfigs.customPointsValue,
+        })
+        .from(employerOpportunityConfigs);
+
+      // Build a lookup: employerId → opportunityId → config
+      const configMap = new Map<string, Map<string, typeof allConfigs[0]>>();
+      for (const cfg of allConfigs) {
+        if (!configMap.has(cfg.employerId)) {
+          configMap.set(cfg.employerId, new Map());
+        }
+        configMap.get(cfg.employerId)!.set(cfg.opportunityId, cfg);
+      }
+
+      const defaultWindowEnd = new Date(Date.now() + 30 * 86400_000)
         .toISOString()
         .slice(0, 10);
 
       for (const user of activeUsers) {
+        // Get this user's already-assigned opportunity IDs
         const existing = await db
           .select({ opportunityId: userOpportunities.opportunityId })
           .from(userOpportunities)
@@ -54,8 +80,27 @@ export function startScheduler() {
 
         const assignedIds = new Set(existing.map((r) => r.opportunityId));
 
+        // Get employer-level config map for this user (if they have an employer)
+        const employerCfgs = user.employerId
+          ? configMap.get(user.employerId)
+          : undefined;
+
         for (const opp of allOpps) {
           if (assignedIds.has(opp.id)) continue;
+
+          // Check employer config — if the employer has explicitly disabled this opp, skip it
+          if (employerCfgs) {
+            const cfg = employerCfgs.get(opp.id);
+            if (cfg && !cfg.isEnabled) continue;
+          }
+
+          // Use opportunity's own window if defined, else fall back to 30-day default
+          const windowStart = opp.windowStart ?? today;
+          const windowEnd = opp.windowEnd ?? defaultWindowEnd;
+
+          // Use employer's custom points value if configured, otherwise use master value
+          const pointsValue =
+            employerCfgs?.get(opp.id)?.customPointsValue ?? opp.pointsValue;
 
           await db.insert(userOpportunities).values({
             userId: user.id,
@@ -69,7 +114,7 @@ export function startScheduler() {
             userId: user.id,
             type: "OPPORTUNITY_AVAILABLE",
             title: "New Opportunity Available",
-            message: `Earn ${opp.pointsValue} points: ${opp.title}`,
+            message: `Earn ${pointsValue} points: ${opp.title}`,
           });
         }
       }
@@ -206,7 +251,7 @@ export function startScheduler() {
   });
 
   console.log("[scheduler] All 4 jobs scheduled:");
-  console.log("  - Job 1: Opportunities engine (daily 2 AM)");
+  console.log("  - Job 1: Opportunities engine (daily 2 AM) — respects employer configs");
   console.log("  - Job 2: Redemption window (monthly 1st midnight)");
   console.log("  - Job 3: Closing warning (daily 9 AM)");
   console.log("  - Job 4: Annual points reset (Jan 1 midnight)");

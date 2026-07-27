@@ -1,0 +1,149 @@
+The "implementor" is the person or company that deploys CareReward for a group of users. In most cases this is: 
+
+CareReward Internal Team    → Super admin, full control
+Employer HR Administrator   → Manages their employees
+Insurance Company Rep       → Defines clinical opportunities
+
+
+"View for Opp Build"
+This means a screen inside the Implementor Portal where someone can create and configure opportunities. Right now your opportunities are hard-coded in the seed file. The "opp build" view makes them dynamic — anyone with the right permissions can create new ones without a developer.
+The screen would look something like this:
+
+CREATE NEW OPPORTUNITY
+─────────────────────────────────────────
+Title:          [Schedule Annual Wellness Visit      ]
+Description:    [Book and complete your annual...    ]
+
+Category:       ○ Care Site Alternative
+                ● Preventative Care
+                ○ Care Protocol
+                ○ Care Quality
+
+Points Value:   [100] points
+
+Sub-category:   [Annual Checkup                      ]
+
+Window:         Start [01/01/2026] End [12/31/2026]
+
+Who sees this:  ○ All users
+                ● Employer specific
+                ○ Individual users only
+
+Completion:     ○ Self-reported by user
+                ● Verified by EMR data
+                ○ Manual admin verification
+
+Status:         ● Active  ○ Draft  ○ Archived
+
+              [Save as Draft]  [Publish Opportunity]
+"Who Defines the Opp + Logic and Also Assigns Points"
+This is a roles and permissions question. The answer depends on our business model but here is the most logical structure for CareReward:
+ROLE 1 — CareReward Super Admin
+  Who:    Your internal team
+  Can do: Everything. Create master opportunity catalog,
+          set global point values, manage all employers,
+          override anything.
+
+ROLE 2 — Employer Admin / Implementor
+  Who:    HR manager at Acme Corp for example
+  Can do: Choose which opportunities from the master
+          catalog apply to their employees.
+          Set custom point multipliers for their plan.
+          Upload insurance implementation file.
+          View their employees' engagement reports.
+          Cannot create new opportunity types —
+          only picks from what CareReward defined.
+
+ROLE 3 — Insurance Company Rep
+  Who:    Partner insurance companies
+  Can do: Define clinical protocol opportunities
+          (e.g. "Get your A1C tested if diabetic")
+          that are medically validated.
+          Set point values tied to their cost savings.
+
+ROLE 4 — End User (Mobile App)
+  Who:    The employee/member
+  Can do: View assigned opportunities only.
+          Complete them.
+          Cannot see who defined them or why.
+How the Three Pieces Connect
+Here is the full flow from opportunity creation to a user earning points:
+STEP 1 — DEFINE (Super Admin or Insurance Rep)
+  Someone with admin access logs into the
+  Implementor Portal and creates an opportunity
+  using the "opp build" view.
+  Sets title, category, points value, logic.
+  Saves to the opportunities table in your DB.
+
+STEP 2 — CONFIGURE (Employer Admin / Implementor)
+  Employer HR logs into their portal view.
+  Sees the master catalog of opportunities.
+  Selects which ones apply to their employees.
+  Can adjust point values within allowed range.
+  This creates employer_opportunity_configs records.
+
+STEP 3 — ASSIGN (Nightly Rules Engine — already built)
+  The scheduler job you already have runs at 2AM.
+  For each user it checks:
+    - What employer are they with?
+    - Which opportunities did that employer activate?
+    - Has this user already been assigned this?
+    - Are they eligible based on their health profile?
+  Creates userOpportunities rows for eligible users.
+
+STEP 4 — COMPLETE (End User — Mobile App)
+  User sees the opportunity on their phone.
+  Completes the required action.
+  App calls POST /api/opportunities/complete.
+  Points are added to their balance.
+
+STEP 5 — REPORT (Employer Admin / Implementor)
+  Employer logs into portal.
+  Sees dashboard: how many employees completed,
+  total points awarded, cost savings estimate.
+What This Means for Your Database
+You need two additional tables to support this properly
+// Employer-specific opportunity configuration
+// Allows employers to customise the master catalog
+employerOpportunityConfigs:
+  id (uuid PK)
+  employerId (uuid FK → employers.id)
+  opportunityId (uuid FK → opportunities.id)
+  isEnabled (boolean)
+  customPointsValue (integer nullable)
+    // null = use the master points value
+    // set = override for this employer's users
+  createdAt (timestamp)
+
+// Tracks who created/owns each opportunity
+opportunityAuthors:
+  id (uuid PK)
+  opportunityId (uuid FK → opportunities.id)
+  createdByUserId (uuid FK → users.id)
+  createdByRole (enum: 'SUPER_ADMIN' | 'EMPLOYER_ADMIN' | 'INSURANCE_REP')
+  approvedAt (timestamp nullable)
+  approvedByUserId (uuid nullable)
+What You Actually Need to Build
+Three things come out of this:
+THING 1 — Implementor Portal (separate web app)
+
+  Minimum screens needed:
+    - Login
+    - Dashboard (overview stats)
+    - Opportunity builder (the "opp build" view)
+    - Opportunity catalog management
+    - Employee/user management
+    - Insurance file upload (we already have this API)
+    - Reports
+
+THING 2 — Role-Based Access on Your API
+  Add middleware that checks userRole before
+  allowing access to admin endpoints.
+  Already partially done — your userRoleEnum
+  has 'user' | 'admin' | 'employer_admin'
+  Just needs enforcing on the routes.
+
+THING 3 — Opportunity Assignment Logic Update
+  Update the nightly scheduler to check
+  employerOpportunityConfigs before assigning
+  so employer customisation is respected.

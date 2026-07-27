@@ -51,7 +51,8 @@ export const LogoutResponse = zod.object({
  */
 export const ListAdminOpportunitiesQueryParams = zod.object({
   "category": zod.enum(['CARE_SITE_ALTERNATIVE', 'CARE_PROTOCOL', 'PREVENTATIVE_CARE', 'CARE_QUALITY']).optional(),
-  "isActive": zod.coerce.boolean().optional()
+  "isActive": zod.coerce.boolean().optional(),
+  "oppStatus": zod.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']).optional()
 })
 
 export const ListAdminOpportunitiesResponseItem = zod.object({
@@ -63,6 +64,11 @@ export const ListAdminOpportunitiesResponseItem = zod.object({
   "pointsValue": zod.number(),
   "logoUrl": zod.string().nullish(),
   "isActive": zod.boolean(),
+  "oppStatus": zod.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']),
+  "audience": zod.enum(['ALL_USERS', 'EMPLOYER_SPECIFIC', 'INDIVIDUAL_ONLY']).nullish(),
+  "completionType": zod.enum(['SELF_REPORTED', 'EMR_VERIFIED', 'ADMIN_VERIFIED']).nullish(),
+  "windowStart": zod.coerce.date().nullish(),
+  "windowEnd": zod.coerce.date().nullish(),
   "createdBy": zod.string().nullish(),
   "createdByName": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
@@ -84,7 +90,12 @@ export const CreateOpportunityBody = zod.object({
   "category": zod.enum(['CARE_SITE_ALTERNATIVE', 'CARE_PROTOCOL', 'PREVENTATIVE_CARE', 'CARE_QUALITY']),
   "subCategory": zod.string().optional(),
   "pointsValue": zod.number().min(1),
-  "logoUrl": zod.string().optional()
+  "logoUrl": zod.string().optional(),
+  "oppStatus": zod.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']).optional(),
+  "audience": zod.enum(['ALL_USERS', 'EMPLOYER_SPECIFIC', 'INDIVIDUAL_ONLY']).optional(),
+  "completionType": zod.enum(['SELF_REPORTED', 'EMR_VERIFIED', 'ADMIN_VERIFIED']).optional(),
+  "windowStart": zod.coerce.date().optional(),
+  "windowEnd": zod.coerce.date().optional()
 })
 
 
@@ -108,6 +119,11 @@ export const GetOpportunityStatsResponse = zod.object({
   "pointsValue": zod.number(),
   "logoUrl": zod.string().nullish(),
   "isActive": zod.boolean(),
+  "oppStatus": zod.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']),
+  "audience": zod.enum(['ALL_USERS', 'EMPLOYER_SPECIFIC', 'INDIVIDUAL_ONLY']).nullish(),
+  "completionType": zod.enum(['SELF_REPORTED', 'EMR_VERIFIED', 'ADMIN_VERIFIED']).nullish(),
+  "windowStart": zod.coerce.date().nullish(),
+  "windowEnd": zod.coerce.date().nullish(),
   "createdBy": zod.string().nullish(),
   "createdByName": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
@@ -132,6 +148,11 @@ export const GetOpportunityResponse = zod.object({
   "pointsValue": zod.number(),
   "logoUrl": zod.string().nullish(),
   "isActive": zod.boolean(),
+  "oppStatus": zod.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']),
+  "audience": zod.enum(['ALL_USERS', 'EMPLOYER_SPECIFIC', 'INDIVIDUAL_ONLY']).nullish(),
+  "completionType": zod.enum(['SELF_REPORTED', 'EMR_VERIFIED', 'ADMIN_VERIFIED']).nullish(),
+  "windowStart": zod.coerce.date().nullish(),
+  "windowEnd": zod.coerce.date().nullish(),
   "createdBy": zod.string().nullish(),
   "createdByName": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
@@ -165,6 +186,11 @@ export const UpdateOpportunityBody = zod.object({
   "pointsValue": zod.number().min(1).optional(),
   "logoUrl": zod.string().optional(),
   "isActive": zod.boolean().optional(),
+  "oppStatus": zod.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']).optional(),
+  "audience": zod.enum(['ALL_USERS', 'EMPLOYER_SPECIFIC', 'INDIVIDUAL_ONLY']).optional(),
+  "completionType": zod.enum(['SELF_REPORTED', 'EMR_VERIFIED', 'ADMIN_VERIFIED']).optional(),
+  "windowStart": zod.coerce.date().optional(),
+  "windowEnd": zod.coerce.date().optional(),
   "notes": zod.string().optional()
 })
 
@@ -177,6 +203,11 @@ export const UpdateOpportunityResponse = zod.object({
   "pointsValue": zod.number(),
   "logoUrl": zod.string().nullish(),
   "isActive": zod.boolean(),
+  "oppStatus": zod.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']),
+  "audience": zod.enum(['ALL_USERS', 'EMPLOYER_SPECIFIC', 'INDIVIDUAL_ONLY']).nullish(),
+  "completionType": zod.enum(['SELF_REPORTED', 'EMR_VERIFIED', 'ADMIN_VERIFIED']).nullish(),
+  "windowStart": zod.coerce.date().nullish(),
+  "windowEnd": zod.coerce.date().nullish(),
   "createdBy": zod.string().nullish(),
   "createdByName": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
@@ -235,6 +266,11 @@ export const ListEmployerConfigsResponseItem = zod.object({
   "pointsValue": zod.number(),
   "logoUrl": zod.string().nullish(),
   "isActive": zod.boolean(),
+  "oppStatus": zod.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']),
+  "audience": zod.enum(['ALL_USERS', 'EMPLOYER_SPECIFIC', 'INDIVIDUAL_ONLY']).nullish(),
+  "completionType": zod.enum(['SELF_REPORTED', 'EMR_VERIFIED', 'ADMIN_VERIFIED']).nullish(),
+  "windowStart": zod.coerce.date().nullish(),
+  "windowEnd": zod.coerce.date().nullish(),
   "createdBy": zod.string().nullish(),
   "createdByName": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
@@ -277,6 +313,11 @@ export const SetEmployerConfigResponse = zod.object({
   "pointsValue": zod.number(),
   "logoUrl": zod.string().nullish(),
   "isActive": zod.boolean(),
+  "oppStatus": zod.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']),
+  "audience": zod.enum(['ALL_USERS', 'EMPLOYER_SPECIFIC', 'INDIVIDUAL_ONLY']).nullish(),
+  "completionType": zod.enum(['SELF_REPORTED', 'EMR_VERIFIED', 'ADMIN_VERIFIED']).nullish(),
+  "windowStart": zod.coerce.date().nullish(),
+  "windowEnd": zod.coerce.date().nullish(),
   "createdBy": zod.string().nullish(),
   "createdByName": zod.string().nullish(),
   "createdAt": zod.coerce.date(),

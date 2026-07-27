@@ -5,7 +5,10 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OpportunityInputAudience } from './opportunityInputAudience';
 import type { OpportunityInputCategory } from './opportunityInputCategory';
+import type { OpportunityInputCompletionType } from './opportunityInputCompletionType';
+import type { OpportunityInputOppStatus } from './opportunityInputOppStatus';
 
 export interface OpportunityInput {
   /** @minLength 1 */
@@ -16,4 +19,9 @@ export interface OpportunityInput {
   /** @minimum 1 */
   pointsValue: number;
   logoUrl?: string;
+  oppStatus?: OpportunityInputOppStatus;
+  audience?: OpportunityInputAudience;
+  completionType?: OpportunityInputCompletionType;
+  windowStart?: Date;
+  windowEnd?: Date;
 }

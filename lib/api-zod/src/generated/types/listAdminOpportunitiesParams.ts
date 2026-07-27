@@ -6,8 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ListAdminOpportunitiesCategory } from './listAdminOpportunitiesCategory';
+import type { ListAdminOpportunitiesOppStatus } from './listAdminOpportunitiesOppStatus';
 
 export type ListAdminOpportunitiesParams = {
 category?: ListAdminOpportunitiesCategory;
 isActive?: boolean;
+oppStatus?: ListAdminOpportunitiesOppStatus;
 };

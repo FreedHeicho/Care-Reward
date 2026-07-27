@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OpportunityAuthorEntry } from './opportunityAuthorEntry';
+import type { OpportunityDetailAudience } from './opportunityDetailAudience';
 import type { OpportunityDetailCategory } from './opportunityDetailCategory';
+import type { OpportunityDetailCompletionType } from './opportunityDetailCompletionType';
+import type { OpportunityDetailOppStatus } from './opportunityDetailOppStatus';
 
 export interface OpportunityDetail {
   id: string;
@@ -19,6 +22,13 @@ export interface OpportunityDetail {
   /** @nullable */
   logoUrl?: string | null;
   isActive: boolean;
+  oppStatus: OpportunityDetailOppStatus;
+  audience?: OpportunityDetailAudience;
+  completionType?: OpportunityDetailCompletionType;
+  /** @nullable */
+  windowStart?: Date | null;
+  /** @nullable */
+  windowEnd?: Date | null;
   /** @nullable */
   createdBy?: string | null;
   /** @nullable */

@@ -5,7 +5,10 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OpportunityUpdateAudience } from './opportunityUpdateAudience';
 import type { OpportunityUpdateCategory } from './opportunityUpdateCategory';
+import type { OpportunityUpdateCompletionType } from './opportunityUpdateCompletionType';
+import type { OpportunityUpdateOppStatus } from './opportunityUpdateOppStatus';
 
 export interface OpportunityUpdate {
   /** @minLength 1 */
@@ -17,5 +20,10 @@ export interface OpportunityUpdate {
   pointsValue?: number;
   logoUrl?: string;
   isActive?: boolean;
+  oppStatus?: OpportunityUpdateOppStatus;
+  audience?: OpportunityUpdateAudience;
+  completionType?: OpportunityUpdateCompletionType;
+  windowStart?: Date;
+  windowEnd?: Date;
   notes?: string;
 }

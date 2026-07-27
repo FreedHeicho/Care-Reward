@@ -108,6 +108,21 @@ export const opportunityAuthorActionEnum = pgEnum("opportunity_author_action", [
   "DEACTIVATED",
   "REACTIVATED",
 ]);
+export const opportunityLifecycleEnum = pgEnum("opportunity_lifecycle", [
+  "ACTIVE",
+  "DRAFT",
+  "ARCHIVED",
+]);
+export const opportunityAudienceEnum = pgEnum("opportunity_audience", [
+  "ALL_USERS",
+  "EMPLOYER_SPECIFIC",
+  "INDIVIDUAL_ONLY",
+]);
+export const completionTypeEnum = pgEnum("completion_type", [
+  "SELF_REPORTED",
+  "EMR_VERIFIED",
+  "ADMIN_VERIFIED",
+]);
 
 // ─── Group 1: Users ───────────────────────────────────────────────────────────
 
@@ -228,6 +243,15 @@ export const opportunities = pgTable("opportunities", {
   pointsValue: integer("points_value").notNull(),
   logoUrl: text("logo_url"),
   isActive: boolean("is_active").default(true),
+  // Lifecycle status — governs visibility to the scheduler and mobile app
+  oppStatus: opportunityLifecycleEnum("opp_status").default("DRAFT").notNull(),
+  // Who this opportunity is available to
+  audience: opportunityAudienceEnum("audience"),
+  // How completion is verified
+  completionType: completionTypeEnum("completion_type"),
+  // Optional explicit date window for the opportunity itself
+  windowStart: date("window_start"),
+  windowEnd: date("window_end"),
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
