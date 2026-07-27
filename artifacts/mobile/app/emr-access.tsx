@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
+  ActivityIndicator,
   Platform,
   ScrollView,
   StyleSheet,
@@ -30,9 +31,20 @@ export default function EmrAccessScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { connectedSystems, removeSystem } = useHealthRecords();
+  const { connectedSystems, loading, removeSystem } = useHealthRecords();
 
   const hasConnected = connectedSystems.length > 0;
+
+  // Wait for the API check before deciding which view to show.
+  // Without this guard, users with existing connections briefly see the
+  // "Connect" empty state while the fetch is in flight.
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   if (!hasConnected) {
     return (
@@ -167,6 +179,7 @@ export default function EmrAccessScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  centered: { alignItems: "center", justifyContent: "center" },
   emptyWrap: {
     flex: 1,
     alignItems: "center",

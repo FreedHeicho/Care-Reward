@@ -68,16 +68,22 @@ const HealthRecordsContext = createContext<HealthRecordsContextType | null>(null
 
 export function HealthRecordsProvider({ children }: { children: ReactNode }) {
   const [connectedSystems, setConnectedSystems] = useState<HealthSystem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     const token = await getStoredToken();
-    if (!token) return;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     try {
       const systems = await healthSystemsApi.list();
       setConnectedSystems(systems.map(toUiSystem));
     } catch {
       // silently fail — user may not be authenticated yet
+    } finally {
+      setLoading(false);
     }
   }, []);
 
