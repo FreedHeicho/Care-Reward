@@ -20,7 +20,21 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { useHealthRecords } from "@/context/HealthRecordsContext";
+import { useConnectedDevices } from "@/context/ConnectedDevicesContext";
+import { pushTokensApi } from "@/services/api";
 import { useColors } from "@/hooks/useColors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const DEVICE_TOKEN_KEY = "@cr_device_token";
+
+async function getOrCreateDeviceToken(): Promise<string> {
+  let token = await AsyncStorage.getItem(DEVICE_TOKEN_KEY);
+  if (!token) {
+    token = `device_${Math.random().toString(36).substring(2, 11)}_${Date.now()}`;
+    await AsyncStorage.setItem(DEVICE_TOKEN_KEY, token);
+  }
+  return token;
+}
 
 const LOGO = require("../../assets/carealign-logo.png");
 
@@ -30,6 +44,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
   const { refresh: refreshHealthRecords } = useHealthRecords();
+  const { refresh: refreshDevices } = useConnectedDevices();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,10 +67,15 @@ export default function LoginScreen() {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await signIn(email.trim().toLowerCase(), password);
-      // Trigger health records fetch now that a valid token is stored.
-      // The context's initial fetch ran before login (no token), so it
-      // returned early and left connectedSystems empty.
+      // Trigger data fetches now that a valid token is stored.
       refreshHealthRecords();
+      refreshDevices();
+      // Register push token for this device (fire-and-forget)
+      getOrCreateDeviceToken()
+        .then((token) =>
+          pushTokensApi.register(token, Platform.OS === "ios" ? "IOS" : "ANDROID"),
+        )
+        .catch(() => {});
       router.replace("/(tabs)");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign in failed";

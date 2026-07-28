@@ -128,6 +128,175 @@ export const pointsApi = {
   getBalance: () => request<PointsBalanceResponse>("/points/balance"),
 };
 
+// ── Connected Devices ─────────────────────────────────────────────────────────
+
+export interface ConnectedDevice {
+  id: string;
+  userId: string;
+  deviceType: "BLOOD_PRESSURE" | "GLUCOSE" | "OXYGEN" | "HEART_RATE" | "STRESS";
+  deviceName: string;
+  deviceModel: string | null;
+  manufacturer: string | null;
+  connectionType: "BLUETOOTH" | "WIFI" | "NFC";
+  macAddress: string | null;
+  isActive: boolean;
+  lastConnectedAt: string | null;
+  createdAt: string;
+  alreadyConnected?: boolean;
+}
+
+export const devicesApi = {
+  list: () => request<ConnectedDevice[]>("/user/devices"),
+
+  connect: (params: {
+    deviceType: string;
+    deviceName: string;
+    deviceModel?: string;
+    manufacturer?: string;
+    connectionType: string;
+  }) =>
+    request<ConnectedDevice>("/user/devices", {
+      method: "POST",
+      body: JSON.stringify(params),
+    }),
+
+  disconnect: (id: string) =>
+    request<{ success: boolean }>(`/user/devices/${id}`, { method: "DELETE" }),
+};
+
+// ── Device Readings ───────────────────────────────────────────────────────────
+
+export interface DeviceReading {
+  id: string;
+  userId: string;
+  deviceId: string;
+  metricType: string;
+  value: string;
+  unit: string;
+  recordedAt: string;
+  syncedAt: string;
+  isFlagged: boolean;
+  deviceName?: string;
+  deviceType?: string;
+}
+
+export const deviceReadingsApi = {
+  list: (params?: { deviceId?: string; metricType?: string; limit?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.deviceId) qs.set("deviceId", params.deviceId);
+    if (params?.metricType) qs.set("metricType", params.metricType);
+    if (params?.limit) qs.set("limit", String(params.limit));
+    const query = qs.toString() ? `?${qs}` : "";
+    return request<DeviceReading[]>(`/user/device-readings${query}`);
+  },
+
+  log: (params: {
+    deviceId: string;
+    metricType: string;
+    value: number;
+    unit: string;
+    recordedAt?: string;
+    isFlagged?: boolean;
+  }) =>
+    request<DeviceReading>("/user/device-readings", {
+      method: "POST",
+      body: JSON.stringify(params),
+    }),
+};
+
+// ── Copay Records ─────────────────────────────────────────────────────────────
+
+export interface CopayRecord {
+  id: string;
+  userId: string;
+  providerName: string | null;
+  amountDue: string;
+  visitDate: string;
+  status: string;
+  emrRecordId: string | null;
+  createdAt: string;
+}
+
+export const copayApi = {
+  list: () => request<CopayRecord[]>("/user/copay"),
+
+  create: (params: {
+    providerName?: string;
+    amountDue: number;
+    visitDate: string;
+    status?: string;
+    emrRecordId?: string;
+  }) =>
+    request<CopayRecord>("/user/copay", {
+      method: "POST",
+      body: JSON.stringify(params),
+    }),
+
+  updateStatus: (id: string, status: string) =>
+    request<CopayRecord>(`/user/copay/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
+};
+
+// ── EMR Records ───────────────────────────────────────────────────────────────
+
+export interface EmrRecord {
+  id: string;
+  userId: string;
+  healthSystemId: string;
+  recordType: "IMMUNIZATION" | "VISIT" | "LAB_RESULT" | "MEDICATION";
+  fhirResourceType: string;
+  fhirResourceId: string;
+  loincCode: string | null;
+  icd10Code: string | null;
+  cvxCode: string | null;
+  rawData: Record<string, unknown>;
+  displayData: Record<string, unknown>;
+  recordDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const emrApi = {
+  // Existing read endpoint (by type)
+  getByType: (recordType: "IMMUNIZATION" | "VISIT" | "LAB_RESULT" | "MEDICATION") =>
+    request<EmrRecord[]>(`/user/emr/${recordType}`),
+
+  // New write endpoint — sync records from a connected health system
+  syncRecords: (params: {
+    healthSystemId: string;
+    records: Array<{
+      recordType: string;
+      fhirResourceType: string;
+      fhirResourceId: string;
+      loincCode?: string;
+      icd10Code?: string;
+      cvxCode?: string;
+      rawData: Record<string, unknown>;
+      displayData: Record<string, unknown>;
+      recordDate: string;
+    }>;
+  }) =>
+    request<{ inserted: number; records: EmrRecord[] }>("/user/emr", {
+      method: "POST",
+      body: JSON.stringify(params),
+    }),
+};
+
+// ── Push Tokens ───────────────────────────────────────────────────────────────
+
+export const pushTokensApi = {
+  register: (token: string, platform: "IOS" | "ANDROID") =>
+    request<{ id: string; token: string; platform: string; isActive: boolean }>(
+      "/user/push-token",
+      { method: "POST", body: JSON.stringify({ token, platform }) },
+    ),
+
+  deactivate: () =>
+    request<{ success: boolean }>("/user/push-token", { method: "DELETE" }),
+};
+
 export interface ApiUser {
   id: string;
   email: string;

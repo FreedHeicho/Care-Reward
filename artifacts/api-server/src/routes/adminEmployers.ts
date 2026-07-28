@@ -11,6 +11,25 @@ import { requireAuth, requireRole } from "../middlewares/auth.js";
 const router = Router();
 const adminGuard = [requireAuth, requireRole("admin", "employer_admin")] as const;
 
+// ── POST /api/admin/employers ─────────────────────────────────────────────────
+router.post("/admin/employers", requireAuth, requireRole("admin"), async (req, res) => {
+  const { name, planType } = req.body as { name?: string; planType?: string };
+  if (!name?.trim()) {
+    res.status(400).json({ error: "name is required" });
+    return;
+  }
+  try {
+    const [employer] = await db
+      .insert(employers)
+      .values({ name: name.trim(), planType: planType ?? null })
+      .returning();
+    res.status(201).json(employer);
+  } catch (err) {
+    req.log.error({ err }, "create employer error");
+    res.status(500).json({ error: "Failed to create employer" });
+  }
+});
+
 // ── GET /api/admin/employers ──────────────────────────────────────────────────
 router.get("/admin/employers", ...adminGuard, async (req, res) => {
   try {

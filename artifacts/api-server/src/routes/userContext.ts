@@ -194,13 +194,16 @@ router.get("/emr/:recordType", requireAuth, async (req, res) => {
     .catch(() => {});
 
   try {
-    const rows = await db.query.emrRecords.findMany({
-      where: and(
-        eq(emrRecords.userId, userId),
-        eq(emrRecords.recordType, recordType),
-      ),
-      with: { healthSystem: true } as never,
-    });
+    const rows = await db
+      .select()
+      .from(emrRecords)
+      .where(
+        and(
+          eq(emrRecords.userId, userId),
+          eq(emrRecords.recordType, recordType),
+        ),
+      )
+      .orderBy(emrRecords.recordDate);
     res.json(rows);
   } catch (err) {
     req.log.error({ err }, "emr error");

@@ -247,6 +247,8 @@ export default function DeviceListScreen() {
                           params: {
                             deviceName: device.name,
                             deviceType: type ?? "",
+                            deviceModel: device.id,
+                            deviceConnectivity: device.connectivity,
                           },
                         } as never)
                       }

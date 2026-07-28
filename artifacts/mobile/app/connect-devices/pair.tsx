@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { useConnectedDevices } from "@/context/ConnectedDevicesContext";
 
 /* ─── State machine type ─────────────────────────────────── */
 type PairState =
@@ -56,15 +57,21 @@ export default function PairScreen() {
   const insets     = useSafeAreaInsets();
   const router     = useRouter();
   const navigation = useNavigation();
-  const { deviceName, deviceType } =
-    useLocalSearchParams<{ deviceName: string; deviceType: string }>();
-
   const [pairState, setPairState] = useState<PairState>("ready");
+  const { addDevice } = useConnectedDevices();
 
   /* Spinner animation for State B */
   const spinValue  = useRef(new Animated.Value(0)).current;
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const animRef     = useRef<Animated.CompositeAnimation | null>(null);
+
+  const { deviceName, deviceType, deviceModel, deviceConnectivity } =
+    useLocalSearchParams<{
+      deviceName: string;
+      deviceType: string;
+      deviceModel?: string;
+      deviceConnectivity?: string;
+    }>();
 
   const displayName = deviceName ?? "Your Device";
   const metrics     = (deviceType ? METRICS[deviceType] : undefined) ?? METRICS["heart-rate"];
@@ -112,9 +119,23 @@ export default function PairScreen() {
   /* ── Actions ── */
   const startPairing = () => {
     setPairState("searching");
-    /* Simulate: device found in 3 s */
-    searchTimer.current = setTimeout(() => {
-      setPairState("connected");
+    /* Simulate Bluetooth discovery (3 s), then write to DB */
+    searchTimer.current = setTimeout(async () => {
+      try {
+        const result = await addDevice({
+          deviceType: deviceType ?? "HEART_RATE",
+          deviceName: displayName,
+          deviceModel: deviceModel ?? undefined,
+          connectionType: deviceConnectivity ?? "BLUETOOTH",
+        });
+        if (result.alreadyConnected) {
+          setPairState("error-already-connected");
+        } else {
+          setPairState("connected");
+        }
+      } catch {
+        setPairState("error-pairing-failed");
+      }
     }, 3000);
   };
 
