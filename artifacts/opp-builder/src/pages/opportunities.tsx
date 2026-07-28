@@ -1,26 +1,35 @@
 import { useState } from "react";
-import { useListAdminOpportunities, OpportunityCategory, ListAdminOpportunitiesCategory } from "@workspace/api-client-react";
+import { useListAdminOpportunities, ListAdminOpportunitiesCategory } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryBadge } from "@/components/category-badge";
 import { Plus, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+
+function OppStatusBadge({ status }: { status?: string | null }) {
+  if (status === "ACTIVE")
+    return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-200">Active</Badge>;
+  if (status === "DRAFT")
+    return <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50">Draft</Badge>;
+  if (status === "ARCHIVED")
+    return <Badge variant="secondary" className="text-muted-foreground">Archived</Badge>;
+  return null;
+}
 
 export default function OpportunitiesPage() {
   const [categoryFilter, setCategoryFilter] = useState<ListAdminOpportunitiesCategory | "ALL">("ALL");
-  const [activeFilter, setActiveFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "DRAFT" | "ARCHIVED">("ALL");
 
   const { data: opportunities, isLoading } = useListAdminOpportunities(
-    categoryFilter === "ALL" ? {} : { category: categoryFilter, isActive: activeFilter === "ALL" ? undefined : activeFilter === "ACTIVE" }
+    categoryFilter === "ALL" ? {} : { category: categoryFilter }
   );
 
   const filteredOpportunities = opportunities?.filter((opp) => {
-    if (activeFilter === "ACTIVE") return opp.isActive;
-    if (activeFilter === "INACTIVE") return !opp.isActive;
-    return true;
+    if (statusFilter === "ALL") return true;
+    return (opp as any).oppStatus === statusFilter;
   });
 
   return (
@@ -69,14 +78,15 @@ export default function OpportunitiesPage() {
               <label className="text-sm font-medium text-foreground mb-2 block">
                 Status
               </label>
-              <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as any)}>
+              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
                 <SelectTrigger data-testid="select-status-filter">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">All Statuses</SelectItem>
-                  <SelectItem value="ACTIVE">Active Only</SelectItem>
-                  <SelectItem value="INACTIVE">Inactive Only</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="DRAFT">Draft</SelectItem>
+                  <SelectItem value="ARCHIVED">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -114,16 +124,7 @@ export default function OpportunitiesPage() {
                           {opp.title}
                         </h4>
                         <CategoryBadge category={opp.category} />
-                        <span
-                          className={cn(
-                            "px-2 py-0.5 rounded text-xs font-medium",
-                            opp.isActive
-                              ? "bg-primary/10 text-primary"
-                              : "bg-muted text-muted-foreground"
-                          )}
-                        >
-                          {opp.isActive ? "Active" : "Inactive"}
-                        </span>
+                        <OppStatusBadge status={(opp as any).oppStatus ?? (opp.isActive ? "ACTIVE" : "ARCHIVED")} />
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-1">
                         {opp.description}

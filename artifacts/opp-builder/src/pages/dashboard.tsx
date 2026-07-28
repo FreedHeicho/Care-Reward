@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useGetOpportunityStats } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { getAuthToken } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,7 +23,7 @@ export default function DashboardPage() {
       const res = await fetch("/opp-builder/api/admin/scheduler/run", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken") ?? ""}`,
+          Authorization: `Bearer ${getAuthToken() ?? ""}`,
         },
       });
       const data = await res.json();
