@@ -57,7 +57,11 @@ function OppCard({ opp }: { opp: Opportunity }) {
   const bg = opp.iconBg ?? "#EDE9FE";
 
   const handleAction = () => {
-    router.push(`/opportunity-variants/${opp.id}` as never);
+    if (opp.category === "mail-delivery") {
+      router.push(`/mail-delivery-opportunity/${opp.id}` as never);
+    } else {
+      router.push(`/opportunity-variants/${opp.id}` as never);
+    }
   };
 
   return (

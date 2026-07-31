@@ -117,6 +117,10 @@ function RootLayoutNav() {
         options={{ title: "Choose Your Path", headerBackTitle: "Back" }}
       />
       <Stack.Screen
+        name="mail-delivery-opportunity/[id]"
+        options={{ title: "Mail Delivery Opportunity", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
         name="schedule-opportunity"
         options={{ title: "Schedule Appointment", headerBackTitle: "Back" }}
       />
