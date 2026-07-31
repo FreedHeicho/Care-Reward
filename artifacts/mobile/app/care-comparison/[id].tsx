@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
   Platform,
   ScrollView,
@@ -246,20 +246,16 @@ export default function CareComparisonScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const navigation = useNavigation();
   const opp = MOCK_OPPORTUNITIES.find((o) => o.id === id);
   const filterCategory = opp?.filterCategory ?? "care-site-alternative";
   const content = CONTENT[filterCategory] ?? CONTENT["care-site-alternative"];
-
-  useEffect(() => {
-    navigation.setOptions({ title: opp?.title ?? content.pageTitle });
-  }, [opp?.title, content.pageTitle]);
 
   const immediatePoints = opp?.points ?? 50;
   const monthlyPoints = opp?.pointsMonthly ?? 50;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Stack.Screen options={{ title: opp?.title ?? content.pageTitle, headerBackTitle: "Back" }} />
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
