@@ -103,6 +103,8 @@ function OppCard({ opp }: { opp: Opportunity }) {
       opp.filterCategory === "care-protocol"
     ) {
       router.push(`/care-comparison/${opp.id}` as never);
+    } else if (opp.filterCategory === "care-quality") {
+      router.push(`/care-quality-form/${opp.id}` as never);
     } else {
       router.push(`/opportunity-variants/${opp.id}` as never);
     }
