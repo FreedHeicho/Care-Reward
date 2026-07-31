@@ -145,7 +145,7 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
       "Free shipping and delivery",
     ],
     group: "Mail Delivery Opportunities",
-    filterCategory: "care-site-alternative",
+    filterCategory: "mail-delivery",
     icon: "package",
     iconBg: "#E8F5F2",
     frequency: "one-time",

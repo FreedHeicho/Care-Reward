@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Platform,
   ScrollView,
@@ -25,8 +25,13 @@ interface ComparisonContent {
   pointBSubtitle: string;
   pointBBullets: string[];
   whatYouGet: string[];
+  howToTitle: string;
   howToSteps: string[];
+  howToCircleColor?: string;
+  noteTitle: string;
   noteContents: string[];
+  noteCircleColor?: string;
+  pointsLabel?: string; // if set, renders a single full-width box with this label
   importantInfo: string[];
   faqs: string[];
 }
@@ -56,12 +61,14 @@ const CONTENT: Record<string, ComparisonContent> = {
       "More convenient access to care",
       "Avoid unnecessary hospital charges",
     ],
+    howToTitle: "How to Generate Doctor Note",
     howToSteps: [
       "Generate care site comparison note",
       "Review note and add any custom information",
       "Choose delivery method for the note",
       "Submit note to your care coordinator",
     ],
+    noteTitle: "What's in the Doctor Note",
     noteContents: [
       "Current care site details",
       "Alternative care site comparison",
@@ -106,12 +113,14 @@ const CONTENT: Record<string, ComparisonContent> = {
       "Lower out-of-pocket costs",
       "More coordinated care experience",
     ],
+    howToTitle: "How to Generate Doctor Note",
     howToSteps: [
       "Generate care protocol comparison note",
       "Review note and add any custom information",
       "Choose delivery method for the note",
       "Submit note to your care team",
     ],
+    noteTitle: "What's in the Doctor Note",
     noteContents: [
       "Current protocol details",
       "Recommended protocol information",
@@ -130,6 +139,62 @@ const CONTENT: Record<string, ComparisonContent> = {
       "Q: Will my insurance cover the new protocol? A: Most insurance plans prefer evidence-based protocols",
       "Q: Will I still see my specialist? A: Your care team will determine the best approach for you",
       "Q: How long does the protocol take? A: Timelines vary by condition and protocol type",
+    ],
+  },
+  "mail-delivery": {
+    pageTitle: "Mail Delivery Opportunity",
+    pointATitle: "In-Store Pickup",
+    pointASubtitle: "Pharmacy Pickup · Your Local Pharmacy",
+    pointABullets: [
+      "Visit pharmacy in person",
+      "Wait in line for pickup",
+      "Limited to 30-day supply",
+      "Requires monthly trips",
+    ],
+    pointBTitle: "Mail Delivery",
+    pointBSubtitle: "Home Delivery",
+    pointBBullets: [
+      "Automatic refills",
+      "Free home delivery",
+      "90-day supply available",
+      "No trips to pharmacy needed",
+    ],
+    whatYouGet: [
+      "Automatic refill reminders",
+      "Free shipping and delivery",
+      "90-day supply options",
+      "No waiting in pharmacy lines",
+      "Convenient home delivery",
+    ],
+    pointsLabel: "One-Time Reward",
+    howToTitle: "How to Switch to Mail Delivery",
+    howToCircleColor: "#3B82F6",
+    howToSteps: [
+      "Generate doctor note for mail delivery",
+      "Share note with your doctor",
+      "Switch to mail delivery service",
+      "Earn points for convenience",
+    ],
+    noteTitle: "What's Different with Mail Delivery",
+    noteCircleColor: "#3B82F6",
+    noteContents: [
+      "Mail delivery setup instructions",
+      "Automatic refill preferences",
+      "Delivery address confirmation",
+      "Insurance coverage verification",
+      "Contact information for mail pharmacy",
+    ],
+    importantInfo: [
+      "Mail delivery is available for most medications",
+      "Your doctor will need to approve the switch",
+      "You can always switch back to in-store pickup",
+      "Delivery times may vary by location",
+    ],
+    faqs: [
+      "Q: Which medications can be mail-delivered? A: Most maintenance medications qualify for mail delivery",
+      "Q: How long does delivery take? A: Most orders arrive within 5–7 business days",
+      "Q: Can I still use my local pharmacy? A: Yes, you can switch back to in-store pickup at any time",
+      "Q: Is mail delivery covered by my plan? A: Yes, mail delivery is covered and often has lower copays",
     ],
   },
 };
@@ -181,9 +246,14 @@ export default function CareComparisonScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const navigation = useNavigation();
   const opp = MOCK_OPPORTUNITIES.find((o) => o.id === id);
   const filterCategory = opp?.filterCategory ?? "care-site-alternative";
   const content = CONTENT[filterCategory] ?? CONTENT["care-site-alternative"];
+
+  useEffect(() => {
+    navigation.setOptions({ title: content.pageTitle });
+  }, [content.pageTitle]);
 
   const immediatePoints = opp?.points ?? 50;
   const monthlyPoints = opp?.pointsMonthly ?? 50;
@@ -237,26 +307,33 @@ export default function CareComparisonScreen() {
         {/* Points Breakdown */}
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Points Breakdown</Text>
-          <View style={styles.pointsRow}>
-            <View style={[styles.pointsBox, { backgroundColor: colors.primary }]}>
-              <Text style={styles.pointsLabel}>Immediate</Text>
-              <Text style={styles.pointsValue}>{immediatePoints}</Text>
+          {content.pointsLabel ? (
+            <View style={[styles.pointsBoxFull, { backgroundColor: colors.primary }]}>
+              <Text style={styles.pointsLabel}>{content.pointsLabel}</Text>
+              <Text style={styles.pointsValue}>{immediatePoints} Points</Text>
             </View>
-            <View style={[styles.pointsBox, { backgroundColor: colors.primary }]}>
-              <Text style={styles.pointsLabel}>Monthly</Text>
-              <Text style={styles.pointsValue}>{monthlyPoints}</Text>
+          ) : (
+            <View style={styles.pointsRow}>
+              <View style={[styles.pointsBox, { backgroundColor: colors.primary }]}>
+                <Text style={styles.pointsLabel}>Immediate</Text>
+                <Text style={styles.pointsValue}>{immediatePoints}</Text>
+              </View>
+              <View style={[styles.pointsBox, { backgroundColor: colors.primary }]}>
+                <Text style={styles.pointsLabel}>Monthly</Text>
+                <Text style={styles.pointsValue}>{monthlyPoints}</Text>
+              </View>
             </View>
-          </View>
+          )}
         </View>
 
-        {/* How to Generate Doctor Note */}
+        {/* How to … */}
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-            How to Generate Doctor Note
+            {content.howToTitle}
           </Text>
           {content.howToSteps.map((step, i) => (
             <View key={i} style={styles.stepRow}>
-              <View style={[styles.stepCircle, { backgroundColor: colors.primary }]}>
+              <View style={[styles.stepCircle, { backgroundColor: content.howToCircleColor ?? colors.primary }]}>
                 <Text style={styles.stepNum}>{i + 1}</Text>
               </View>
               <Text style={[styles.stepText, { color: colors.foreground }]}>{step}</Text>
@@ -264,14 +341,14 @@ export default function CareComparisonScreen() {
           ))}
         </View>
 
-        {/* What's in the Doctor Note */}
+        {/* What's … */}
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-            What's in the Doctor Note
+            {content.noteTitle}
           </Text>
           {content.noteContents.map((item, i) => (
             <View key={i} style={styles.bulletRow}>
-              <Text style={[styles.bulletDot, { color: colors.primary }]}>•</Text>
+              <Text style={[styles.bulletDot, { color: content.noteCircleColor ?? colors.primary }]}>•</Text>
               <Text style={[styles.cardBBullet, { color: colors.foreground }]}>{item}</Text>
             </View>
           ))}
@@ -354,6 +431,12 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 10,
     paddingVertical: 14,
+    alignItems: "center",
+    gap: 4,
+  },
+  pointsBoxFull: {
+    borderRadius: 10,
+    paddingVertical: 18,
     alignItems: "center",
     gap: 4,
   },

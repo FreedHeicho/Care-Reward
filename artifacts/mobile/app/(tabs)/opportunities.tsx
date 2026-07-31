@@ -100,7 +100,8 @@ function OppCard({ opp }: { opp: Opportunity }) {
   const handleAction = () => {
     if (
       opp.filterCategory === "care-site-alternative" ||
-      opp.filterCategory === "care-protocol"
+      opp.filterCategory === "care-protocol" ||
+      opp.filterCategory === "mail-delivery"
     ) {
       router.push(`/care-comparison/${opp.id}` as never);
     } else if (opp.filterCategory === "care-quality") {
