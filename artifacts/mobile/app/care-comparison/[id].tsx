@@ -252,8 +252,8 @@ export default function CareComparisonScreen() {
   const content = CONTENT[filterCategory] ?? CONTENT["care-site-alternative"];
 
   useEffect(() => {
-    navigation.setOptions({ title: content.pageTitle });
-  }, [content.pageTitle]);
+    navigation.setOptions({ title: opp?.title ?? content.pageTitle });
+  }, [opp?.title, content.pageTitle]);
 
   const immediatePoints = opp?.points ?? 50;
   const monthlyPoints = opp?.pointsMonthly ?? 50;
