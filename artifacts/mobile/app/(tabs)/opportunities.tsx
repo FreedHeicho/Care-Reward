@@ -98,17 +98,7 @@ function OppCard({ opp }: { opp: Opportunity }) {
   const bg = opp.iconBg ?? "#EDE9FE";
 
   const handleAction = () => {
-    if (
-      opp.filterCategory === "care-site-alternative" ||
-      opp.filterCategory === "care-protocol" ||
-      opp.filterCategory === "mail-delivery"
-    ) {
-      router.push(`/care-comparison/${opp.id}` as never);
-    } else if (opp.filterCategory === "care-quality") {
-      router.push(`/care-quality-form/${opp.id}` as never);
-    } else {
-      router.push(`/opportunity-variants/${opp.id}` as never);
-    }
+    router.push(`/opportunity-variants/${opp.id}` as never);
   };
 
   return (

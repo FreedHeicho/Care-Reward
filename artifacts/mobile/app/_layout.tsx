@@ -117,18 +117,6 @@ function RootLayoutNav() {
         options={{ title: "Choose Your Path", headerBackTitle: "Back" }}
       />
       <Stack.Screen
-        name="care-comparison/[id]"
-        options={{ title: "Care Comparison", headerBackTitle: "Back" }}
-      />
-      <Stack.Screen
-        name="doctor-note-wizard/[id]"
-        options={{ title: "Doctor Note", headerBackTitle: "Back" }}
-      />
-      <Stack.Screen
-        name="care-quality-form/[id]"
-        options={{ title: "Care Quality", headerBackTitle: "Back" }}
-      />
-      <Stack.Screen
         name="schedule-opportunity"
         options={{ title: "Schedule Appointment", headerBackTitle: "Back" }}
       />
