@@ -1,8 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   Platform,
   ScrollView,
   StyleSheet,
@@ -19,7 +18,6 @@ import {
   OpportunityFilterCategory,
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
-import { ApiOpportunity, userApi } from "@/services/api";
 
 type FilterKey = Exclude<OpportunityFilterCategory, "mail-delivery"> | null;
 
@@ -48,45 +46,6 @@ const ICON_EMOJI: Record<string, string> = {
   CARE_PROTOCOL: "🩺",
 };
 
-const CATEGORY_TO_FILTER: Record<string, OpportunityFilterCategory> = {
-  CARE_SITE_ALTERNATIVE: "care-site-alternative",
-  PREVENTATIVE_CARE: "preventative-care",
-  CARE_QUALITY: "care-quality",
-  CARE_PROTOCOL: "care-protocol",
-  MAIL_DELIVERY: "mail-delivery",
-};
-
-const CATEGORY_TO_GROUP: Record<string, string> = {
-  CARE_SITE_ALTERNATIVE: "Care Site Alternative",
-  PREVENTATIVE_CARE: "Preventative Care",
-  CARE_QUALITY: "Care Quality",
-  CARE_PROTOCOL: "Care Protocol",
-  MAIL_DELIVERY: "Mail Delivery Opportunities",
-};
-
-function mapApiOpportunity(api: ApiOpportunity): Opportunity {
-  const opp = api.opportunity;
-  return {
-    id: api.id,
-    title: opp.title,
-    description: opp.description,
-    category: "preventive",
-    filterCategory: CATEGORY_TO_FILTER[opp.category] ?? "preventative-care",
-    group: CATEGORY_TO_GROUP[opp.category] ?? "Opportunities",
-    points: opp.pointsValue,
-    pointsMonthly: 0,
-    savings: 0,
-    actionLabel: "How To Earn",
-    frequency: "one-time",
-    icon: "calendar",
-    iconBg: "#EDE9FE",
-    benefits: [opp.description],
-    status: "active",
-    priority: "medium",
-    steps: ["Ask your doctor", "Complete the action", "Claim your points"],
-    why: opp.description,
-  };
-}
 
 function OppCard({ opp }: { opp: Opportunity }) {
   const colors = useColors();
@@ -172,28 +131,7 @@ export default function OpportunitiesScreen() {
 
   const [filter, setFilter] = useState<FilterKey>(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [opportunities, setOpportunities] = useState<Opportunity[]>(MOCK_OPPORTUNITIES);
-  const [loadingOpps, setLoadingOpps] = useState(true);
-
-  const fetchOpportunities = useCallback(async () => {
-    try {
-      setLoadingOpps(true);
-      const apiOpps = await userApi.getOpportunities();
-      if (apiOpps && apiOpps.length > 0) {
-        setOpportunities(apiOpps.map(mapApiOpportunity));
-      } else {
-        setOpportunities(MOCK_OPPORTUNITIES);
-      }
-    } catch {
-      setOpportunities(MOCK_OPPORTUNITIES);
-    } finally {
-      setLoadingOpps(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchOpportunities();
-  }, [fetchOpportunities]);
+  const opportunities = MOCK_OPPORTUNITIES;
 
   useEffect(() => {
     navigation.setOptions({
@@ -348,14 +286,7 @@ export default function OpportunitiesScreen() {
           </View>
         )}
 
-        {loadingOpps ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
-              Loading your opportunities…
-            </Text>
-          </View>
-        ) : hierarchical.length === 0 ? (
+        {hierarchical.length === 0 ? (
           <View style={styles.empty}>
             <Feather name="check-circle" size={40} color={colors.mutedForeground} />
             <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
