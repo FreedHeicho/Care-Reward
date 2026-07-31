@@ -59,6 +59,8 @@ function OppCard({ opp }: { opp: Opportunity }) {
   const handleAction = () => {
     if (opp.category === "mail-delivery") {
       router.push(`/mail-delivery-opportunity/${opp.id}` as never);
+    } else if (opp.title.includes("Survey")) {
+      router.push(`/patient-satisfaction-survey/${opp.id}` as never);
     } else {
       router.push(`/opportunity-variants/${opp.id}` as never);
     }

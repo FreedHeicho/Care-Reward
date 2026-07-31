@@ -121,6 +121,10 @@ function RootLayoutNav() {
         options={{ title: "Mail Delivery Opportunity", headerBackTitle: "Back" }}
       />
       <Stack.Screen
+        name="patient-satisfaction-survey/[id]"
+        options={{ title: "Patient Satisfaction Survey", headerBackTitle: "Back" }}
+      />
+      <Stack.Screen
         name="schedule-opportunity"
         options={{ title: "Schedule Appointment", headerBackTitle: "Back" }}
       />
