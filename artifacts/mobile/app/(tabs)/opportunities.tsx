@@ -63,6 +63,8 @@ function OppCard({ opp }: { opp: Opportunity }) {
       router.push(`/medication-opportunity/${opp.id}` as never);
     } else if (opp.title.includes("Survey")) {
       router.push(`/patient-satisfaction-survey/${opp.id}` as never);
+    } else if (opp.category === "upcoming" && opp.title === "Log Upcoming Care") {
+      router.push("/log-upcoming-care" as never);
     } else {
       router.push(`/opportunity-variants/${opp.id}` as never);
     }

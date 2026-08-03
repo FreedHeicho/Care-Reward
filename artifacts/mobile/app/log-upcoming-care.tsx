@@ -16,12 +16,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 
-type Urgency = "Normal" | "Urgent" | "Emergency";
+type Urgency = "Urgent" | "Normal" | "Flexible";
 
 const URGENCY_OPTIONS: { value: Urgency; label: string; timeframe: string }[] = [
+  { value: "Urgent", label: "Urgent", timeframe: "1 to 2 weeks" },
   { value: "Normal", label: "Normal", timeframe: "3 to 6 weeks" },
-  { value: "Urgent", label: "Urgent", timeframe: "1 to 3 days" },
-  { value: "Emergency", label: "Emergency", timeframe: "Same day" },
+  { value: "Flexible", label: "Flexible", timeframe: "No rush" },
 ];
 
 function TextField({
@@ -30,16 +30,18 @@ function TextField({
   onChange,
   placeholder,
   required,
-  hint,
   keyboard,
+  rightIcon,
+  onRightIconPress,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   required?: boolean;
-  hint?: string;
   keyboard?: "default" | "email-address" | "numeric" | "phone-pad";
+  rightIcon?: keyof typeof Feather.glyphMap;
+  onRightIconPress?: () => void;
 }) {
   const colors = useColors();
   return (
@@ -48,20 +50,23 @@ function TextField({
         {label}
         {required && <Text style={{ color: "#EF4444" }}> *</Text>}
       </Text>
-      <TextInput
-        style={[
-          styles.input,
-          { borderColor: colors.border, backgroundColor: colors.card, color: colors.foreground },
-        ]}
-        value={value}
-        onChangeText={onChange}
-        placeholder={placeholder}
-        placeholderTextColor={colors.mutedForeground}
-        keyboardType={keyboard ?? "default"}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      {hint && <Text style={[styles.hint, { color: colors.mutedForeground }]}>{hint}</Text>}
+      <View style={[styles.inputWrapper, { borderColor: colors.border, backgroundColor: colors.card }]}>
+        <TextInput
+          style={[styles.input, { color: colors.foreground, flex: 1 }]}
+          value={value}
+          onChangeText={onChange}
+          placeholder={placeholder}
+          placeholderTextColor={colors.mutedForeground}
+          keyboardType={keyboard ?? "default"}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {rightIcon && (
+          <TouchableOpacity onPress={onRightIconPress} style={styles.inputIcon}>
+            <Feather name={rightIcon} size={18} color={colors.mutedForeground} />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 }
@@ -78,12 +83,19 @@ export default function LogUpcomingCareScreen() {
   const [urgency, setUrgency] = useState<Urgency>("Normal");
   const [showUrgencyPicker, setShowUrgencyPicker] = useState(false);
   const [hasAppointment, setHasAppointment] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState("");
+  const [appointmentProvider, setAppointmentProvider] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const selectedUrgency = URGENCY_OPTIONS.find((u) => u.value === urgency)!;
 
+  const isValid =
+    procedure.trim() &&
+    zipCode.trim() &&
+    (!hasAppointment || (appointmentDate.trim() && appointmentProvider.trim()));
+
   const handleSubmit = async () => {
-    if (!procedure.trim() || !zipCode.trim()) return;
+    if (!isValid) return;
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSubmitted(true);
     setTimeout(() => router.back(), 1500);
@@ -107,18 +119,26 @@ export default function LogUpcomingCareScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Feather name="x" size={22} color={colors.foreground} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>Log Upcoming Care</Text>
+        <View style={styles.closeBtn} />
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.flex}
+        keyboardVerticalOffset={0}
       >
         <ScrollView
-          contentContainerStyle={[
-            styles.scroll,
-            { paddingBottom: insets.bottom + 100 },
-          ]}
+          contentContainerStyle={[styles.scroll, { paddingBottom: 24 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* Hero */}
           <View style={styles.hero}>
             <Text style={[styles.heroTitle, { color: colors.foreground }]}>
               Tell us about your care
@@ -128,45 +148,55 @@ export default function LogUpcomingCareScreen() {
             </Text>
           </View>
 
+          {/* Procedure name */}
           <TextField
-            label="Procedure name"
+            label="Procedure name *"
             value={procedure}
             onChange={setProcedure}
             placeholder="Enter procedure name"
-            required
+            required={false}
           />
 
+          {/* Zip code */}
           <TextField
-            label="Desired care location zip code"
+            label="Desired care location zip code *"
             value={zipCode}
             onChange={setZipCode}
             placeholder="e.g., 10001, 10002, 10003 (multiple zip codes)"
-            required
             keyboard="numeric"
           />
 
+          {/* Referring provider */}
           <TextField
-            label="Referring provider"
+            label="Referring provider (optional)"
             value={referringProvider}
             onChange={setReferringProvider}
             placeholder="Enter referring provider name"
           />
 
+          {/* Preferred provider group */}
           <TextField
-            label="Any preferred provider group"
+            label="Any preferred provider group (optional)"
             value={preferredGroup}
             onChange={setPreferredGroup}
             placeholder="Enter preferred provider group"
           />
 
-          {/* Urgency Selector */}
+          {/* Urgency */}
           <View style={styles.field}>
             <Text style={[styles.label, { color: colors.foreground }]}>
               How urgent is the care?
             </Text>
+
+            {/* Selector trigger */}
             <TouchableOpacity
-              style={[styles.urgencySelector, { borderColor: colors.border, backgroundColor: colors.card }]}
+              style={[
+                styles.urgencySelector,
+                { borderColor: colors.border, backgroundColor: colors.card },
+                showUrgencyPicker && styles.urgencySelectorOpen,
+              ]}
               onPress={() => setShowUrgencyPicker(!showUrgencyPicker)}
+              activeOpacity={0.8}
             >
               <View style={styles.urgencySelectorContent}>
                 <Text style={[styles.urgencyValue, { color: colors.foreground }]}>
@@ -183,22 +213,29 @@ export default function LogUpcomingCareScreen() {
               />
             </TouchableOpacity>
 
+            {/* Inline dropdown options */}
             {showUrgencyPicker && (
               <View style={[styles.urgencyOptions, { borderColor: colors.border, backgroundColor: colors.card }]}>
-                {URGENCY_OPTIONS.map((opt) => (
+                {URGENCY_OPTIONS.map((opt, idx) => (
                   <TouchableOpacity
                     key={opt.value}
                     style={[
                       styles.urgencyOption,
-                      { borderBottomColor: colors.border },
+                      idx < URGENCY_OPTIONS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
                       urgency === opt.value && { backgroundColor: colors.secondary },
                     ]}
                     onPress={() => {
                       setUrgency(opt.value);
                       setShowUrgencyPicker(false);
                     }}
+                    activeOpacity={0.7}
                   >
-                    <Text style={[styles.urgencyOptionLabel, { color: colors.foreground }]}>
+                    <Text
+                      style={[
+                        styles.urgencyOptionLabel,
+                        { color: urgency === opt.value ? colors.primary : colors.foreground },
+                      ]}
+                    >
                       {opt.label}
                     </Text>
                     <Text style={[styles.urgencyOptionTime, { color: colors.mutedForeground }]}>
@@ -210,10 +247,17 @@ export default function LogUpcomingCareScreen() {
             )}
           </View>
 
-          {/* Appointment Checkbox */}
+          {/* Appointment checkbox */}
           <TouchableOpacity
             style={styles.checkboxRow}
-            onPress={() => setHasAppointment(!hasAppointment)}
+            onPress={() => {
+              setHasAppointment(!hasAppointment);
+              if (hasAppointment) {
+                setAppointmentDate("");
+                setAppointmentProvider("");
+              }
+            }}
+            activeOpacity={0.7}
           >
             <View
               style={[
@@ -224,42 +268,56 @@ export default function LogUpcomingCareScreen() {
                 },
               ]}
             >
-              {hasAppointment && <Feather name="check" size={12} color="#fff" />}
+              {hasAppointment && <Feather name="check" size={13} color="#fff" />}
             </View>
             <Text style={[styles.checkboxLabel, { color: colors.foreground }]}>
               I already have an appointment
             </Text>
           </TouchableOpacity>
 
+          {/* Path B — appointment details */}
+          {hasAppointment && (
+            <>
+              <TextField
+                label="Appointment date"
+                value={appointmentDate}
+                onChange={setAppointmentDate}
+                placeholder="Select appointment date"
+                rightIcon="calendar"
+              />
+
+              <TextField
+                label="Appointment provider name"
+                value={appointmentProvider}
+                onChange={setAppointmentProvider}
+                placeholder="Enter appointment provider name"
+              />
+            </>
+          )}
+        </ScrollView>
+
+        {/* Fixed submit button */}
+        <View
+          style={[
+            styles.footer,
+            { paddingBottom: insets.bottom + 12, backgroundColor: colors.background, borderTopColor: colors.border },
+          ]}
+        >
           <TouchableOpacity
             style={[
               styles.submitBtn,
-              {
-                backgroundColor:
-                  procedure.trim() && zipCode.trim() ? colors.primaryDark : colors.muted,
-              },
+              { backgroundColor: isValid ? "#05503C" : colors.muted },
             ]}
             onPress={handleSubmit}
-            disabled={!procedure.trim() || !zipCode.trim()}
+            disabled={!isValid}
             activeOpacity={0.85}
           >
-            <Text
-              style={[
-                styles.submitBtnText,
-                {
-                  color: procedure.trim() && zipCode.trim() ? "#fff" : colors.mutedForeground,
-                },
-              ]}
-            >
+            <Text style={[styles.submitBtnText, { color: isValid ? "#fff" : colors.mutedForeground }]}>
               Submit
             </Text>
-            <Feather
-              name="arrow-right"
-              size={18}
-              color={procedure.trim() && zipCode.trim() ? "#fff" : colors.mutedForeground}
-            />
+            <Feather name="arrow-right" size={18} color={isValid ? "#fff" : colors.mutedForeground} />
           </TouchableOpacity>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </View>
   );
@@ -268,20 +326,42 @@ export default function LogUpcomingCareScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   flex: { flex: 1 },
-  scroll: { paddingHorizontal: 20, paddingTop: 8, gap: 20 },
-  hero: { gap: 6 },
+
+  /* Header */
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  closeBtn: { width: 32, alignItems: "center" },
+  headerTitle: { fontSize: 17, fontWeight: "700" },
+
+  /* Scroll */
+  scroll: { paddingHorizontal: 20, paddingTop: 24, gap: 20 },
+
+  /* Hero */
+  hero: { gap: 6, marginBottom: 4 },
   heroTitle: { fontSize: 22, fontWeight: "800" },
   heroDesc: { fontSize: 14, lineHeight: 20 },
+
+  /* Fields */
   field: { gap: 8 },
   label: { fontSize: 14, fontWeight: "600" },
-  input: {
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1.5,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    fontSize: 15,
   },
-  hint: { fontSize: 12, lineHeight: 16 },
+  input: { fontSize: 15 },
+  inputIcon: { paddingLeft: 8 },
+
+  /* Urgency */
   urgencySelector: {
     flexDirection: "row",
     alignItems: "center",
@@ -290,22 +370,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
+  urgencySelectorOpen: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
   urgencySelectorContent: { flex: 1 },
   urgencyValue: { fontSize: 15, fontWeight: "500" },
   urgencyTimeframe: { fontSize: 12, marginTop: 2 },
   urgencyOptions: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
     overflow: "hidden",
-    marginTop: 4,
   },
   urgencyOption: {
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingVertical: 13,
   },
   urgencyOptionLabel: { fontSize: 15, fontWeight: "500" },
   urgencyOptionTime: { fontSize: 12, marginTop: 2 },
+
+  /* Checkbox */
   checkboxRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   checkbox: {
     width: 22,
@@ -316,6 +402,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   checkboxLabel: { fontSize: 15, flex: 1 },
+
+  /* Footer */
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   submitBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -323,9 +416,10 @@ const styles = StyleSheet.create({
     gap: 8,
     borderRadius: 10,
     paddingVertical: 16,
-    marginTop: 8,
   },
   submitBtnText: { fontSize: 16, fontWeight: "700" },
+
+  /* Success */
   successContainer: {
     flex: 1,
     alignItems: "center",

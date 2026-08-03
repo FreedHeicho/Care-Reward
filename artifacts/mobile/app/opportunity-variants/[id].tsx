@@ -88,12 +88,6 @@ function getVariants(category: string, points: number): PathVariant[] {
       points: points,
       tag: "Recommended",
     },
-    {
-      id: "v2",
-      title: "Complete via Telehealth",
-      description: "Complete this service via telehealth from the comfort of your home.",
-      points: Math.round(points * 0.9),
-    },
   ];
 }
 
