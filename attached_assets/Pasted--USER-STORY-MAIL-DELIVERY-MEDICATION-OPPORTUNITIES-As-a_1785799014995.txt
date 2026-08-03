@@ -1,0 +1,30 @@
+### USER STORY: MAIL DELIVERY & MEDICATION OPPORTUNITIES
+As a user navigating Mail Delivery and Medication opportunities on any device,
+I want an ultra-simple, visually clear, and effortlessly intuitive interface where selecting Mail Delivery dynamically displays its uploaded attachment at the top of the existing page while remaining perfectly harmonized with the app's established design system,
+So that I can immediately review critical delivery details and medication actions with zero friction, zero layout confusion, and total brand and visual continuity regardless of screen size.
+
+### ACCEPTANCE CRITERIA & DESIGN REQUIREMENTS
+
+1. Brand & Design System Alignment (Color Flow & Visual Consistency):
+- Visual Continuity: Strict adherence to the existing app design system, including predefined color palettes, typography rules, surface elevation (shadows/borders), corner radiuses, and spacing scales.
+- Harmonious Color Flow: Ensure all new components (top image banner, medication status cards, action buttons) seamlessly integrate into the app's color hierarchy without feeling disjointed or out of place.
+- Theme Consistency: Respect globally established light and dark mode rules, preserving exact palette tokens across background surfaces and interactive elements.
+
+2. Mail Delivery Navigation & Top-Page Content Hierarchy:
+- Dynamic In-Page Attachment Placement: When a user clicks or selects a "Mail Delivery" opportunity, render the associated attached picture/document directly AT THE TOP of the destination page, placed inline above the pre-existing page content (on the same page, not a separate page or modal).
+- Layout Flow: Existing page elements (details, instructions, metadata) must cleanly shift down below the top-placed image viewer without breaking the responsive grid or visual cadence.
+- Attachment Viewing: Include clean, non-intrusive image controls (zoom, preview overlay, or collapse toggle) designed in line with existing UI icon and button styles.
+
+3. Frictionless UI/UX & Radical Simplicity (Mail Delivery & Medication Workflows):
+- Clear Visual Hierarchy: Emphasize primary actions (e.g., "Confirm Delivery", "Accept Medication Request", "Log Status") with high-visibility CTA buttons styled using primary theme colors.
+- Progressive Disclosure: Display critical summary info first (recipient name, medication name, urgency, delivery time slot); expand to reveal full medication dosages, special handling instructions, or tracking details upon interaction.
+- Smooth Feedback: Provide clear micro-interactions, loading skeletons for images/data, and actionable state indicators matching app loader patterns.
+
+4. Responsive Across All Screen Sizes:
+- Seamless adaptation across Mobile (<640px), Tablet (640px–1024px), Desktop (1024px+), and Ultrawide displays.
+- Flexible Top Image Container: The top attached image must scale down proportionally on mobile without losing sharpness or overflowing the viewport horizontally.
+- Touch Targets: All action buttons, image expand toggles, and filter controls must be at least 44x44px with comfortable padding for touch inputs.
+
+5. High Color Contrast & Accessibility (WCAG Compliance):
+- High-contrast color palette meeting or exceeding WCAG AA standards (minimum 4.5:1 ratio for normal text, 3:1 for large text and UI elements).
+- Legible Status & Medication Alerts: Ensure critical badges (e.g., "Urgent Medication", "Pending Delivery", "Completed") feature high-contrast background/text pairs supplemented with clear icons/labels for accessibility in light or dark modes.

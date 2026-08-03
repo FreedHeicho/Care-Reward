@@ -76,6 +76,53 @@ export default function MailDeliveryOpportunityScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Comparison: In-Store Pickup vs Mail Delivery ──────────────── */}
+        {/* In-Store Pickup card — light teal background */}
+        <View style={[styles.card, styles.cardInStore, { borderColor: colors.border }]}>
+          <View>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+              In-Store Pickup
+            </Text>
+            <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
+              Pharmacy Pickup • Your Local Pharmacy
+            </Text>
+          </View>
+          {[
+            "Visit pharmacy in person",
+            "Wait in line for pickup",
+            "Limited to 30-day supply",
+            "Requires monthly trips",
+          ].map((item, i) => (
+            <View key={i} style={styles.bulletRow}>
+              <View style={[styles.bulletDot, { backgroundColor: colors.mutedForeground }]} />
+              <Text style={[styles.bulletText, { color: colors.foreground }]}>{item}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Mail Delivery card — white/card background */}
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+              Mail Delivery
+            </Text>
+            <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
+              Home Delivery
+            </Text>
+          </View>
+          {[
+            "Automatic refills",
+            "Free home delivery",
+            "90-day supply available",
+            "No trips to pharmacy needed",
+          ].map((item, i) => (
+            <View key={i} style={styles.bulletRow}>
+              <View style={[styles.bulletDot, { backgroundColor: colors.primary }]} />
+              <Text style={[styles.bulletText, { color: colors.foreground }]}>{item}</Text>
+            </View>
+          ))}
+        </View>
+
         {/* ── Why Switch ────────────────────────────────────────────────── */}
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>
@@ -227,10 +274,18 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
+  cardInStore: {
+    backgroundColor: "#E8F5F2",   // light teal — matches app secondary palette
+  },
   cardTitle: {
     fontSize: 16,
     fontWeight: "700",
     lineHeight: 22,
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 2,
   },
 
   // ── Bullet rows ────────────────────────────────────────────────────────
