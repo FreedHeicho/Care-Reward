@@ -75,35 +75,66 @@ function Accordion({
 
 function OverviewContent({ points, pointsMonthly }: { points: number; pointsMonthly: number }) {
   const colors = useColors();
+  const [showComparison, setShowComparison] = useState(true);
   return (
     <>
-      {/* Current Medication */}
-      <View style={[styles.card, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" }]}>
-        <View>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>Current Medication</Text>
-          <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-            Brand Name • Your Pharmacy
+      {/* ── Collapsible comparison toggle ─────────────────────────────── */}
+      <TouchableOpacity
+        style={[styles.compareToggle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        onPress={() => setShowComparison((v) => !v)}
+        activeOpacity={0.8}
+      >
+        <View style={styles.compareToggleLeft}>
+          <View style={[styles.compareToggleIcon, { backgroundColor: colors.secondary }]}>
+            <Feather name="repeat" size={15} color={colors.primary} />
+          </View>
+          <Text style={[styles.compareToggleTitle, { color: colors.foreground }]}>
+            Compare Options
           </Text>
         </View>
-        <BulletItem text="Brand name medication" />
-        <BulletItem text="Higher cost option" />
-        <BulletItem text="Same active ingredient as generic" />
-        <BulletItem text="No additional benefits over generic" />
-      </View>
+        <View style={styles.compareToggleRight}>
+          <Text style={[styles.compareToggleLabel, { color: colors.mutedForeground }]}>
+            {showComparison ? "Hide" : "Show"}
+          </Text>
+          <Feather
+            name={showComparison ? "chevron-up" : "chevron-down"}
+            size={18}
+            color={colors.mutedForeground}
+          />
+        </View>
+      </TouchableOpacity>
 
-      {/* Generic Alternative */}
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>Generic Alternative</Text>
-          <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-            Generic Equivalent
-          </Text>
-        </View>
-        <BulletItem text="Generic equivalent" />
-        <BulletItem text="Significantly lower cost" />
-        <BulletItem text="Same effectiveness" />
-        <BulletItem text="FDA approved generic" />
-      </View>
+      {showComparison && (
+        <>
+          {/* Current Medication */}
+          <View style={[styles.card, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" }]}>
+            <View>
+              <Text style={[styles.cardTitle, { color: colors.foreground }]}>Current Medication</Text>
+              <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
+                Brand Name • Your Pharmacy
+              </Text>
+            </View>
+            <BulletItem text="Brand name medication" />
+            <BulletItem text="Higher cost option" />
+            <BulletItem text="Same active ingredient as generic" />
+            <BulletItem text="No additional benefits over generic" />
+          </View>
+
+          {/* Generic Alternative */}
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View>
+              <Text style={[styles.cardTitle, { color: colors.foreground }]}>Generic Alternative</Text>
+              <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
+                Generic Equivalent
+              </Text>
+            </View>
+            <BulletItem text="Generic equivalent" />
+            <BulletItem text="Significantly lower cost" />
+            <BulletItem text="Same effectiveness" />
+            <BulletItem text="FDA approved generic" />
+          </View>
+        </>
+      )}
 
       {/* What You'll Get */}
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -698,6 +729,29 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     gap: 14,
   },
+
+  // ── Compare toggle ────────────────────────────────────────────────────
+  compareToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
+    minHeight: 48,
+  },
+  compareToggleLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+  compareToggleIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  compareToggleTitle: { fontSize: 15, fontWeight: "700" },
+  compareToggleRight: { flexDirection: "row", alignItems: "center", gap: 6 },
+  compareToggleLabel: { fontSize: 13, fontWeight: "500" },
 
   // ── Cards (shared) ────────────────────────────────────────────────────
   card: {

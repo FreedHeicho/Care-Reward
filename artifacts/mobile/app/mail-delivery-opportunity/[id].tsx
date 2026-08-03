@@ -63,6 +63,8 @@ export default function MailDeliveryOpportunityScreen() {
     navigation.setOptions({ title: "Mail Delivery Opportunity" });
   }, [navigation]);
 
+  const [showComparison, setShowComparison] = useState(true);
+
   const handleGenerateNote = () => {
     router.push(`/doctor-note?id=${opp.id}` as never);
   };
@@ -77,51 +79,81 @@ export default function MailDeliveryOpportunityScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* ── Comparison: In-Store Pickup vs Mail Delivery ──────────────── */}
-        {/* In-Store Pickup card — light teal background */}
-        <View style={[styles.card, styles.cardInStore, { borderColor: colors.border }]}>
-          <View>
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-              In-Store Pickup
-            </Text>
-            <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-              Pharmacy Pickup • Your Local Pharmacy
+        {/* Collapsible section header */}
+        <TouchableOpacity
+          style={[styles.compareToggle, { backgroundColor: colors.card, borderColor: colors.border }]}
+          onPress={() => setShowComparison((v) => !v)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.compareToggleLeft}>
+            <View style={[styles.compareToggleIcon, { backgroundColor: colors.secondary }]}>
+              <Feather name="repeat" size={15} color={colors.primary} />
+            </View>
+            <Text style={[styles.compareToggleTitle, { color: colors.foreground }]}>
+              Compare Options
             </Text>
           </View>
-          {[
-            "Visit pharmacy in person",
-            "Wait in line for pickup",
-            "Limited to 30-day supply",
-            "Requires monthly trips",
-          ].map((item, i) => (
-            <View key={i} style={styles.bulletRow}>
-              <View style={[styles.bulletDot, { backgroundColor: colors.mutedForeground }]} />
-              <Text style={[styles.bulletText, { color: colors.foreground }]}>{item}</Text>
-            </View>
-          ))}
-        </View>
+          <View style={styles.compareToggleRight}>
+            <Text style={[styles.compareToggleLabel, { color: colors.mutedForeground }]}>
+              {showComparison ? "Hide" : "Show"}
+            </Text>
+            <Feather
+              name={showComparison ? "chevron-up" : "chevron-down"}
+              size={18}
+              color={colors.mutedForeground}
+            />
+          </View>
+        </TouchableOpacity>
 
-        {/* Mail Delivery card — white/card background */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View>
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-              Mail Delivery
-            </Text>
-            <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-              Home Delivery
-            </Text>
-          </View>
-          {[
-            "Automatic refills",
-            "Free home delivery",
-            "90-day supply available",
-            "No trips to pharmacy needed",
-          ].map((item, i) => (
-            <View key={i} style={styles.bulletRow}>
-              <View style={[styles.bulletDot, { backgroundColor: colors.primary }]} />
-              <Text style={[styles.bulletText, { color: colors.foreground }]}>{item}</Text>
+        {showComparison && (
+          <>
+            {/* In-Store Pickup card — light teal background */}
+            <View style={[styles.card, styles.cardInStore, { borderColor: colors.border }]}>
+              <View>
+                <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+                  In-Store Pickup
+                </Text>
+                <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
+                  Pharmacy Pickup • Your Local Pharmacy
+                </Text>
+              </View>
+              {[
+                "Visit pharmacy in person",
+                "Wait in line for pickup",
+                "Limited to 30-day supply",
+                "Requires monthly trips",
+              ].map((item, i) => (
+                <View key={i} style={styles.bulletRow}>
+                  <View style={[styles.bulletDot, { backgroundColor: colors.mutedForeground }]} />
+                  <Text style={[styles.bulletText, { color: colors.foreground }]}>{item}</Text>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
+
+            {/* Mail Delivery card — white/card background */}
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View>
+                <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+                  Mail Delivery
+                </Text>
+                <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
+                  Home Delivery
+                </Text>
+              </View>
+              {[
+                "Automatic refills",
+                "Free home delivery",
+                "90-day supply available",
+                "No trips to pharmacy needed",
+              ].map((item, i) => (
+                <View key={i} style={styles.bulletRow}>
+                  <View style={[styles.bulletDot, { backgroundColor: colors.primary }]} />
+                  <Text style={[styles.bulletText, { color: colors.foreground }]}>{item}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         {/* ── Why Switch ────────────────────────────────────────────────── */}
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -266,6 +298,29 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     gap: 12,
   },
+
+  // ── Compare toggle ─────────────────────────────────────────────────────
+  compareToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
+    minHeight: 48,
+  },
+  compareToggleLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+  compareToggleIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  compareToggleTitle: { fontSize: 15, fontWeight: "700" },
+  compareToggleRight: { flexDirection: "row", alignItems: "center", gap: 6 },
+  compareToggleLabel: { fontSize: 13, fontWeight: "500" },
 
   // ── Cards ──────────────────────────────────────────────────────────────
   card: {
