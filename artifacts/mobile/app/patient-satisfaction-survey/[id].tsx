@@ -295,14 +295,14 @@ export default function PatientSatisfactionSurveyScreen() {
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    navigation.setOptions({ title: "Patient Satisfaction Survey" });
+  }, [navigation]);
+
   if (loading) return <OpportunityDetailSkeleton />;
 
   const answeredCount = Object.keys(answers).length;
   const allAnswered = answeredCount === TOTAL_QUESTIONS;
-
-  useEffect(() => {
-    navigation.setOptions({ title: "Patient Satisfaction Survey" });
-  }, [navigation]);
 
   const handleSelect = (qId: string, val: string) => {
     setAnswers((prev) => ({ ...prev, [qId]: val }));
