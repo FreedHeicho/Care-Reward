@@ -1,0 +1,32 @@
+Opportunity Logic Concept 
+There are things that are going to be Generic 
+Things that are Profile specific
+
+Keep creating opportunities, there will be mountains of opportunities we are creating and analysing which will be pushed to different individuals based on their profile.
+
+Behind the scenes we get data from employer insurance on a monthly basis.
+
+Assume assistize has 20000 employees and provides them health insurance. Assist has outdone money aside to cover medical bills as they come up. I have created a pot of 100 Million Naira. If anyone goes to healthcare needs, they will submit a claim and the claim will be paid from the pot . The hospital has to submit a claim and a third party admin- HMO manages that 10 million
+
+Every time there is an health care need claim is submitted to HMO we.g AXA mansard. 
+
+There is a lot of people , claims keep coming in and is getting paid as long as it passes xyz. On a monthly basis, I will get a download of everything my employees did in terms of accessing care. Dami went for annual visit: 2000, fred, John lots of transaction . You collect all that. Insurance company on behalf of company has that. That data is what CareReward uses to collar that data. Fredrick Goes to vi demola using this data, find cheaper opportunities for users and give them points to use, that points can be accumulating in another bank account. 
+
+Every time you go to Store, you buy something in the store. Dami 12345 has used his card in store 34ifelodun foods. Ifelodun food is asking to take 19k. Visa adjudicates  that in 2 Seconds. Someone else does this. We will get that data- the details of transaction and use that to curate cheaper opportunities and give them points. 
+
+
+We will be running analysis behind the scenes on data, see what the activities should be. 
+
+I need the opportunities database and the transactional Opportunity database that shows and populates for individuals opportnuites
+
+We need a lot of logic running in the background
+
+E.g if I have not seen a primary care code, I flag and say you have to go see
+
+There are also things you have to do by age
+
+Opportunities can be precalcaulted 
+Opportunities after you have engaged
+Opportunities because you havw not engaged
+
+Product manager knows how to calc so we don't have to calculate that right now  
