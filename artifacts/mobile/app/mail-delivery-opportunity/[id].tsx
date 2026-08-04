@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MOCK_OPPORTUNITIES } from "@/constants/data";
+import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
 import { useColors } from "@/hooks/useColors";
 
 const STEP_COLOR = "#3B82F6";
@@ -64,6 +65,14 @@ export default function MailDeliveryOpportunityScreen() {
   }, [navigation]);
 
   const [showComparison, setShowComparison] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 380);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (loading) return <OpportunityDetailSkeleton />;
 
   const handleGenerateNote = () => {
     router.push(`/doctor-note?id=${opp.id}` as never);

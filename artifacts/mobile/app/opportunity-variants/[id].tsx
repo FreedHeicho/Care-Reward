@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Platform,
   ScrollView,
@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CATEGORY_COLORS, MOCK_OPPORTUNITIES } from "@/constants/data";
+import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
 import { useColors } from "@/hooks/useColors";
 
 interface PathVariant {
@@ -97,8 +98,16 @@ export default function OpportunityVariantsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 380);
+    return () => clearTimeout(t);
+  }, []);
 
   const opp = MOCK_OPPORTUNITIES.find((o) => o.id === id);
+
+  if (loading) return <OpportunityDetailSkeleton />;
 
   if (!opp) {
     return (

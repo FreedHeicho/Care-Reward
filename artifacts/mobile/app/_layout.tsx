@@ -114,19 +114,19 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="opportunity-variants/[id]"
-        options={{ title: "Choose Your Path", headerBackTitle: "Back" }}
+        options={{ title: "Choose Your Path", headerBackTitle: "Opportunities" }}
       />
       <Stack.Screen
         name="mail-delivery-opportunity/[id]"
-        options={{ title: "Mail Delivery Opportunity", headerBackTitle: "Back" }}
+        options={{ title: "Mail Delivery Opportunity", headerBackTitle: "Opportunities" }}
       />
       <Stack.Screen
         name="patient-satisfaction-survey/[id]"
-        options={{ title: "Patient Satisfaction Survey", headerBackTitle: "Back" }}
+        options={{ title: "Patient Satisfaction Survey", headerBackTitle: "Opportunities" }}
       />
       <Stack.Screen
         name="medication-opportunity/[id]"
-        options={{ title: "Substitution Opportunity", headerBackTitle: "Back" }}
+        options={{ title: "Substitution Opportunity", headerBackTitle: "Opportunities" }}
       />
       <Stack.Screen
         name="schedule-opportunity"

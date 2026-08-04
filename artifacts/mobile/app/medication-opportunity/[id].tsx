@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MOCK_OPPORTUNITIES } from "@/constants/data";
+import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
 import { useColors } from "@/hooks/useColors";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -511,6 +512,13 @@ export default function MedicationOpportunityScreen() {
   const [customNote, setCustomNote] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState<string | null>(null);
   const [genStep, setGenStep] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  // Brief skeleton while screen mounts
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 380);
+    return () => clearTimeout(t);
+  }, []);
 
   // Set nav header title
   useEffect(() => {
@@ -582,6 +590,8 @@ export default function MedicationOpportunityScreen() {
       : null;
 
   const footerDisabled = step === 2 && !deliveryMethod;
+
+  if (loading) return <OpportunityDetailSkeleton />;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MOCK_OPPORTUNITIES } from "@/constants/data";
+import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
 import { useColors } from "@/hooks/useColors";
 
 // ─── Survey definition ─────────────────────────────────────────────────────
@@ -287,6 +288,14 @@ export default function PatientSatisfactionSurveyScreen() {
   }, [opp]);
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 380);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (loading) return <OpportunityDetailSkeleton />;
 
   const answeredCount = Object.keys(answers).length;
   const allAnswered = answeredCount === TOTAL_QUESTIONS;

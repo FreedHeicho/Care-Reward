@@ -1,0 +1,24 @@
+INDIVIDUAL OPPORTUNITY PAGE & NAVIGATION
+As a user clicking on any opportunity card/item from the main list,
+I want to be seamlessly navigated to that specific Opportunity Details page, where  all presented in a simple, high-contrast interface that matches the app's overall design system,
+So that I can immediately review, understand, and act on the specific opportunity with zero friction, complete visual clarity, and perfect design continuity across any screen size.
+
+### ACCEPTANCE CRITERIA & DESIGN REQUIREMENTS
+
+1. Seamless Page Navigation & Transition:
+- Smooth State Loading: Display subtle page-level loading skeletons or transitional UI that maintains the page layout structure while details and media load, preventing layout jumpiness.
+- Intuitive Back Navigation: Provide a clear, persistent "Back to Opportunities" button at the top-left of the page that allows effortless return to the filtered list state.
+
+2. Page Content Hierarchy & Top Attachment Banner:
+- Top-Placed Media Placement: If the selected opportunity (e.g., Mail Delivery) contains an attached picture or document, render it prominently AT THE VERY TOP of the opportunity page, positioned inline above all existing details and metadata.
+- Fluid Layout Shift: Core opportunity information (medication details, delivery addresses, notes, and action buttons) must cleanly flow directly below the top media element without overlapping.
+- Interactive Media Viewer: Provide subtle, design-system-aligned media controls (click-to-expand, full-screen lightbox preview, or toggle collapse) for clear inspection on smaller devices.
+
+3. Brand & Design System Alignment (Color Flow & Visual Consistency):
+- Consistent Aesthetic: The individual detail page must strictly align with the global design system—using established color tokens, typography scales, surface elevations (shadows/borders), corner radiuses, and padding.
+- Natural Color Flow: Ensure action buttons, status chips, and background surfaces flow logically and match the app's primary and secondary palette rules in both Light and Dark modes.
+
+4. Frictionless UI/UX & High Color Contrast (WCAG AA):
+- High-Contrast Legibility: Ensure all text, icons, and status badges meet or exceed WCAG AA standards (minimum 4.5:1 ratio for normal text, 3:1 for large text/UI components).
+- Clear Primary Actions: Highlight primary actions (e.g., "Confirm Delivery", "Accept Request", "Submit Update") with prominent, high-visibility CTA buttons.
+- Fully Responsive: Ensure the page automatically scales gracefully across Mobile (<640px), Tablet (640px–1024px), and Desktop layouts, with touch targets guaranteed at 44x44px minimum on mobile.
