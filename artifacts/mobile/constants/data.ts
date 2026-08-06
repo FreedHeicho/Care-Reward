@@ -3,7 +3,8 @@ export type OpportunityCategory =
   | "preventive"
   | "mail-delivery"
   | "specialist"
-  | "upcoming";
+  | "upcoming"
+  | "care-site";
 
 export type OpportunityFilterCategory =
   | "care-site-alternative"
@@ -94,6 +95,93 @@ export const MOCK_USER_PLAN: UserPlan = {
 };
 
 export const MOCK_OPPORTUNITIES: Opportunity[] = [
+  {
+    id: "opp-csa-1",
+    category: "care-site",
+    title: "Care Site Alternative",
+    description: "Hospital C-section Delivery — save up to ₦200k",
+    savings: 200,
+    points: 2000,
+    pointsMonthly: 0,
+    status: "active",
+    priority: "high",
+    steps: [
+      "Review alternative providers",
+      "Select your preferred option",
+      "Schedule your appointment",
+    ],
+    why: "NY Health & Hospital offers the same quality C-section delivery at significantly lower cost.",
+    benefits: [
+      "Earn up to 2,000 points",
+      "Access equivalent care quality",
+      "Lower out-of-pocket cost",
+    ],
+    group: "Care Site Alternative",
+    filterCategory: "care-site-alternative",
+    icon: "CARE_SITE_ALTERNATIVE",
+    iconBg: "#F3F0FF",
+    frequency: "one-time",
+    action: "earn",
+    actionLabel: "View Options",
+  },
+  {
+    id: "opp-csa-2",
+    category: "care-site",
+    title: "Care Site Alternative",
+    description: "Diagnostics Ultrasound — find a lower-cost facility",
+    savings: 40,
+    points: 40,
+    pointsMonthly: 0,
+    status: "active",
+    priority: "medium",
+    steps: [
+      "Review alternative providers",
+      "Select your preferred option",
+      "Schedule your appointment",
+    ],
+    why: "NY Health & Hospital provides the same ultrasound diagnostics at a lower cost.",
+    benefits: [
+      "Earn up to 40 points",
+      "Same imaging quality",
+      "Convenient location options",
+    ],
+    group: "Care Site Alternative",
+    filterCategory: "care-site-alternative",
+    icon: "CARE_SITE_ALTERNATIVE",
+    iconBg: "#F3F0FF",
+    frequency: "one-time",
+    action: "earn",
+    actionLabel: "View Options",
+  },
+  {
+    id: "opp-csa-3",
+    category: "care-site",
+    title: "Care Site Alternative",
+    description: "Specialist OB/GYN — in-network options near you",
+    savings: 80,
+    points: 80,
+    pointsMonthly: 0,
+    status: "active",
+    priority: "medium",
+    steps: [
+      "Review specialist options",
+      "Select your preferred provider",
+      "Schedule your appointment",
+    ],
+    why: "In-network OB/GYN specialists like Dr. Cohen at NY Health & Hospital reduce your copay significantly.",
+    benefits: [
+      "Earn up to 80 points",
+      "Board-certified specialists",
+      "Reduced copay with in-network provider",
+    ],
+    group: "Care Site Alternative",
+    filterCategory: "care-site-alternative",
+    icon: "CARE_SITE_ALTERNATIVE",
+    iconBg: "#F3F0FF",
+    frequency: "one-time",
+    action: "earn",
+    actionLabel: "View Options",
+  },
   {
     id: "opp-1",
     category: "medication",

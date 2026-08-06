@@ -1,0 +1,37 @@
+### USER STORY: CARE SITE ALTERNATIVES MOBILE NAVIGATION & SCHEDULING WORKFLOW
+As a mobile app user navigating from the "Opportunity" screen to "Care Site Alternatives",
+I want to select an alternative option and experience an intuitive, mobile-optimized two-step scheduling flow that precisely mirrors the provided design images,
+So that I can effortlessly specify appointment urgency and choose between Care Reward booking for me or scheduling it myself, using touch-friendly controls with high color contrast and zero navigation friction.
+
+### NAVIGATION & ROUTING PATH
+- Path: Opportunity Screen -> Care Site Alternatives Screen -> Option Selection -> Two-Step Scheduling Workflow.
+- The transition from the "Opportunity" screen to the "Care Site Alternatives" screen must follow the app's established mobile screen transition pattern (e.g., slide-over, stack navigation push).
+
+### ACCEPTANCE CRITERIA & DESIGN REQUIREMENTS
+
+1. Precise Visual Implementation from Reference Images:
+- Visual Fidelity: The AI MUST reference the provided images EXACTLY as seen for component layouts, card styles, typography, button treatments, and color flow.
+- Visual Continuity: Maintain strict consistency with the app's established design system, color tokens, surface elevations, and theme settings (Light/Dark mode).
+
+2. Two-Step Mobile Workflow Logic (Triggered on Option Tap):
+When the user taps on a specific option within the Care Site Alternatives page:
+
+- STEP 1: URGENCY SELECTION
+    - Display the prompt: "How urgent is the appointment you want?"
+    - Present three distinct, touch-optimized selection buttons (minimum 44x44px target area):
+        1. "Immediately"
+        2. "2 weeks"
+        3. "4 weeks"
+
+- STEP 2: APPOINTMENT SCHEDULING SELECTION
+    - After selecting urgency, dynamically reveal the final scheduling choices:
+        - OPTION A (Primary Action): **"Book an Appointment for Me (Care Reward)"** (Triggers Care Reward automated booking handling).
+        - OPTION B (Secondary / Dismiss Action): **"Schedule My Own Appointment"** (Closes/dismisses the workflow screen or modal and returns the user to their overview state).
+
+3. Mobile Ergonomics & WCAG AA Contrast:
+- Radical Simplicity: Keep the 2-step process clean and responsive using smooth mobile transitions or step progressive disclosure.
+- Accessibility & Legibility: Ensure all text elements, choice badges, and action buttons meet high-contrast WCAG AA standards (minimum 4.5:1 ratio for text).
+- Thumb-Zone Placement: Position primary action buttons within comfortable thumb-reach area at the bottom of the screen.
+
+### CRITICAL IMPLEMENTATION CONSTRAINT: SYSTEM INTEGRITY
+- Critical Rule: You are authorized to modify/add code ONLY for the Opportunity -> Care Site Alternatives route, its screens, and the associated scheduling logic. Do NOT break, refactor, or alter any unrelated global state, existing screens, or navigation stacks.
