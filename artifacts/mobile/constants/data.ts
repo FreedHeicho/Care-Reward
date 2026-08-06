@@ -98,8 +98,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
   {
     id: "opp-csa-1",
     category: "care-site",
-    title: "Care Site Alternative",
-    description: "Hospital C-section Delivery — save up to ₦200k",
+    title: "Hospital C-section Delivery",
+    description: "Care Site Alternative",
     savings: 200,
     points: 2000,
     pointsMonthly: 0,
@@ -127,8 +127,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
   {
     id: "opp-csa-2",
     category: "care-site",
-    title: "Care Site Alternative",
-    description: "Diagnostics Ultrasound — find a lower-cost facility",
+    title: "Diagnostics Ultrasound",
+    description: "Care Site Alternative",
     savings: 40,
     points: 40,
     pointsMonthly: 0,
@@ -156,8 +156,8 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
   {
     id: "opp-csa-3",
     category: "care-site",
-    title: "Care Site Alternative",
-    description: "Specialist OB/GYN — in-network options near you",
+    title: "Specialist OB/GYN",
+    description: "Care Site Alternative",
     savings: 80,
     points: 80,
     pointsMonthly: 0,

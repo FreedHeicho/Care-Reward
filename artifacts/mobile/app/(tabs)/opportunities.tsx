@@ -109,7 +109,7 @@ function OppCard({ opp }: { opp: Opportunity }) {
 
   const handleAction = () => {
     if (opp.category === "care-site") {
-      router.push("/care-site-alternatives" as never);
+      router.push(`/care-site-alternative/${opp.id}` as never);
     } else if (opp.category === "mail-delivery") {
       router.push(`/mail-delivery-opportunity/${opp.id}` as never);
     } else if (opp.category === "medication") {
