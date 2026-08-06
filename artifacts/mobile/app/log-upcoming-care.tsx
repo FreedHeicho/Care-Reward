@@ -98,7 +98,8 @@ export default function LogUpcomingCareScreen() {
     if (!isValid) return;
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSubmitted(true);
-    setTimeout(() => router.back(), 1500);
+    // Replace this screen so the back-stack goes to Opportunities, not back into the form
+    setTimeout(() => router.replace("/care-site-alternatives?fromLog=true" as any), 900);
   };
 
   if (submitted) {

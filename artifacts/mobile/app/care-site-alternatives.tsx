@@ -12,7 +12,7 @@
  */
 
 import { Feather } from "@expo/vector-icons";
-import { useNavigation, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -128,13 +128,60 @@ type Urgency = (typeof URGENCY_OPTIONS)[number];
 
 // ─── PointsBanner ─────────────────────────────────────────────────────────────
 
-function PointsBanner() {
+function PointsBanner({ highlight }: { highlight?: boolean }) {
   const colors = useColors();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(highlight ? 0 : 1)).current;
+
+  useEffect(() => {
+    if (!highlight) return;
+    // Fade + scale in, then pulse twice to celebrate
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 350,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: NATIVE_DRIVER,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1.04,
+          useNativeDriver: NATIVE_DRIVER,
+          tension: 180,
+          friction: 8,
+        }),
+      ]),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: NATIVE_DRIVER,
+        tension: 180,
+        friction: 8,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1.03,
+        useNativeDriver: NATIVE_DRIVER,
+        tension: 180,
+        friction: 8,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: NATIVE_DRIVER,
+        tension: 180,
+        friction: 8,
+      }),
+    ]).start();
+  }, [highlight]);
+
   return (
-    <View
+    <Animated.View
       style={[
         styles.banner,
-        { backgroundColor: colors.primary + "15", borderColor: colors.primary + "30" },
+        {
+          backgroundColor: highlight ? colors.primary + "22" : colors.primary + "15",
+          borderColor: highlight ? colors.primary + "60" : colors.primary + "30",
+          opacity: opacityAnim,
+          transform: [{ scale: scaleAnim }],
+        },
       ]}
     >
       <Feather name="star" size={20} color={colors.primary} />
@@ -146,7 +193,7 @@ function PointsBanner() {
           For logging your upcoming care
         </Text>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -483,6 +530,8 @@ export default function CareSiteAlternativesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const navigation = useNavigation();
+  const { fromLog } = useLocalSearchParams<{ fromLog?: string }>();
+  const highlightBanner = fromLog === "true";
 
   // Skeleton
   const [loading, setLoading] = useState(true);
@@ -565,7 +614,7 @@ export default function CareSiteAlternativesScreen() {
         </Text>
 
         {/* Points earned banner */}
-        <PointsBanner />
+        <PointsBanner highlight={highlightBanner} />
 
         {/* Care site cards */}
         {CARE_SITE_GROUPS.map((group) => (
