@@ -1,8 +1,24 @@
+/**
+ * Medication Opportunity Screen
+ *
+ * Shows two parallel workflows for a single medication opportunity:
+ *
+ * A) Generic Substitution (Norvasc → Amlodipine)
+ *    Step 1 — Accept recommendation
+ *    Step 2 — Choose: Care Reward sends to doctor  OR  Printout to take yourself
+ *    Step 3 — Acknowledgement / close opportunity
+ *
+ * B) Refill Location Switch (CVS Pharmacy → CR Mail Order)
+ *    Step 1 — Accept recommendation
+ *    Step 2 — Enter delivery address
+ *    Step 3 — Acknowledgement / close opportunity
+ */
+
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Dimensions,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -13,14 +29,18 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { MOCK_OPPORTUNITIES } from "@/constants/data";
 import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
+import { MOCK_OPPORTUNITIES } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const SHEET_TOP = Math.round(SCREEN_HEIGHT * 0.3);
 const DARK_TEAL = "#05503C";
 const LIGHT_TEAL_BG = "#E8F5F2";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type Flow = "substitution" | "refill" | null;
+// step 0 = overview, 1 = accept, 2 = method/address, 3 = acknowledgement
+type Step = 0 | 1 | 2 | 3;
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -46,450 +66,577 @@ function CheckItem({ text }: { text: string }) {
   );
 }
 
-function Accordion({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function SectionHeading({ label }: { label: string }) {
   const colors = useColors();
-  const [open, setOpen] = useState(false);
   return (
-    <View style={[styles.accordionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <TouchableOpacity
-        style={styles.accordionHeader}
-        onPress={() => setOpen((v) => !v)}
-        activeOpacity={0.8}
+    <Text style={[styles.sectionHeading, { color: colors.mutedForeground }]}>
+      {label.toUpperCase()}
+    </Text>
+  );
+}
+
+// ─── Drug comparison cards (overview) ────────────────────────────────────────
+
+function DrugComparisonCards() {
+  const colors = useColors();
+  return (
+    <View style={styles.compRow}>
+      {/* Branded */}
+      <View
+        style={[
+          styles.compCard,
+          { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "40" },
+        ]}
       >
-        <Text style={[styles.accordionTitle, { color: colors.foreground }]}>{title}</Text>
-        <Text style={[styles.accordionChevron, { color: colors.mutedForeground }]}>
-          {open ? "▲" : "▼"}
-        </Text>
-      </TouchableOpacity>
-      {open && <View style={styles.accordionBody}>{children}</View>}
+        <Text style={[styles.compTag, { color: colors.mutedForeground }]}>Branded</Text>
+        <Text style={[styles.compDrug, { color: colors.foreground }]}>Norvasc</Text>
+        <Text style={[styles.compSub, { color: colors.mutedForeground }]}>Amlodipine besylate</Text>
+        <View style={[styles.compCostBadge, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
+          <Text style={[styles.compCostText, { color: "#DC2626" }]}>Higher cost</Text>
+        </View>
+        <BulletItem text="Brand-name pricing" />
+        <BulletItem text="Same active ingredient" />
+      </View>
+
+      {/* Arrow */}
+      <View style={styles.compArrow}>
+        <Feather name="arrow-right" size={20} color={DARK_TEAL} />
+      </View>
+
+      {/* Generic */}
+      <View
+        style={[
+          styles.compCard,
+          { backgroundColor: colors.card, borderColor: colors.primary, borderWidth: 2 },
+        ]}
+      >
+        <View style={styles.compRecommendedRow}>
+          <Text style={[styles.compTag, { color: colors.mutedForeground }]}>Generic</Text>
+          <View style={[styles.recBadge, { backgroundColor: DARK_TEAL }]}>
+            <Text style={styles.recBadgeText}>Recommended</Text>
+          </View>
+        </View>
+        <Text style={[styles.compDrug, { color: colors.foreground }]}>Amlodipine</Text>
+        <Text style={[styles.compSub, { color: colors.mutedForeground }]}>Amlodipine generic</Text>
+        <View style={[styles.compCostBadge, { backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }]}>
+          <Text style={[styles.compCostText, { color: "#16A34A" }]}>Lower cost ✓</Text>
+        </View>
+        <BulletItem text="FDA-approved equivalent" />
+        <BulletItem text="Same effectiveness" />
+      </View>
     </View>
   );
 }
 
-// ─── Overview screen content ──────────────────────────────────────────────────
+// ─── Refill location comparison (overview) ────────────────────────────────────
 
-function OverviewContent({ points, pointsMonthly }: { points: number; pointsMonthly: number }) {
+function RefillComparisonCards() {
   const colors = useColors();
-  const [showComparison, setShowComparison] = useState(true);
   return (
-    <>
-      {/* ── Collapsible comparison toggle ─────────────────────────────── */}
-      <TouchableOpacity
-        style={[styles.compareToggle, { backgroundColor: colors.card, borderColor: colors.border }]}
-        onPress={() => setShowComparison((v) => !v)}
-        activeOpacity={0.8}
+    <View style={styles.locationStack}>
+      {/* Current */}
+      <View
+        style={[
+          styles.locationCard,
+          { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" },
+        ]}
       >
-        <View style={styles.compareToggleLeft}>
-          <View style={[styles.compareToggleIcon, { backgroundColor: colors.secondary }]}>
-            <Feather name="repeat" size={15} color={colors.primary} />
+        <View style={styles.locationLeft}>
+          <View style={[styles.locationIconWrap, { backgroundColor: colors.primary + "20" }]}>
+            <Feather name="map-pin" size={18} color={colors.primary} />
           </View>
-          <Text style={[styles.compareToggleTitle, { color: colors.foreground }]}>
-            Compare Options
+          <View style={styles.locationText}>
+            <Text style={[styles.locationLabel, { color: colors.mutedForeground }]}>
+              Current location
+            </Text>
+            <Text style={[styles.locationName, { color: colors.foreground }]}>
+              CVS Pharmacy Midtown
+            </Text>
+            <Text style={[styles.locationZip, { color: colors.mutedForeground }]}>
+              ZIP 10006
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.costPill, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
+          <Text style={[styles.costPillText, { color: "#DC2626" }]}>Higher cost</Text>
+        </View>
+      </View>
+
+      {/* Arrow */}
+      <View style={styles.locationArrow}>
+        <Feather name="arrow-down" size={18} color={DARK_TEAL} />
+      </View>
+
+      {/* Proposed */}
+      <View
+        style={[
+          styles.locationCard,
+          { backgroundColor: colors.card, borderColor: colors.primary, borderWidth: 2 },
+        ]}
+      >
+        <View style={styles.locationLeft}>
+          <View style={[styles.locationIconWrap, { backgroundColor: DARK_TEAL + "18" }]}>
+            <Feather name="package" size={18} color={DARK_TEAL} />
+          </View>
+          <View style={styles.locationText}>
+            <Text style={[styles.locationLabel, { color: colors.mutedForeground }]}>
+              Proposed location
+            </Text>
+            <Text style={[styles.locationName, { color: colors.foreground }]}>
+              CR Mail Order
+            </Text>
+            <Text style={[styles.locationZip, { color: colors.mutedForeground }]}>
+              Delivered to your door
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.costPill, { backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }]}>
+          <Text style={[styles.costPillText, { color: "#16A34A" }]}>Save more ✓</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ─── Overview section card ────────────────────────────────────────────────────
+
+function OpportunityCard({
+  icon,
+  iconBg,
+  title,
+  subtitle,
+  points,
+  pointsMonthly,
+  children,
+  ctaLabel,
+  onCta,
+}: {
+  icon: keyof typeof Feather.glyphMap;
+  iconBg: string;
+  title: string;
+  subtitle: string;
+  points: number;
+  pointsMonthly: number;
+  children: React.ReactNode;
+  ctaLabel: string;
+  onCta: () => void;
+}) {
+  const colors = useColors();
+  return (
+    <View style={[styles.oppCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      {/* Header */}
+      <View style={styles.oppCardHeader}>
+        <View style={[styles.oppCardIcon, { backgroundColor: iconBg }]}>
+          <Feather name={icon} size={22} color={DARK_TEAL} />
+        </View>
+        <View style={styles.oppCardTitles}>
+          <Text style={[styles.oppCardTitle, { color: colors.foreground }]}>{title}</Text>
+          <Text style={[styles.oppCardSub, { color: colors.mutedForeground }]}>{subtitle}</Text>
+        </View>
+        {/* Points pill */}
+        <View style={[styles.oppPtsPill, { backgroundColor: DARK_TEAL + "15" }]}>
+          <Feather name="star" size={12} color={DARK_TEAL} />
+          <Text style={[styles.oppPtsText, { color: DARK_TEAL }]}>
+            {points}{pointsMonthly > 0 ? ` + ${pointsMonthly}/mo` : ""} pts
           </Text>
         </View>
-        <View style={styles.compareToggleRight}>
-          <Text style={[styles.compareToggleLabel, { color: colors.mutedForeground }]}>
-            {showComparison ? "Hide" : "Show"}
-          </Text>
-          <Feather
-            name={showComparison ? "chevron-up" : "chevron-down"}
-            size={18}
-            color={colors.mutedForeground}
-          />
-        </View>
+      </View>
+
+      {/* Content */}
+      {children}
+
+      {/* CTA */}
+      <TouchableOpacity
+        style={[styles.oppCta, { backgroundColor: DARK_TEAL }]}
+        onPress={onCta}
+        activeOpacity={0.85}
+        accessibilityRole="button"
+      >
+        <Text style={styles.oppCtaText}>{ctaLabel}</Text>
+        <Feather name="arrow-right" size={16} color="#fff" />
       </TouchableOpacity>
+    </View>
+  );
+}
 
-      {showComparison && (
+// ─── Step 1: Accept recommendation ───────────────────────────────────────────
+
+function AcceptStep({
+  flow,
+  onAccept,
+}: {
+  flow: Flow;
+  onAccept: () => void;
+}) {
+  const colors = useColors();
+  const isSub = flow === "substitution";
+
+  return (
+    <ScrollView
+      contentContainerStyle={styles.stepScroll}
+      showsVerticalScrollIndicator={false}
+    >
+      {isSub ? (
         <>
-          {/* Current Medication */}
-          <View style={[styles.card, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" }]}>
-            <View>
-              <Text style={[styles.cardTitle, { color: colors.foreground }]}>Current Medication</Text>
-              <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-                Brand Name • Your Pharmacy
-              </Text>
+          <Text style={[styles.stepQuestion, { color: colors.foreground }]}>
+            Switch to the generic version of your blood pressure medication?
+          </Text>
+
+          {/* Drug highlight */}
+          <View style={[styles.drugHighlight, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "40" }]}>
+            <View style={styles.drugRow}>
+              <View style={styles.drugItem}>
+                <Text style={[styles.drugLabel, { color: colors.mutedForeground }]}>Branded</Text>
+                <Text style={[styles.drugName, { color: colors.foreground }]}>Norvasc</Text>
+              </View>
+              <Feather name="arrow-right" size={20} color={DARK_TEAL} style={{ marginTop: 16 }} />
+              <View style={styles.drugItem}>
+                <Text style={[styles.drugLabel, { color: colors.mutedForeground }]}>Generic</Text>
+                <Text style={[styles.drugName, { color: DARK_TEAL }]}>Amlodipine</Text>
+              </View>
             </View>
-            <BulletItem text="Brand name medication" />
-            <BulletItem text="Higher cost option" />
-            <BulletItem text="Same active ingredient as generic" />
-            <BulletItem text="No additional benefits over generic" />
+            <Text style={[styles.drugFda, { color: colors.mutedForeground }]}>
+              FDA-approved · Same active ingredient · Same dosage
+            </Text>
           </View>
 
-          {/* Generic Alternative */}
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View>
-              <Text style={[styles.cardTitle, { color: colors.foreground }]}>Generic Alternative</Text>
-              <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-                Generic Equivalent
-              </Text>
+          <View style={[styles.acceptBenefits, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+            <CheckItem text="Clinically identical to Norvasc" />
+            <CheckItem text="Lower copay under your plan" />
+            <CheckItem text="Your doctor will be notified" />
+            <CheckItem text="You can switch back at any time" />
+          </View>
+        </>
+      ) : (
+        <>
+          <Text style={[styles.stepQuestion, { color: colors.foreground }]}>
+            Switch your refill location to CR Mail Order for lower cost and home delivery?
+          </Text>
+
+          <View style={[styles.drugHighlight, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "40" }]}>
+            <View style={styles.switchRow}>
+              <View style={styles.switchItem}>
+                <Feather name="map-pin" size={18} color={colors.mutedForeground} />
+                <Text style={[styles.switchLabel, { color: colors.mutedForeground }]}>Current</Text>
+                <Text style={[styles.switchName, { color: colors.foreground }]}>CVS Pharmacy Midtown</Text>
+                <Text style={[styles.switchDetail, { color: colors.mutedForeground }]}>ZIP 10006</Text>
+              </View>
+              <Feather name="arrow-right" size={20} color={DARK_TEAL} style={{ marginTop: 8 }} />
+              <View style={styles.switchItem}>
+                <Feather name="package" size={18} color={DARK_TEAL} />
+                <Text style={[styles.switchLabel, { color: colors.mutedForeground }]}>Proposed</Text>
+                <Text style={[styles.switchName, { color: DARK_TEAL }]}>CR Mail Order</Text>
+                <Text style={[styles.switchDetail, { color: colors.mutedForeground }]}>Home delivery</Text>
+              </View>
             </View>
-            <BulletItem text="Generic equivalent" />
-            <BulletItem text="Significantly lower cost" />
-            <BulletItem text="Same effectiveness" />
-            <BulletItem text="FDA approved generic" />
+          </View>
+
+          <View style={[styles.acceptBenefits, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+            <CheckItem text="90-day supply delivered to your door" />
+            <CheckItem text="Automatic refill reminders" />
+            <CheckItem text="Free home delivery" />
+            <CheckItem text="Lower per-fill cost under your plan" />
           </View>
         </>
       )}
 
-      {/* What You'll Get */}
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.cardTitle, { color: colors.foreground }]}>What You'll Get</Text>
-        <CheckItem text="Save money on medication costs" />
-        <CheckItem text="Same therapeutic benefits" />
-        <CheckItem text="No change in effectiveness" />
-        <CheckItem text="More affordable long-term treatment" />
-      </View>
-
-      {/* Points Breakdown */}
-      <View style={styles.pointsSection}>
-        <Text style={[styles.sectionLabel, { color: colors.foreground }]}>Points Breakdown</Text>
-        <View style={styles.pointsRow}>
-          <View style={[styles.pointsCard, { backgroundColor: colors.primary }]}>
-            <Text style={styles.pointsCardLabel}>Immediate</Text>
-            <Text style={styles.pointsCardValue}>{points}</Text>
-          </View>
-          <View style={[styles.pointsCard, { backgroundColor: colors.primary }]}>
-            <Text style={styles.pointsCardLabel}>Monthly</Text>
-            <Text style={styles.pointsCardValue}>{pointsMonthly}</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* How to Generate Doctor Note */}
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-          How to Generate Doctor Note
-        </Text>
-        {[
-          "Generate doctor note for medication substitution",
-          "Review note content and add any custom information",
-          "Choose delivery method for the note",
-          "Submit note to your doctor for review",
-        ].map((step, i) => (
-          <View key={i} style={styles.stepRow}>
-            <View style={[styles.stepBadge, { backgroundColor: DARK_TEAL }]}>
-              <Text style={styles.stepNum}>{i + 1}</Text>
-            </View>
-            <Text style={[styles.stepText, { color: colors.foreground }]}>{step}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* What's in the Doctor Note */}
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-          What's in the Doctor Note
-        </Text>
-        <BulletItem text="Current medication details" />
-        <BulletItem text="Generic equivalent information" />
-        <BulletItem text="Cost analysis comparison" />
-        <BulletItem text="Patient consent for switch" />
-        <BulletItem text="Pharmacy instructions" />
-      </View>
-
-      {/* Important Information */}
-      <Accordion title="Important Information">
-        {[
-          "Generic medications are FDA approved and equivalent to brand names",
-          "Your doctor will review the substitution before approving",
-          "You can always switch back if needed",
-          "Cost benefits may vary by pharmacy",
-        ].map((item, i) => (
-          <Text key={i} style={[styles.accordionItem, { color: colors.foreground }]}>
-            • {item}
-          </Text>
-        ))}
-      </Accordion>
-
-      {/* FAQ */}
-      <Accordion title="Frequently Asked Questions">
-        {[
-          {
-            q: "Are generic medications as effective?",
-            a: "Yes, they contain the same active ingredients",
-          },
-          { q: "Can I switch back to brand name?", a: "Yes, discuss with your doctor" },
-          {
-            q: "Will my insurance cover the generic?",
-            a: "Most insurance plans prefer generics",
-          },
-          {
-            q: "How long does the process take?",
-            a: "Usually 1-2 weeks for doctor review",
-          },
-        ].map((item, i) => (
-          <Text key={i} style={[styles.accordionItem, { color: colors.foreground }]}>
-            • Q: {item.q} A: {item.a}
-          </Text>
-        ))}
-      </Accordion>
-    </>
-  );
-}
-
-// ─── Step 1: Review Doctor Note ───────────────────────────────────────────────
-
-function Step1Content({
-  customNote,
-  setCustomNote,
-}: {
-  customNote: string;
-  setCustomNote: (v: string) => void;
-}) {
-  const colors = useColors();
-  return (
-    <ScrollView
-      contentContainerStyle={styles.sheetScroll}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Text style={[styles.sheetSectionLabel, { color: colors.foreground }]}>
-        Medication Comparison
-      </Text>
-
-      {/* Current Medication */}
-      <View style={[styles.sheetCard, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" }]}>
-        <Text style={[styles.cardTitle, { color: colors.foreground }]}>Current Medication</Text>
-        <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-          Brand Name • Your Pharmacy
-        </Text>
-        <BulletItem text="Last filled: Recent Fill" />
-        <BulletItem text="Brand name medication" />
-        <BulletItem text="Higher cost option" />
-      </View>
-
-      {/* Generic Alternative */}
-      <View style={[styles.sheetCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.cardTitle, { color: colors.foreground }]}>Generic Alternative</Text>
-        <Text style={[styles.cardSubtitle, { color: colors.mutedForeground }]}>
-          Generic Equivalent
-        </Text>
-        <BulletItem text="Generic equivalent" />
-        <BulletItem text="Significantly lower cost" />
-        <BulletItem text="Same effectiveness" />
-      </View>
-
-      {/* What's Included */}
-      <View style={[styles.sheetCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-          What's Included in the Note
-        </Text>
-        <CheckItem text="Brand name medication details" />
-        <CheckItem text="Generic equivalent information" />
-        <CheckItem text="FDA approval and rating" />
-        <CheckItem text="Effectiveness comparison data" />
-        <CheckItem text="Safety profile information" />
-      </View>
-
-      {/* Custom Note */}
-      <View style={[styles.sheetCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.cardTitle, { color: colors.foreground }]}>Custom Note (Optional)</Text>
-        <TextInput
-          style={[
-            styles.noteInput,
-            { borderColor: colors.border, color: colors.foreground },
-          ]}
-          placeholder="Add any additional information for your doctor..."
-          placeholderTextColor={colors.mutedForeground}
-          multiline
-          value={customNote}
-          onChangeText={(t) => setCustomNote(t.slice(0, 500))}
-          textAlignVertical="top"
-        />
-        <Text style={[styles.charCount, { color: colors.mutedForeground }]}>
-          {customNote.length}/500 characters
-        </Text>
-      </View>
+      <TouchableOpacity
+        style={[styles.acceptBtn, { backgroundColor: DARK_TEAL }]}
+        onPress={onAccept}
+        activeOpacity={0.85}
+        accessibilityRole="button"
+      >
+        <Feather name="check-circle" size={20} color="#fff" style={{ marginRight: 10 }} />
+        <Text style={styles.acceptBtnText}>Accept Recommendation</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
-// ─── Step 2: Choose Delivery Method ──────────────────────────────────────────
+// ─── Step 2A: Substitution — choose delivery method ───────────────────────────
 
-const DELIVERY_OPTIONS = [
-  {
-    id: "email-me",
-    icon: "mail" as const,
-    title: "Email to Me",
-    desc: "Send to your registered email address",
-  },
-  {
-    id: "download",
-    icon: "download" as const,
-    title: "Download PDF",
-    desc: "Download directly to your device",
-  },
-  {
-    id: "print",
-    icon: "printer" as const,
-    title: "Print Now",
-    desc: "Send to nearby printer or save as PDF",
-  },
-  {
-    id: "email-doctor",
-    icon: "user" as const,
-    title: "Email to Doctor",
-    desc: "Send directly to your doctor",
-  },
-];
-
-function Step2Content({
-  deliveryMethod,
-  setDeliveryMethod,
+function SubDeliveryStep({
+  selected,
+  onSelect,
 }: {
-  deliveryMethod: string | null;
-  setDeliveryMethod: (v: string) => void;
+  selected: "care-reward" | "printout" | null;
+  onSelect: (v: "care-reward" | "printout") => void;
 }) {
   const colors = useColors();
+
+  const options: {
+    id: "care-reward" | "printout";
+    icon: keyof typeof Feather.glyphMap;
+    title: string;
+    desc: string;
+    highlight?: boolean;
+  }[] = [
+    {
+      id: "care-reward",
+      icon: "send",
+      title: "Care Reward sends request to doctor",
+      desc: "We'll send a change request directly to your prescribing doctor on your behalf — no action needed.",
+      highlight: true,
+    },
+    {
+      id: "printout",
+      icon: "printer",
+      title: "I'll take a printout to my doctor",
+      desc: "We'll generate a ready-to-print document you can bring to your next appointment.",
+    },
+  ];
+
   return (
-    <ScrollView
-      contentContainerStyle={styles.sheetScroll}
-      showsVerticalScrollIndicator={false}
-    >
-      <Text style={[styles.deliveryQuestion, { color: colors.foreground }]}>
-        How would you like to receive your doctor note?
+    <ScrollView contentContainerStyle={styles.stepScroll} showsVerticalScrollIndicator={false}>
+      <Text style={[styles.stepQuestion, { color: colors.foreground }]}>
+        How would you like to send the change request?
       </Text>
 
-      {DELIVERY_OPTIONS.map((opt) => {
-        const selected = deliveryMethod === opt.id;
+      {options.map((opt) => {
+        const sel = selected === opt.id;
         return (
           <TouchableOpacity
             key={opt.id}
             style={[
-              styles.deliveryCard,
+              styles.methodCard,
               {
-                backgroundColor: colors.card,
-                borderColor: selected ? colors.primary : colors.border,
-                borderWidth: selected ? 2 : 1,
+                backgroundColor: sel ? DARK_TEAL + "0D" : colors.card,
+                borderColor: sel ? DARK_TEAL : colors.border,
+                borderWidth: sel ? 2 : 1,
               },
             ]}
-            onPress={() => setDeliveryMethod(opt.id)}
-            activeOpacity={0.85}
+            onPress={() => onSelect(opt.id)}
+            activeOpacity={0.82}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: sel }}
           >
-            <View style={[styles.deliveryIcon, { backgroundColor: colors.primary + "18" }]}>
-              <Feather name={opt.icon} size={20} color={colors.primary} />
+            <View style={[styles.methodIconWrap, { backgroundColor: sel ? DARK_TEAL + "18" : colors.secondary }]}>
+              <Feather name={opt.icon} size={22} color={sel ? DARK_TEAL : colors.mutedForeground} />
             </View>
-            <View style={styles.deliveryText}>
-              <Text style={[styles.deliveryTitle, { color: colors.foreground }]}>
-                {opt.title}
-              </Text>
-              <Text style={[styles.deliveryDesc, { color: colors.mutedForeground }]}>
-                {opt.desc}
-              </Text>
+            <View style={styles.methodText}>
+              <View style={styles.methodTitleRow}>
+                <Text style={[styles.methodTitle, { color: colors.foreground }]}>{opt.title}</Text>
+                {opt.highlight && (
+                  <View style={[styles.recommendedPill, { backgroundColor: DARK_TEAL }]}>
+                    <Text style={styles.recommendedPillText}>Recommended</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={[styles.methodDesc, { color: colors.mutedForeground }]}>{opt.desc}</Text>
             </View>
             <View
               style={[
-                styles.deliveryRadio,
-                {
-                  borderColor: selected ? colors.primary : colors.border,
-                  backgroundColor: selected ? colors.primary : "transparent",
-                },
+                styles.radioOuter,
+                { borderColor: sel ? DARK_TEAL : colors.border },
               ]}
             >
-              {selected && <View style={styles.deliveryRadioDot} />}
+              {sel && <View style={[styles.radioDot, { backgroundColor: DARK_TEAL }]} />}
             </View>
           </TouchableOpacity>
         );
       })}
-
-      <View style={styles.deliveryEta}>
-        <Feather name="clock" size={14} color={DARK_TEAL} />
-        <Text style={[styles.deliveryEtaText, { color: DARK_TEAL }]}>
-          Estimated delivery time: 2-3 minutes
-        </Text>
-      </View>
     </ScrollView>
   );
 }
 
-// ─── Step 3: Generating ───────────────────────────────────────────────────────
+// ─── Step 2B: Refill — delivery address form ──────────────────────────────────
 
-const GEN_STEPS = [
-  "Analyzing medication data...",
-  "Generating comparison report...",
-  "Creating doctor note...",
-  "Finalizing document...",
-];
-
-function Step3Content({ genStep }: { genStep: number }) {
+function RefillAddressStep({
+  address,
+  setAddress,
+  city,
+  setCity,
+  stateVal,
+  setStateVal,
+  zip,
+  setZip,
+}: {
+  address: string; setAddress: (v: string) => void;
+  city: string; setCity: (v: string) => void;
+  stateVal: string; setStateVal: (v: string) => void;
+  zip: string; setZip: (v: string) => void;
+}) {
   const colors = useColors();
+
+  const inputStyle = [styles.input, { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.card }];
+  const labelStyle = [styles.fieldLabel, { color: colors.foreground }];
+
   return (
-    <View style={styles.genContainer}>
-      {/* Icon */}
-      <View style={styles.genIconWrap}>
-        <View style={[styles.genIconCircle, { backgroundColor: colors.primary + "18" }]}>
-          <Feather name="file-text" size={48} color={colors.primary} />
-        </View>
-      </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        contentContainerStyle={styles.stepScroll}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={[styles.stepQuestion, { color: colors.foreground }]}>
+          Where should we deliver your medication?
+        </Text>
 
-      <Text style={[styles.genTitle, { color: colors.foreground }]}>
-        Generating comparison report...
-      </Text>
+        <View style={[styles.addressCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {/* Street */}
+          <View style={styles.fieldGroup}>
+            <Text style={labelStyle}>Street address *</Text>
+            <TextInput
+              style={inputStyle}
+              placeholder="e.g. 123 Main Street, Apt 4B"
+              placeholderTextColor={colors.mutedForeground}
+              value={address}
+              onChangeText={setAddress}
+              autoCapitalize="words"
+              returnKeyType="next"
+            />
+          </View>
 
-      <View style={styles.genStepList}>
-        {GEN_STEPS.map((step, i) => {
-          const active = i < genStep;
-          return (
-            <View key={i} style={styles.genStepRow}>
-              <View
-                style={[
-                  styles.genDot,
-                  { backgroundColor: active ? colors.primary : colors.border },
-                ]}
+          {/* City */}
+          <View style={styles.fieldGroup}>
+            <Text style={labelStyle}>City *</Text>
+            <TextInput
+              style={inputStyle}
+              placeholder="e.g. New York"
+              placeholderTextColor={colors.mutedForeground}
+              value={city}
+              onChangeText={setCity}
+              autoCapitalize="words"
+              returnKeyType="next"
+            />
+          </View>
+
+          {/* State + ZIP side by side */}
+          <View style={styles.fieldRow}>
+            <View style={[styles.fieldGroup, { flex: 1 }]}>
+              <Text style={labelStyle}>State *</Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="e.g. NY"
+                placeholderTextColor={colors.mutedForeground}
+                value={stateVal}
+                onChangeText={(v) => setStateVal(v.toUpperCase().slice(0, 2))}
+                autoCapitalize="characters"
+                maxLength={2}
+                returnKeyType="next"
               />
-              <Text
-                style={[
-                  styles.genStepText,
-                  { color: active ? colors.foreground : colors.mutedForeground },
-                ]}
-              >
-                {step}
-              </Text>
             </View>
-          );
-        })}
-      </View>
-    </View>
+            <View style={[styles.fieldGroup, { flex: 1 }]}>
+              <Text style={labelStyle}>ZIP code *</Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="e.g. 10001"
+                placeholderTextColor={colors.mutedForeground}
+                value={zip}
+                onChangeText={(v) => setZip(v.replace(/\D/g, "").slice(0, 5))}
+                keyboardType="number-pad"
+                maxLength={5}
+                returnKeyType="done"
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.deliveryNote, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" }]}>
+          <Feather name="info" size={15} color={DARK_TEAL} />
+          <Text style={[styles.deliveryNoteText, { color: DARK_TEAL }]}>
+            Your first 90-day supply will arrive within 7–10 business days of confirmation.
+          </Text>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
-// ─── Step 4: Success ──────────────────────────────────────────────────────────
+// ─── Step 3: Acknowledgement ──────────────────────────────────────────────────
 
-function Step4Content() {
+function AcknowledgementStep({
+  flow,
+  subDelivery,
+  address,
+  city,
+  stateVal,
+  zip,
+  points,
+  pointsMonthly,
+  onClose,
+}: {
+  flow: Flow;
+  subDelivery: "care-reward" | "printout" | null;
+  address: string;
+  city: string;
+  stateVal: string;
+  zip: string;
+  points: number;
+  pointsMonthly: number;
+  onClose: () => void;
+}) {
   const colors = useColors();
+  const isSub = flow === "substitution";
+
+  const title = isSub
+    ? subDelivery === "care-reward"
+      ? "Request sent to your doctor!"
+      : "Your printout is ready!"
+    : "Mail order set up!";
+
+  const desc = isSub
+    ? subDelivery === "care-reward"
+      ? "Care Reward has sent a generic substitution request to your prescribing doctor. You'll be notified when they respond."
+      : "Your printout document is ready. Bring it to your next appointment and ask your doctor to switch you to Amlodipine."
+    : `Your first 90-day supply of Amlodipine will be delivered to ${address}, ${city}, ${stateVal} ${zip}. Expect arrival in 7–10 business days.`;
+
   return (
-    <View style={styles.successContainer}>
-      <View style={styles.successCheckWrap}>
-        <View style={[styles.successCheckCircle, { backgroundColor: "#22C55E" }]}>
-          <Feather name="check" size={40} color="#fff" />
-        </View>
+    <View style={styles.ackContainer}>
+      {/* Success icon */}
+      <View style={[styles.ackIconCircle, { backgroundColor: "#22C55E" }]}>
+        <Feather name="check" size={40} color="#fff" />
       </View>
 
-      <Text style={[styles.successTitle, { color: colors.foreground }]}>
-        Doctor Note Ready!
-      </Text>
+      <Text style={[styles.ackTitle, { color: colors.foreground }]}>{title}</Text>
+      <Text style={[styles.ackDesc, { color: colors.mutedForeground }]}>{desc}</Text>
 
-      <View style={[styles.successBadge, { backgroundColor: colors.primary + "18" }]}>
-        <Text style={[styles.successBadgeText, { color: colors.primary }]}>
-          Downloaded to your device
+      {/* Points earned */}
+      <View style={[styles.ackPointsBadge, { backgroundColor: DARK_TEAL + "15", borderColor: DARK_TEAL + "30" }]}>
+        <Feather name="star" size={18} color={DARK_TEAL} />
+        <Text style={[styles.ackPointsText, { color: DARK_TEAL }]}>
+          +{points} points earned{pointsMonthly > 0 ? ` · +${pointsMonthly}/mo ongoing` : ""}
         </Text>
       </View>
 
-      <View style={[styles.docCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Feather name="file-text" size={32} color="#3B82F6" />
-        <Text style={[styles.docCardTitle, { color: colors.foreground }]}>
-          Medication Comparison Note
-        </Text>
-        <Text style={[styles.docCardSub, { color: colors.mutedForeground }]}>
-          Current Medication → Generic Alternative
-        </Text>
+      {/* What happens next */}
+      <View style={[styles.ackNextCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[styles.ackNextLabel, { color: colors.foreground }]}>What happens next</Text>
+        {isSub && subDelivery === "care-reward" && (
+          <>
+            <CheckItem text="Doctor reviews the substitution request" />
+            <CheckItem text="You'll be notified of their decision" />
+            <CheckItem text="Prescription updated at your pharmacy" />
+          </>
+        )}
+        {isSub && subDelivery === "printout" && (
+          <>
+            <CheckItem text="Download or print the document" />
+            <CheckItem text="Bring it to your next doctor visit" />
+            <CheckItem text="Doctor approves and updates your prescription" />
+          </>
+        )}
+        {!isSub && (
+          <>
+            <CheckItem text="Prescription transferred to CR Mail Order" />
+            <CheckItem text="First delivery in 7–10 business days" />
+            <CheckItem text="Auto-refill set up for future fills" />
+          </>
+        )}
       </View>
+
+      {/* Close button */}
+      <TouchableOpacity
+        style={[styles.closeOppBtn, { backgroundColor: DARK_TEAL }]}
+        onPress={onClose}
+        activeOpacity={0.85}
+        accessibilityRole="button"
+      >
+        <Text style={styles.closeOppBtnText}>Close Opportunity</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -502,147 +649,155 @@ export default function MedicationOpportunityScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const navigation = useNavigation();
-  const bgScrollRef = useRef<ScrollView>(null);
 
   const opp = MOCK_OPPORTUNITIES.find((o) => o.id === id);
   const points = opp?.points ?? 50;
   const pointsMonthly = opp?.pointsMonthly ?? 50;
 
-  const [step, setStep] = useState(0); // 0=overview, 1=review, 2=delivery, 3=generating, 4=success
-  const [customNote, setCustomNote] = useState("");
-  const [deliveryMethod, setDeliveryMethod] = useState<string | null>(null);
-  const [genStep, setGenStep] = useState(0);
+  // Skeleton
   const [loading, setLoading] = useState(true);
-
-  // Brief skeleton while screen mounts
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 380);
     return () => clearTimeout(t);
   }, []);
 
-  // Set nav header title
   useEffect(() => {
-    navigation.setOptions({ title: "Substitution Opportunity" });
+    navigation.setOptions({ title: "Medication Opportunity" });
   }, [navigation]);
 
-  // Scroll background to bottom when entering stepper
-  useEffect(() => {
-    if (step === 1) {
-      setTimeout(() => bgScrollRef.current?.scrollToEnd({ animated: false }), 50);
-    }
-  }, [step]);
+  // Workflow state
+  const [flow, setFlow] = useState<Flow>(null);
+  const [step, setStep] = useState<Step>(0);
 
-  // Generation animation
-  useEffect(() => {
-    if (step !== 3) return;
-    setGenStep(0);
-    let gs = 0;
-    const timer = setInterval(() => {
-      gs++;
-      setGenStep(gs);
-      if (gs >= GEN_STEPS.length) {
-        clearInterval(timer);
-        setTimeout(() => setStep(4), 400);
-      }
-    }, 700);
-    return () => clearInterval(timer);
-  }, [step]);
+  // Substitution state
+  const [subDelivery, setSubDelivery] = useState<"care-reward" | "printout" | null>(null);
 
-  // Step titles
-  const STEP_TITLES: Record<number, string> = {
-    1: "Review Doctor Note",
-    2: "Choose Delivery Method",
-    3: "Generating Doctor Note",
-    4: "Doctor Note Ready",
+  // Refill address state
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [stateVal, setStateVal] = useState("");
+  const [zip, setZip] = useState("");
+
+  const startFlow = (f: Flow) => {
+    setFlow(f);
+    setStep(1);
+    // Reset sub-state when starting
+    setSubDelivery(null);
+    setAddress(""); setCity(""); setStateVal(""); setZip("");
   };
 
   const handleBack = () => {
-    if (step === 0) {
-      router.back();
-    } else if (step === 4) {
-      router.back();
+    if (step <= 1 || step === 0) {
+      setFlow(null);
+      setStep(0);
     } else {
-      setStep((s) => Math.max(0, s - 1));
+      setStep((s) => Math.max(0, s - 1) as Step);
     }
   };
 
-  const handleFooterAction = () => {
-    if (step === 0) {
-      setStep(1);
-    } else if (step === 1) {
+  const handleNext = () => {
+    if (step === 1) {
       setStep(2);
-    } else if (step === 2 && deliveryMethod) {
+    } else if (step === 2) {
       setStep(3);
-    } else if (step === 4) {
-      router.back();
     }
   };
 
-  const footerLabel =
-    step === 0
-      ? "Generate Doctor Note"
-      : step === 1
-      ? "Continue"
-      : step === 2
-      ? "Generate Note"
-      : step === 4
-      ? "Done"
-      : null;
+  // Footer config per step
+  const footerLabel = (() => {
+    if (step === 1) return "Continue";
+    if (step === 2 && flow === "substitution") return subDelivery ? "Continue" : null;
+    if (step === 2 && flow === "refill") {
+      const ready = address.trim() && city.trim() && stateVal.trim().length === 2 && zip.length === 5;
+      return ready ? "Confirm Address" : null;
+    }
+    return null;
+  })();
 
-  const footerDisabled = step === 2 && !deliveryMethod;
+  const STEP_TITLES: Record<number, string> = {
+    1: "Accept Recommendation",
+    2: flow === "substitution" ? "Choose How to Send" : "Delivery Address",
+    3: "Opportunity Closed",
+  };
 
   if (loading) return <OpportunityDetailSkeleton />;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* ── Background overview (always rendered) ──────────────────────────── */}
-      <View
-        style={[
-          styles.bgWrap,
-          step > 0 && { opacity: 0.35, pointerEvents: "none" as any },
-        ]}
-      >
-        <ScrollView
-          ref={bgScrollRef}
-          contentContainerStyle={[
-            styles.overviewScroll,
-            { paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0) + 100 },
-          ]}
-          showsVerticalScrollIndicator={false}
-          scrollEnabled={step === 0}
-        >
-          <OverviewContent points={points} pointsMonthly={pointsMonthly} />
-        </ScrollView>
-      </View>
-
-      {/* ── Overview footer button ──────────────────────────────────────────── */}
+      {/* ── Overview (step === 0) ───────────────────────────────────────────── */}
       {step === 0 && (
-        <View
-          style={[
-            styles.footer,
-            {
-              backgroundColor: colors.background,
-              paddingBottom: insets.bottom + (Platform.OS === "web" ? 16 : 8),
-            },
-          ]}
-        >
-          <TouchableOpacity
-            style={[styles.footerBtn, { backgroundColor: DARK_TEAL }]}
-            onPress={handleFooterAction}
-            activeOpacity={0.85}
+        <>
+          <ScrollView
+            contentContainerStyle={[
+              styles.overviewScroll,
+              { paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0) + 32 },
+            ]}
+            showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.footerBtnText}>{footerLabel}</Text>
-          </TouchableOpacity>
-        </View>
+            {/* Page header */}
+            <View style={[styles.pageHeader, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" }]}>
+              <View style={[styles.pageHeaderIcon, { backgroundColor: DARK_TEAL + "18" }]}>
+                <Feather name="activity" size={24} color={DARK_TEAL} />
+              </View>
+              <View style={styles.pageHeaderText}>
+                <Text style={[styles.pageHeaderDrug, { color: DARK_TEAL }]}>Blood Pressure Medication</Text>
+                <Text style={[styles.pageHeaderSub, { color: colors.mutedForeground }]}>
+                  2 savings opportunities found
+                </Text>
+              </View>
+            </View>
+
+            {/* ── Opportunity 1: Generic Substitution ── */}
+            <SectionHeading label="Opportunity 1 · Generic Substitution" />
+            <OpportunityCard
+              icon="refresh-cw"
+              iconBg={LIGHT_TEAL_BG}
+              title="Switch to Generic"
+              subtitle="Norvasc → Amlodipine"
+              points={points}
+              pointsMonthly={pointsMonthly}
+              ctaLabel="Accept Generic Substitution"
+              onCta={() => startFlow("substitution")}
+            >
+              <DrugComparisonCards />
+              <View style={[styles.savingsRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+                <Feather name="trending-down" size={15} color="#16A34A" />
+                <Text style={[styles.savingsText, { color: "#16A34A" }]}>
+                  Save up to $127/month on your medication costs
+                </Text>
+              </View>
+            </OpportunityCard>
+
+            {/* ── Opportunity 2: Refill Location ── */}
+            <SectionHeading label="Opportunity 2 · Refill Location" />
+            <OpportunityCard
+              icon="package"
+              iconBg={LIGHT_TEAL_BG}
+              title="Switch to Mail Order"
+              subtitle="CVS Pharmacy → CR Mail Order"
+              points={50}
+              pointsMonthly={0}
+              ctaLabel="Switch to Mail Order"
+              onCta={() => startFlow("refill")}
+            >
+              <RefillComparisonCards />
+              <View style={[styles.savingsRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+                <Feather name="trending-down" size={15} color="#16A34A" />
+                <Text style={[styles.savingsText, { color: "#16A34A" }]}>
+                  90-day supply delivered free — lower per-fill cost
+                </Text>
+              </View>
+            </OpportunityCard>
+          </ScrollView>
+        </>
       )}
 
-      {/* ── Stepper sheet overlay ───────────────────────────────────────────── */}
+      {/* ── Stepper (steps 1-3) ─────────────────────────────────────────────── */}
       {step > 0 && (
         <View
           style={[
             styles.sheet,
             {
-              top: SHEET_TOP,
               backgroundColor: colors.background,
               paddingBottom: insets.bottom + (Platform.OS === "web" ? 16 : 8),
             },
@@ -650,10 +805,18 @@ export default function MedicationOpportunityScreen() {
         >
           {/* Sheet header */}
           <View style={[styles.sheetHeader, { borderBottomColor: colors.border }]}>
-            <TouchableOpacity onPress={handleBack} style={styles.sheetBack} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Feather name="arrow-left" size={20} color={colors.primary} />
-              <Text style={[styles.sheetBackText, { color: colors.primary }]}>Back</Text>
-            </TouchableOpacity>
+            {step < 3 ? (
+              <TouchableOpacity
+                onPress={handleBack}
+                style={styles.sheetBack}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Feather name="arrow-left" size={20} color={colors.primary} />
+                <Text style={[styles.sheetBackText, { color: colors.primary }]}>Back</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.sheetBack} />
+            )}
             <Text style={[styles.sheetTitle, { color: colors.foreground }]}>
               {STEP_TITLES[step]}
             </Text>
@@ -661,16 +824,16 @@ export default function MedicationOpportunityScreen() {
           </View>
 
           {/* Progress bar */}
-          {step <= 3 && (
+          {step < 3 && (
             <View style={styles.progressWrap}>
               <Text style={[styles.progressLabel, { color: colors.mutedForeground }]}>
-                Step {step} of 3
+                Step {step} of 2
               </Text>
               <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
                 <View
                   style={[
                     styles.progressFill,
-                    { backgroundColor: DARK_TEAL, width: `${(step / 3) * 100}%` },
+                    { backgroundColor: DARK_TEAL, width: `${(step / 2) * 100}%` },
                   ]}
                 />
               </View>
@@ -680,44 +843,46 @@ export default function MedicationOpportunityScreen() {
           {/* Step content */}
           <View style={styles.sheetContent}>
             {step === 1 && (
-              <Step1Content customNote={customNote} setCustomNote={setCustomNote} />
+              <AcceptStep flow={flow} onAccept={handleNext} />
             )}
-            {step === 2 && (
-              <Step2Content
-                deliveryMethod={deliveryMethod}
-                setDeliveryMethod={setDeliveryMethod}
+            {step === 2 && flow === "substitution" && (
+              <SubDeliveryStep selected={subDelivery} onSelect={setSubDelivery} />
+            )}
+            {step === 2 && flow === "refill" && (
+              <RefillAddressStep
+                address={address} setAddress={setAddress}
+                city={city} setCity={setCity}
+                stateVal={stateVal} setStateVal={setStateVal}
+                zip={zip} setZip={setZip}
               />
             )}
-            {step === 3 && <Step3Content genStep={genStep} />}
-            {step === 4 && <Step4Content />}
+            {step === 3 && (
+              <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+                <AcknowledgementStep
+                  flow={flow}
+                  subDelivery={subDelivery}
+                  address={address}
+                  city={city}
+                  stateVal={stateVal}
+                  zip={zip}
+                  points={flow === "refill" ? 50 : points}
+                  pointsMonthly={flow === "refill" ? 0 : pointsMonthly}
+                  onClose={() => router.back()}
+                />
+              </ScrollView>
+            )}
           </View>
 
-          {/* Sheet footer button */}
-          {footerLabel && step !== 3 && (
+          {/* Footer CTA */}
+          {footerLabel && step < 3 && (
             <View style={[styles.sheetFooter, { borderTopColor: colors.border }]}>
               <TouchableOpacity
-                style={[
-                  styles.footerBtn,
-                  {
-                    backgroundColor: footerDisabled
-                      ? colors.border
-                      : step === 4
-                      ? DARK_TEAL
-                      : DARK_TEAL,
-                  },
-                ]}
-                onPress={handleFooterAction}
-                disabled={!!footerDisabled}
-                activeOpacity={footerDisabled ? 1 : 0.85}
+                style={[styles.footerBtn, { backgroundColor: DARK_TEAL }]}
+                onPress={handleNext}
+                activeOpacity={0.85}
+                accessibilityRole="button"
               >
-                <Text
-                  style={[
-                    styles.footerBtnText,
-                    footerDisabled && { color: colors.mutedForeground },
-                  ]}
-                >
-                  {footerLabel}
-                </Text>
+                <Text style={styles.footerBtnText}>{footerLabel}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -732,141 +897,163 @@ export default function MedicationOpportunityScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
-  // ── Background overview ────────────────────────────────────────────────
-  bgWrap: { flex: 1 },
+  // ── Overview ────────────────────────────────────────────────────────────
   overviewScroll: {
     paddingHorizontal: 16,
     paddingTop: 16,
     gap: 14,
   },
 
-  // ── Compare toggle ────────────────────────────────────────────────────
-  compareToggle: {
+  pageHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingVertical: 13,
-    paddingHorizontal: 14,
-    minHeight: 48,
-  },
-  compareToggleLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  compareToggleIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  compareToggleTitle: { fontSize: 15, fontWeight: "700" },
-  compareToggleRight: { flexDirection: "row", alignItems: "center", gap: 6 },
-  compareToggleLabel: { fontSize: 13, fontWeight: "500" },
-
-  // ── Cards (shared) ────────────────────────────────────────────────────
-  card: {
+    gap: 14,
     borderRadius: 14,
     borderWidth: 1,
     padding: 16,
-    gap: 10,
   },
-  cardTitle: { fontSize: 17, fontWeight: "700" },
-  cardSubtitle: { fontSize: 13, marginTop: -4 },
+  pageHeaderIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pageHeaderText: { flex: 1 },
+  pageHeaderDrug: { fontSize: 17, fontFamily: "Inter_700Bold" },
+  pageHeaderSub: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 2 },
 
-  // ── Bullets & checks ─────────────────────────────────────────────────
-  bulletRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  bulletDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginTop: 6,
-    flexShrink: 0,
+  sectionHeading: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.8,
+    marginBottom: -4,
   },
-  bulletText: { flex: 1, fontSize: 14, lineHeight: 20 },
-  checkRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  checkCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+
+  // ── Opportunity card (overview wrapper) ──────────────────────────────────
+  oppCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    gap: 14,
+    ...Platform.select({
+      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4 },
+      android: { elevation: 2 },
+    }),
+  },
+  oppCardHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  oppCardIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
-  checkText: { flex: 1, fontSize: 14, lineHeight: 20 },
-
-  // ── Points breakdown ──────────────────────────────────────────────────
-  pointsSection: { gap: 10 },
-  sectionLabel: { fontSize: 17, fontWeight: "700" },
-  pointsRow: { flexDirection: "row", gap: 12 },
-  pointsCard: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 18,
+  oppCardTitles: { flex: 1 },
+  oppCardTitle: { fontSize: 16, fontFamily: "Inter_700Bold" },
+  oppCardSub: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 2 },
+  oppPtsPill: {
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
+    flexShrink: 0,
   },
-  pointsCardLabel: { color: "#ffffffcc", fontSize: 13, fontWeight: "500" },
-  pointsCardValue: { color: "#fff", fontSize: 30, fontWeight: "800" },
+  oppPtsText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
 
-  // ── Steps (overview) ─────────────────────────────────────────────────
-  stepRow: { flexDirection: "row", alignItems: "center", gap: 14 },
-  stepBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  oppCta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 12,
+    paddingVertical: 15,
+    minHeight: 52,
+  },
+  oppCtaText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
+
+  savingsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  savingsText: { fontSize: 13, fontFamily: "Inter_600SemiBold", flex: 1 },
+
+  // ── Drug comparison (overview) ───────────────────────────────────────────
+  compRow: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  compCard: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    gap: 8,
+  },
+  compRecommendedRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  compTag: { fontSize: 11, fontFamily: "Inter_500Medium", textTransform: "uppercase", letterSpacing: 0.5 },
+  compDrug: { fontSize: 16, fontFamily: "Inter_700Bold" },
+  compSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: -4 },
+  compCostBadge: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  compCostText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  recBadge: {
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+  },
+  recBadgeText: { color: "#fff", fontSize: 10, fontFamily: "Inter_700Bold" },
+  compArrow: { alignSelf: "center", marginTop: 8 },
+
+  // ── Refill location comparison (overview) ──────────────────────────────
+  locationStack: { gap: 4 },
+  locationCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+  },
+  locationLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
+  locationIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
-  stepNum: { color: "#fff", fontSize: 15, fontWeight: "700" },
-  stepText: { flex: 1, fontSize: 14, lineHeight: 20 },
-
-  // ── Accordion ─────────────────────────────────────────────────────────
-  accordionCard: {
-    borderRadius: 14,
+  locationText: { flex: 1 },
+  locationLabel: { fontSize: 11, fontFamily: "Inter_500Medium", textTransform: "uppercase", letterSpacing: 0.5 },
+  locationName: { fontSize: 14, fontFamily: "Inter_700Bold", marginTop: 2 },
+  locationZip: { fontSize: 12, fontFamily: "Inter_400Regular" },
+  costPill: {
+    borderRadius: 8,
     borderWidth: 1,
-    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  accordionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-  },
-  accordionTitle: { fontSize: 16, fontWeight: "700" },
-  accordionChevron: { fontSize: 12 },
-  accordionBody: { paddingHorizontal: 16, paddingBottom: 16, gap: 8 },
-  accordionItem: { fontSize: 14, lineHeight: 20 },
+  costPillText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  locationArrow: { alignSelf: "center", paddingVertical: 2 },
 
-  // ── Footer ────────────────────────────────────────────────────────────
-  footer: { paddingHorizontal: 16, paddingTop: 12 },
-  footerBtn: {
-    borderRadius: 12,
-    paddingVertical: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  footerBtnText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.2,
-  },
-
-  // ── Sheet overlay ─────────────────────────────────────────────────────
+  // ── Sheet overlay (stepper) ──────────────────────────────────────────────
   sheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 12,
-    overflow: "hidden",
+    flex: 1,
     flexDirection: "column",
   },
   sheetHeader: {
@@ -876,135 +1063,190 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
   },
-  sheetBack: { flexDirection: "row", alignItems: "center", gap: 4, minWidth: 60 },
-  sheetBackText: { fontSize: 15, fontWeight: "600" },
-  sheetBackSpacer: { minWidth: 60 },
-  sheetTitle: { flex: 1, textAlign: "center", fontSize: 17, fontWeight: "700" },
+  sheetBack: { flexDirection: "row", alignItems: "center", gap: 4, minWidth: 70 },
+  sheetBackText: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
+  sheetBackSpacer: { minWidth: 70 },
+  sheetTitle: { flex: 1, textAlign: "center", fontSize: 16, fontFamily: "Inter_700Bold" },
 
-  // ── Progress bar ──────────────────────────────────────────────────────
   progressWrap: { paddingHorizontal: 16, paddingVertical: 10, gap: 6 },
-  progressLabel: { fontSize: 12, textAlign: "center" },
-  progressTrack: {
-    height: 4,
-    borderRadius: 2,
-    overflow: "hidden",
-  },
+  progressLabel: { fontSize: 12, fontFamily: "Inter_400Regular", textAlign: "center" },
+  progressTrack: { height: 4, borderRadius: 2, overflow: "hidden" },
   progressFill: { height: "100%", borderRadius: 2 },
 
   sheetContent: { flex: 1 },
-
-  sheetFooter: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    borderTopWidth: 1,
+  sheetFooter: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1 },
+  footerBtn: {
+    borderRadius: 12,
+    paddingVertical: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 54,
   },
+  footerBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
 
-  // ── Sheet scroll & cards ──────────────────────────────────────────────
-  sheetScroll: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, gap: 14 },
-  sheetCard: {
+  // ── Step content shared ──────────────────────────────────────────────────
+  stepScroll: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 16 },
+  stepQuestion: { fontSize: 18, fontFamily: "Inter_700Bold", lineHeight: 26 },
+
+  // ── Step 1: Accept ───────────────────────────────────────────────────────
+  drugHighlight: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    gap: 12,
+  },
+  drugRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  drugItem: { flex: 1, gap: 4 },
+  drugLabel: { fontSize: 11, fontFamily: "Inter_500Medium", textTransform: "uppercase", letterSpacing: 0.5 },
+  drugName: { fontSize: 20, fontFamily: "Inter_700Bold" },
+  drugFda: { fontSize: 12, fontFamily: "Inter_400Regular", textAlign: "center" },
+
+  switchRow: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
+  switchItem: { flex: 1, gap: 4 },
+  switchLabel: { fontSize: 11, fontFamily: "Inter_500Medium", textTransform: "uppercase", letterSpacing: 0.5 },
+  switchName: { fontSize: 16, fontFamily: "Inter_700Bold" },
+  switchDetail: { fontSize: 12, fontFamily: "Inter_400Regular" },
+
+  acceptBenefits: {
     borderRadius: 14,
     borderWidth: 1,
     padding: 16,
     gap: 10,
   },
-  sheetSectionLabel: { fontSize: 17, fontWeight: "700" },
-
-  noteInput: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 14,
-    lineHeight: 20,
-    minHeight: 100,
-  },
-  charCount: { fontSize: 12, textAlign: "right" },
-
-  // ── Delivery method ───────────────────────────────────────────────────
-  deliveryQuestion: { fontSize: 17, fontWeight: "600", lineHeight: 24, marginBottom: 4 },
-  deliveryCard: {
+  acceptBtn: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 14,
+    paddingVertical: 18,
+    minHeight: 60,
+  },
+  acceptBtnText: { color: "#fff", fontSize: 17, fontFamily: "Inter_700Bold" },
+
+  // ── Step 2: Substitution method ──────────────────────────────────────────
+  methodCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: 14,
     borderRadius: 14,
     padding: 16,
+    minHeight: 80,
   },
-  deliveryIcon: {
-    width: 42,
-    height: 42,
+  methodIconWrap: {
+    width: 44,
+    height: 44,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
-  deliveryText: { flex: 1, gap: 2 },
-  deliveryTitle: { fontSize: 15, fontWeight: "700" },
-  deliveryDesc: { fontSize: 13 },
-  deliveryRadio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  methodText: { flex: 1, gap: 6 },
+  methodTitleRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
+  methodTitle: { fontSize: 15, fontFamily: "Inter_700Bold", flex: 1 },
+  methodDesc: { fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 18 },
+  recommendedPill: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
+  recommendedPillText: { color: "#fff", fontSize: 10, fontFamily: "Inter_700Bold" },
+  radioOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
+    marginTop: 2,
   },
-  deliveryRadioDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" },
-  deliveryEta: {
+  radioDot: { width: 10, height: 10, borderRadius: 5 },
+
+  // ── Step 2: Refill address ───────────────────────────────────────────────
+  addressCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    gap: 14,
+  },
+  fieldGroup: { gap: 6 },
+  fieldRow: { flexDirection: "row", gap: 12 },
+  fieldLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
+  input: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+    minHeight: 50,
+  },
+  deliveryNote: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    justifyContent: "center",
-    paddingTop: 4,
+    alignItems: "flex-start",
+    gap: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
   },
-  deliveryEtaText: { fontSize: 13, fontWeight: "600" },
+  deliveryNoteText: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 19 },
 
-  // ── Generation screen ─────────────────────────────────────────────────
-  genContainer: { flex: 1, alignItems: "center", justifyContent: "center", gap: 24, padding: 24 },
-  genIconWrap: { marginBottom: 8 },
-  genIconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  genTitle: { fontSize: 20, fontWeight: "700", textAlign: "center" },
-  genStepList: { gap: 12, alignSelf: "stretch" },
-  genStepRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  genDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
-  genStepText: { fontSize: 14 },
-
-  // ── Success screen ────────────────────────────────────────────────────
-  successContainer: {
+  // ── Step 3: Acknowledgement ──────────────────────────────────────────────
+  ackContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     gap: 20,
     padding: 24,
   },
-  successCheckWrap: { marginBottom: 4 },
-  successCheckCircle: {
+  ackIconCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
     alignItems: "center",
     justifyContent: "center",
   },
-  successTitle: { fontSize: 24, fontWeight: "800", textAlign: "center" },
-  successBadge: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  successBadgeText: { fontSize: 14, fontWeight: "600" },
-  docCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 20,
+  ackTitle: { fontSize: 24, fontFamily: "Inter_700Bold", textAlign: "center" },
+  ackDesc: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 22 },
+  ackPointsBadge: {
+    flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  ackPointsText: { fontSize: 14, fontFamily: "Inter_700Bold" },
+  ackNextCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    gap: 12,
     alignSelf: "stretch",
   },
-  docCardTitle: { fontSize: 16, fontWeight: "700", textAlign: "center" },
-  docCardSub: { fontSize: 13, textAlign: "center" },
+  ackNextLabel: { fontSize: 15, fontFamily: "Inter_700Bold" },
+  closeOppBtn: {
+    borderRadius: 14,
+    paddingVertical: 18,
+    alignSelf: "stretch",
+    alignItems: "center",
+    minHeight: 58,
+  },
+  closeOppBtnText: { color: "#fff", fontSize: 17, fontFamily: "Inter_700Bold" },
+
+  // ── Shared helpers ───────────────────────────────────────────────────────
+  bulletRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  bulletDot: { width: 7, height: 7, borderRadius: 4, marginTop: 7, flexShrink: 0 },
+  bulletText: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 20 },
+  checkRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  checkCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  checkText: { flex: 1, fontSize: 14, fontFamily: "Inter_400Regular", lineHeight: 20 },
 });
