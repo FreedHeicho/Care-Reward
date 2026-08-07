@@ -40,6 +40,9 @@ const PRIMARY = "#1A6B5A";
 const URGENCY_OPTIONS = ["Immediately", "2 weeks", "4 weeks"] as const;
 type Urgency = (typeof URGENCY_OPTIONS)[number];
 
+const SAMPLE_DATE = "Friday, August 7, 2026";
+const SAMPLE_TIME = "2:00 PM";
+
 // ─── ProviderRow ──────────────────────────────────────────────────────────────
 
 function ProviderRow({
@@ -110,6 +113,7 @@ function ProviderRow({
 interface PendingSelection {
   providerId: string;
   providerName: string;
+  points: number;
 }
 
 function SchedulingModal({
@@ -130,7 +134,7 @@ function SchedulingModal({
   const colors = useColors();
   const insets = useSafeAreaInsets();
 
-  const [step, setStep] = useState<0 | 1>(0);
+  const [step, setStep] = useState<0 | 1 | 2>(0);
   const [urgency, setUrgency] = useState<Urgency | null>(null);
 
   const slideAnim = useRef(new Animated.Value(400)).current;
@@ -159,19 +163,29 @@ function SchedulingModal({
     setStep(1);
   };
 
+  const handleBookForMe = () => {
+    // Transition to success card instead of closing immediately
+    setStep(2);
+  };
+
   return (
     <Modal
       visible={visible}
       transparent
       animationType="none"
       statusBarTranslucent
-      onRequestClose={onDismiss}
+      onRequestClose={step === 2 ? () => urgency && onBookForMe(urgency) : onDismiss}
     >
-      <Pressable style={styles.backdrop} onPress={onDismiss} />
+      {/* Backdrop — not dismissible on success step */}
+      <Pressable
+        style={styles.backdrop}
+        onPress={step === 2 ? undefined : onDismiss}
+      />
 
       <Animated.View
         style={[
           styles.sheet,
+          step === 2 && styles.sheetExpanded,
           {
             backgroundColor: colors.card,
             paddingBottom: insets.bottom + 24,
@@ -179,9 +193,12 @@ function SchedulingModal({
           },
         ]}
       >
-        <View style={[styles.sheetHandle, { backgroundColor: colors.border }]} />
+        {step !== 2 && (
+          <View style={[styles.sheetHandle, { backgroundColor: colors.border }]} />
+        )}
 
         {step === 0 ? (
+          /* ── Step 1: Urgency ── */
           <>
             <Text style={[styles.sheetTitle, { color: colors.foreground }]}>
               How urgent is the appointment you want?
@@ -216,7 +233,8 @@ function SchedulingModal({
               </Text>
             </TouchableOpacity>
           </>
-        ) : (
+        ) : step === 1 ? (
+          /* ── Step 2: Booking method ── */
           <>
             <Text style={[styles.sheetTitle, { color: colors.foreground }]}>
               How would you like to schedule?
@@ -237,7 +255,7 @@ function SchedulingModal({
 
             <TouchableOpacity
               style={[styles.bookForMeBtn, { backgroundColor: PRIMARY }]}
-              onPress={() => urgency && onBookForMe(urgency)}
+              onPress={handleBookForMe}
               activeOpacity={0.82}
               accessibilityRole="button"
             >
@@ -266,6 +284,79 @@ function SchedulingModal({
               <Text style={[styles.sheetCancelText, { color: colors.mutedForeground }]}>
                 Go back
               </Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          /* ── Step 3: Appointment Scheduled ── */
+          <>
+            <View style={styles.successIconWrap}>
+              <View style={[styles.successIconCircle, { backgroundColor: PRIMARY + "22" }]}>
+                <Feather name="check" size={38} color={PRIMARY} />
+              </View>
+            </View>
+
+            <Text style={[styles.successTitle, { color: colors.foreground }]}>
+              Appointment Scheduled!
+            </Text>
+            <Text style={[styles.successSub, { color: colors.mutedForeground }]}>
+              Your appointment has been successfully scheduled.
+            </Text>
+
+            {/* Details card */}
+            <View
+              style={[
+                styles.detailsCard,
+                { backgroundColor: colors.secondary, borderColor: colors.border },
+              ]}
+            >
+              <Text style={[styles.detailsCardTitle, { color: colors.foreground }]}>
+                Appointment Details
+              </Text>
+              <View style={[styles.detailsDivider, { backgroundColor: colors.border }]} />
+
+              <View style={styles.detailsRow}>
+                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>Service:</Text>
+                <Text style={[styles.detailsValue, { color: colors.foreground }]}>
+                  Care Site Alternative
+                </Text>
+              </View>
+              <View style={styles.detailsRow}>
+                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>Provider:</Text>
+                <Text style={[styles.detailsValue, { color: colors.foreground }]}>
+                  {pending?.providerName ?? "—"}
+                </Text>
+              </View>
+              <View style={styles.detailsRow}>
+                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>Date:</Text>
+                <Text style={[styles.detailsValue, { color: colors.foreground }]}>
+                  {SAMPLE_DATE}
+                </Text>
+              </View>
+              <View style={styles.detailsRow}>
+                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>Time:</Text>
+                <Text style={[styles.detailsValue, { color: colors.foreground }]}>
+                  {SAMPLE_TIME}
+                </Text>
+              </View>
+              <View style={styles.detailsRow}>
+                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>
+                  Points Earned:
+                </Text>
+                <Text style={[styles.detailsPts, { color: PRIMARY }]}>
+                  +{(pending?.points ?? 0).toLocaleString()} points
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.backToOppsBtn, { backgroundColor: PRIMARY }]}
+              onPress={() => urgency && onBookForMe(urgency)}
+              activeOpacity={0.82}
+              accessibilityRole="button"
+              accessibilityLabel="Back to Pending Opportunities"
+            >
+              <Feather name="arrow-left" size={18} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.backToOppsText}>Back to Pending Opportunities</Text>
             </TouchableOpacity>
           </>
         )}
@@ -311,7 +402,7 @@ export default function CareSiteAlternativeScreen() {
   const [pending, setPending] = useState<PendingSelection | null>(null);
 
   const openModal = (provider: Provider) => {
-    setPending({ providerId: provider.id, providerName: provider.name });
+    setPending({ providerId: provider.id, providerName: provider.name, points: provider.points });
     setModalVisible(true);
   };
 
@@ -603,4 +694,87 @@ const styles = StyleSheet.create({
   scheduleMyselfText: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
   sheetCancel: { alignItems: "center", paddingVertical: 4 },
   sheetCancelText: { fontSize: 14, fontFamily: "Inter_400Regular" },
+
+  // ── Expanded sheet for success state ──
+  sheetExpanded: {
+    top: 60,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
+
+  // ── Success card ──
+  successIconWrap: {
+    alignItems: "center",
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  successIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  successTitle: {
+    fontSize: 22,
+    fontFamily: "Inter_700Bold",
+    textAlign: "center",
+  },
+  successSub: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+    marginTop: -8,
+  },
+  detailsCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    gap: 10,
+  },
+  detailsCardTitle: {
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 2,
+  },
+  detailsDivider: {
+    height: 1,
+    marginTop: -4,
+    marginBottom: 2,
+  },
+  detailsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+  },
+  detailsLabel: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    flexShrink: 0,
+  },
+  detailsValue: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    textAlign: "right",
+    flexShrink: 1,
+  },
+  detailsPts: {
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+    textAlign: "right",
+  },
+  backToOppsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 14,
+    paddingVertical: 18,
+    minHeight: 60,
+  },
+  backToOppsText: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+  },
 });
