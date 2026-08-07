@@ -41,9 +41,21 @@ const NATIVE_DRIVER = Platform.OS !== "web";
 const URGENCY_OPTIONS = ["Immediately", "2 weeks", "4 weeks"] as const;
 type Urgency = (typeof URGENCY_OPTIONS)[number];
 
-// Sample appointment date/time (mock — real booking would return these)
-const SAMPLE_DATE = "Friday, August 7, 2026";
+// Sample appointment time (real booking would return this)
 const SAMPLE_TIME = "2:00 PM";
+
+/** Compute a human-readable appointment date based on the user's urgency pick. */
+function getAppointmentDate(urgency: Urgency | null): string {
+  const daysAhead =
+    urgency === "Immediately" ? 2 : urgency === "2 weeks" ? 14 : 28;
+  const appt = new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000);
+  return appt.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
 // ─── PointsBanner ─────────────────────────────────────────────────────────────
 
@@ -488,7 +500,7 @@ function SchedulingModal({
               <View style={styles.detailsRow}>
                 <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>Date:</Text>
                 <Text style={[styles.detailsValue, { color: colors.foreground }]}>
-                  {SAMPLE_DATE}
+                  {getAppointmentDate(urgency)}
                 </Text>
               </View>
               <View style={styles.detailsRow}>
