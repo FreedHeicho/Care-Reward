@@ -1,0 +1,34 @@
+Make sure you put yourself in the shoes of a potential consumer. Make sure everything is intuitive enough
+### Title: Move Mail Delivery UI and Logic to Mail Delivery Opportunity Page
+
+**User Story:**
+As a developer, I want to relocate the "Present Mail Delivery" section components, layout, and workflow from the Medication Opportunity page into the standalone Mail Delivery Opportunity page so that the Mail Delivery experience lives in its dedicated route.
+
+**Acceptance Criteria:**
+1. Extract the design, components, and interactive workflow of the "Present Mail Delivery" section currently residing on the `Medication Opportunity` page.
+2. Embed this design and workflow into the `Mail Delivery Opportunity` page.
+3. Ensure all state management, data inputs, and action handlers specific to Mail Delivery function seamlessly on the `Mail Delivery Opportunity` page.
+
+### Title: Update "Switch to Mail Delivery" Navigation Target
+
+**User Story:**
+As a user on the Medication Opportunity page, I want clicking the "Switch to Mail Delivery" button to navigate me directly to the dedicated Mail Delivery Opportunity page so that I can manage my delivery options.
+
+**Acceptance Criteria:**
+1. Locate the "Switch to Mail Delivery" action button on the `Medication Opportunity` page.
+2. Update its click handler/navigation link to direct the user to the `Mail Delivery Opportunity` route.
+3. Verify that all required route parameters or state payloads (e.g., medication details) are correctly passed during navigation.
+
+
+### Title: Update Appointment Scheduling Final Confirmation Text in Care Site Alternatives
+
+**User Story:**
+As a user requesting Care Rewards to schedule an appointment on the Care Site Alternatives flow, I want to see a generic confirmation stating the team will follow up, rather than specific appointment details, so that I have clear expectations while the appointment is being booked.
+
+**Acceptance Criteria:**
+1. Locate the final confirmation step/card in the `Care Site Alternatives` flow triggered when a user requests Care Rewards to schedule an appointment.
+2. Remove any components or state variables displaying specific appointment details (e.g., date, time, provider name, or location).
+3. Update the primary confirmation text on the final card to: 
+   > *"We are going to reach back out to you with the appointment we were able to find."*
+4. Ensure primary call-to-action buttons (e.g., "Done", "Back to Home") function as expected to exit the flow.
+

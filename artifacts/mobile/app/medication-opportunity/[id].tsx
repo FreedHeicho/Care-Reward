@@ -778,7 +778,7 @@ export default function MedicationOpportunityScreen() {
               points={50}
               pointsMonthly={0}
               ctaLabel="Switch to Mail Order"
-              onCta={() => startFlow("refill")}
+              onCta={() => router.push(`/mail-delivery-opportunity/${id}` as never)}
             >
               <RefillComparisonCards />
               <View style={[styles.savingsRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>

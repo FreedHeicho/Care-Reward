@@ -40,19 +40,6 @@ const PRIMARY = "#1A6B5A";
 const URGENCY_OPTIONS = ["Immediately", "2 weeks", "4 weeks"] as const;
 type Urgency = (typeof URGENCY_OPTIONS)[number];
 
-const SAMPLE_TIME = "2:00 PM";
-
-function getAppointmentDate(urgency: Urgency | null): string {
-  const daysAhead =
-    urgency === "Immediately" ? 2 : urgency === "2 weeks" ? 14 : 28;
-  const appt = new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000);
-  return appt.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
 
 // ─── ProviderRow ──────────────────────────────────────────────────────────────
 
@@ -310,64 +297,18 @@ function SchedulingModal({
               Appointment Scheduled!
             </Text>
             <Text style={[styles.successSub, { color: colors.mutedForeground }]}>
-              Your appointment has been successfully scheduled.
+              We are going to reach back out to you with the appointment we were able to find.
             </Text>
 
-            {/* Details card */}
-            <View
-              style={[
-                styles.detailsCard,
-                { backgroundColor: colors.secondary, borderColor: colors.border },
-              ]}
-            >
-              <Text style={[styles.detailsCardTitle, { color: colors.foreground }]}>
-                Appointment Details
-              </Text>
-              <View style={[styles.detailsDivider, { backgroundColor: colors.border }]} />
-
-              <View style={styles.detailsRow}>
-                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>Service:</Text>
-                <Text style={[styles.detailsValue, { color: colors.foreground }]}>
-                  Care Site Alternative
-                </Text>
-              </View>
-              <View style={styles.detailsRow}>
-                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>Provider:</Text>
-                <Text style={[styles.detailsValue, { color: colors.foreground }]}>
-                  {pending?.providerName ?? "—"}
-                </Text>
-              </View>
-              <View style={styles.detailsRow}>
-                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>Date:</Text>
-                <Text style={[styles.detailsValue, { color: colors.foreground }]}>
-                  {getAppointmentDate(urgency)}
-                </Text>
-              </View>
-              <View style={styles.detailsRow}>
-                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>Time:</Text>
-                <Text style={[styles.detailsValue, { color: colors.foreground }]}>
-                  {SAMPLE_TIME}
-                </Text>
-              </View>
-              <View style={styles.detailsRow}>
-                <Text style={[styles.detailsLabel, { color: colors.mutedForeground }]}>
-                  Points Earned:
-                </Text>
-                <Text style={[styles.detailsPts, { color: PRIMARY }]}>
-                  +{(pending?.points ?? 0).toLocaleString()} points
-                </Text>
-              </View>
-            </View>
-
+            {/* Done */}
             <TouchableOpacity
               style={[styles.backToOppsBtn, { backgroundColor: PRIMARY }]}
               onPress={() => urgency && onBookForMe(urgency)}
               activeOpacity={0.82}
               accessibilityRole="button"
-              accessibilityLabel="Back to Pending Opportunities"
+              accessibilityLabel="Done"
             >
-              <Feather name="arrow-left" size={18} color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.backToOppsText}>Back to Pending Opportunities</Text>
+              <Text style={styles.backToOppsText}>Done</Text>
             </TouchableOpacity>
           </>
         )}
