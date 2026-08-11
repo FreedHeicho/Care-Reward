@@ -75,18 +75,32 @@ const CATEGORY_META: Record<
 };
 
 const ICON_EMOJI: Record<string, string> = {
-  pill: "💊",
-  package: "📦",
-  calendar: "📅",
-  medication: "💊",
+  // ── care-site alternatives ────────────────────────────────────────────────
+  hospital: "🏥",          // Hospital / surgical inpatient (cross.case.fill)
+  ultrasound: "🩻",        // Diagnostic imaging / sound-wave scan (waveform.path.ecg)
+  obgyn: "🩺",             // Specialist OB/GYN consultation (stethoscope)
+  // ── medication / mail ─────────────────────────────────────────────────────
+  pill: "💊",              // Medication adherence (pill.fill)
+  "med-adherence": "💊",  // Medication Adherence Iron Pill (pill.fill)
+  package: "📦",           // Mail delivery / shipping box (shippingbox.fill)
+  "mail-delivery": "📦",  // category fallback
+  // ── care quality ──────────────────────────────────────────────────────────
+  "survey-ultrasound": "📋", // Patient Satisfaction Survey – Ultrasound (checkmark.seal.fill)
+  "survey-specialist": "⭐", // Patient Satisfaction Survey – Specialist (star.bubble.fill)
+  // ── care protocol ─────────────────────────────────────────────────────────
+  "log-care": "🗓️",       // Log Upcoming Care (calendar.badge.plus)
+  syphilis: "🩸",          // Screening Lab Syphilis RPR (drop.fill)
+  hepatitis: "🧪",         // Screening Hepatitis B Surface Antigen (testtube.2)
+  "flu-shot": "💉",        // Immunization Flu Shot (syringe.fill)
+  // ── preventive care ───────────────────────────────────────────────────────
+  wellness: "🫀",          // Doctor Visit Annual Wellness (heart.text.square.fill)
   preventive: "🛡️",
-  "mail-delivery": "📦",
+  // ── category-level fallbacks ──────────────────────────────────────────────
+  medication: "💊",
+  calendar: "📅",
   specialist: "🩺",
   upcoming: "📅",
   CARE_SITE_ALTERNATIVE: "💊",
-  hospital: "🏥",
-  ultrasound: "🔬",
-  obgyn: "🩺",
   PREVENTATIVE_CARE: "🛡️",
   CARE_QUALITY: "📋",
   CARE_PROTOCOL: "🩺",

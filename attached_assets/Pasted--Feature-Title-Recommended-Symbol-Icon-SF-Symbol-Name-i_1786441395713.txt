@@ -1,0 +1,13 @@
+#,Feature / Title,Recommended Symbol / Icon,SF Symbol Name (iOS),Material Icon Name (Android/Web),Rationale
+1,Hospital C-Section delivery,Hospital / Stethoscope / Bed,cross.case.fill or bed.double.fill,local_hospital or single_bed,Represents surgical hospital care or inpatient admission.
+2,Diagnostics Ultrasound,Waveform / Soundwave / Scan,waveform.path.ecg or sensor,monitor_heart or sensors,Captures sound waves and real-time medical imaging.
+3,Specialist Ob/Gyn,Stethoscope / Care / Female Health,stethoscope or person.badge.plus,stethoscope or female,Represents specialized clinical consultation and women's health.
+4,Mail Delivery Opportunity,Shipping Box / Envelope / Truck,shippingbox.fill or envelope.fill,local_shipping or mail,Directly communicates home delivery and fulfillment.
+5,Patient Satisfaction Survey (Ultrasound),Clipboard Check + Wave,doc.badge.gearshape or checkmark.seal.fill,rate_review or assignment_turned_in,Combines diagnostic imaging with user feedback/completion.
+6,Patient Satisfaction Survey (Specialist Visit),Star / Survey Clipboard,star.bubble.fill or square.and.pencil,reviews or feedback,Clearly signals post-visit evaluation and feedback.
+7,Log Upcoming Care,Calendar Plus / Clock,calendar.badge.plus or clock.badge.checkmark,calendar_add_on or event,"Intuitive for scheduling, tracking, and future appointments."
+8,Screening Lab Syphilis RPR,Blood Drop / Lab Tube,drop.fill or vial.viewfinder,bloodtype or science,Universally recognized for blood draw and serology screening.
+9,Screening Hepatitis B Surface Antigen,Microscope / Test Tube / Shield,testtube.2 or cross.vial.fill,biotech or science,Communicates lab analysis for viral/infectious screening.
+10,Medication Adherence Iron Pill,Pill / Capsule,pill.fill or pills.fill,medication or pill,Immediately recognizable for daily oral supplements or prescriptions.
+11,Immunisation Flu Shot,Syringe / Vaccine,syringe.fill,vaccines or medical_services,Standard symbol for vaccinations and flu shots.
+12,Doctor Visit Annual Wellness,Person Heart / Shield Check,heart.text.square.fill or person.crop.circle.badge.checkmark,health_and_safety or medical_information,"Highlights preventive, holistic yearly health checks."
