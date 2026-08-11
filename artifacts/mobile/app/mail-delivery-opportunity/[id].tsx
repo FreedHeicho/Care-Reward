@@ -147,14 +147,14 @@ function AcceptStep({ points, onAccept }: { points: number; onAccept: () => void
 
         {/* Points reward */}
         <View style={[sh.rewardBanner, { backgroundColor: TEAL }]}>
-          <View style={sh.rewardLeft}>
-            <Feather name="star" size={20} color="#FCD34D" />
-            <View style={{ marginLeft: 12 }}>
-              <Text style={sh.rewardTitle}>One-time reward</Text>
-              <Text style={sh.rewardSub}>Earned when you complete this switch</Text>
-            </View>
+          <View style={sh.rewardTop}>
+            <Feather name="star" size={16} color="#FCD34D" />
+            <Text style={sh.rewardLabel}>One-time reward</Text>
           </View>
-          <Text style={sh.rewardPoints}>+{points} pts</Text>
+          <View style={sh.rewardBottom}>
+            <Text style={sh.rewardPoints}>+{points} pts</Text>
+            <Text style={sh.rewardSub}>earned when you complete this switch</Text>
+          </View>
         </View>
 
         {/* CTA */}
@@ -355,14 +355,14 @@ function AcknowledgementStep({
         </View>
       </Animated.View>
 
-      <Text style={[sh.ackTitle, { color: colors.foreground }]}>You're all set!</Text>
+      <Text style={[sh.ackTitle, { color: colors.foreground }]}>Request Received!</Text>
       <Text style={[sh.ackSub, { color: colors.mutedForeground }]}>
-        Your refill location has been switched to CR Mail Order.
+        We'll update your refill location to CR Mail Order and keep you posted every step of the way.
       </Text>
 
       {/* Switch summary */}
       <View style={[sh.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[sh.summaryLabel, { color: colors.mutedForeground }]}>Refill location changed</Text>
+        <Text style={[sh.summaryLabel, { color: colors.mutedForeground }]}>Refill location update requested</Text>
         <View style={sh.summaryRow}>
           <View style={sh.summaryLoc}>
             <Text style={[sh.summaryLocSub, { color: colors.mutedForeground }]}>From</Text>
@@ -378,7 +378,7 @@ function AcknowledgementStep({
         <View style={sh.summaryAddrRow}>
           <Feather name="map-pin" size={14} color={colors.mutedForeground} />
           <Text style={[sh.summaryAddr, { color: colors.foreground }]}>
-            {address}, {city}, {stateVal} {zip}
+            Delivering to: {address}, {city}, {stateVal} {zip}
           </Text>
         </View>
       </View>
@@ -386,15 +386,15 @@ function AcknowledgementStep({
       {/* Points */}
       <View style={[sh.pointsBadge, { backgroundColor: TEAL_LIGHT, borderColor: TEAL + "40" }]}>
         <Text style={sh.pointsStar}>⭐</Text>
-        <Text style={[sh.pointsText, { color: TEAL }]}>+{points} points earned</Text>
+        <Text style={[sh.pointsText, { color: TEAL }]}>+{points} points pending</Text>
       </View>
 
       {/* What's next */}
       <View style={[sh.nextCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Text style={[sh.nextTitle, { color: colors.foreground }]}>What happens next</Text>
-        <CheckRow text="Prescription transferred to CR Mail Order" />
-        <CheckRow text="First delivery arrives in 7–10 business days" />
-        <CheckRow text="Auto-refill set up for future fills" />
+        <CheckRow text="We'll contact your pharmacy to initiate the transfer" />
+        <CheckRow text="You'll receive a confirmation once your prescription is moved" />
+        <CheckRow text="Your first delivery will arrive in 7–10 business days" />
       </View>
 
       <TouchableOpacity
@@ -657,16 +657,39 @@ const sh = StyleSheet.create({
   // ── Reward banner ──────────────────────────────────────────────────────────
   rewardBanner: {
     borderRadius: 16,
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 18,
+    flexDirection: "column",
+    gap: 6,
+  },
+  rewardTop: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: 6,
   },
-  rewardLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
-  rewardTitle: { color: "#fff", fontSize: 14, fontFamily: "Inter_700Bold" },
-  rewardSub: { color: "rgba(255,255,255,0.7)", fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
-  rewardPoints: { color: "#FCD34D", fontSize: 22, fontFamily: "Inter_800ExtraBold" },
+  rewardLabel: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
+  },
+  rewardBottom: {
+    flexDirection: "column",
+    gap: 2,
+  },
+  rewardPoints: {
+    color: "#FCD34D",
+    fontSize: 26,
+    fontFamily: "Inter_800ExtraBold",
+    lineHeight: 32,
+  },
+  rewardSub: {
+    color: "rgba(255,255,255,0.65)",
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 17,
+  },
 
   footNote: {
     fontSize: 12,
