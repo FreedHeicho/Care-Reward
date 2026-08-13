@@ -121,6 +121,7 @@ function SchedulingModal({
   onBookForMe,
   onScheduleMyself,
   onDismiss,
+  onDone,
 }: {
   visible: boolean;
   pending: PendingSelection | null;
@@ -128,6 +129,7 @@ function SchedulingModal({
   onBookForMe: (urgency: Urgency) => void;
   onScheduleMyself: () => void;
   onDismiss: () => void;
+  onDone: () => void;
 }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -303,7 +305,7 @@ function SchedulingModal({
             {/* Done */}
             <TouchableOpacity
               style={[styles.backToOppsBtn, { backgroundColor: PRIMARY }]}
-              onPress={() => urgency && onBookForMe(urgency)}
+              onPress={onDone}
               activeOpacity={0.82}
               accessibilityRole="button"
               accessibilityLabel="Done"
@@ -476,6 +478,7 @@ export default function CareSiteAlternativeScreen() {
         onBookForMe={handleBookForMe}
         onScheduleMyself={handleScheduleMyself}
         onDismiss={() => { setModalVisible(false); setPending(null); }}
+        onDone={() => router.push("/(tabs)/opportunities" as never)}
       />
     </View>
   );
