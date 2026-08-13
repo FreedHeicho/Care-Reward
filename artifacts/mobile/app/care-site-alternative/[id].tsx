@@ -299,7 +299,7 @@ function SchedulingModal({
               Appointment Scheduled!
             </Text>
             <Text style={[styles.successSub, { color: colors.mutedForeground }]}>
-              We are going to reach back out to you with the appointment we were able to find.
+              Appointment Underway. We will reach out to you with your scheduled appointment.
             </Text>
 
             {/* Done */}
@@ -478,7 +478,11 @@ export default function CareSiteAlternativeScreen() {
         onBookForMe={handleBookForMe}
         onScheduleMyself={handleScheduleMyself}
         onDismiss={() => { setModalVisible(false); setPending(null); }}
-        onDone={() => router.push("/(tabs)/opportunities" as never)}
+        onDone={() => {
+          setModalVisible(false);
+          setPending(null);
+          router.push("/(tabs)/opportunities" as never);
+        }}
       />
     </View>
   );
