@@ -696,7 +696,7 @@ export default function MailDeliveryOpportunityScreen() {
           <AcknowledgementStep
             address={address} city={city} stateVal={stateVal} zip={zip}
             points={points}
-            onDone={() => router.back()}
+            onDone={() => router.replace("/(tabs)/opportunities")}
           />
         )}
       </View>
