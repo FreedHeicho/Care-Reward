@@ -1,0 +1,44 @@
+User Story
+As a User,
+I want my delivery address to auto-complete using an official postal database when I on the Mail Delivery ,
+So that I can enter my address quickly and avoid delivery delays caused by typos or invalid addresses.
+Acceptance Criteria
+Scenario 1: Real-time Address Suggestions
+Given I am on the Delivery Address page,
+When I type at least 3 characters into the address input field,
+Then the system queries the external address API (e.g., Google Postal/Places API),
+And displays a dropdown list of matching address suggestions in real time.
+Scenario 2: Address Selection & Auto-Fill
+Given the list of address suggestions is displayed,
+When I select a valid address from the dropdown,
+Then the form fields (Street Address, City, State/Province, Postal Code, Country) are automatically populated with verified data.
+Scenario 3: Manual Override & Error Handling
+Given no matching addresses are found or the database API fails,
+When I type my address manually,
+Then I am allowed to save the address with a visual indicator noting that address verification was skipped.
+Technical Requirements & Constraints
+API Integration: Connect the address input component to the Google Places API (or equivalent Postal Database API).
+Debounce Rate: Add a 300ms debounce delay on the address input trigger to minimize API calls and costs.
+Data Security: Ensure address suggestions and user inputs comply with data privacy standards (e.g., masking stored PII data).
+—-----------------------------------------------
+
+As a healthcare user navigating the platform,
+I want the terminology in the "Medication Opportunity" workflow to say "Prescribing Provider" instead of "Doctor",
+So that the interface accurately reflects all clinicians licensed to prescribe medication (including Nurse Practitioners and Physician Assistants).
+Acceptance Criteria
+Scenario 1: Workflow Entry & Header Updates
+Given I am in the application,
+When I click on "Medication Opportunity",
+Then all page titles, headers, and navigation breadcrumbs within this workflow display "Prescribing Provider" instead of "Doctor".
+Scenario 2: Form Field & UI Element Updates
+Given I am completing the Medication Opportunity workflow,
+When I view input fields, dropdown labels, tooltips, or table headers,
+Then any references previously labeled "Doctor" (e.g., "Select Doctor", "Doctor Name") display as "Prescribing Provider" (e.g., "Select Prescribing Provider", "Prescribing Provider Name").
+Scenario 3: Notifications & Summary Views
+Given I complete or review a Medication Opportunity,
+When I view the summary screen, generated PDF reports, or confirmation emails,
+Then all exported or rendered text reflects "Prescribing Provider".
+Scope & Implementation Details
+Text Strings: Update language localization files/dictionary keys for the Medication Opportunity module.
+Capitalization: Use sentence case ("prescribing provider") or title case ("Prescribing Provider") depending on the context of the UI element (e.g., Title Case for field labels, sentence case for helper text).
+Scope Boundary: This change applies strictly to the Medication Opportunity workflow; other system modules remain unchanged unless specified.

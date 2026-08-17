@@ -11,6 +11,7 @@ import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   KeyboardAvoidingView,
   Platform,
@@ -177,6 +178,44 @@ function AcceptStep({ points, onAccept }: { points: number; onAccept: () => void
   );
 }
 
+// ── Address autocomplete helpers ──────────────────────────────────────────────
+
+const US_STATES: Record<string, string> = {
+  Alabama: "AL", Alaska: "AK", Arizona: "AZ", Arkansas: "AR",
+  California: "CA", Colorado: "CO", Connecticut: "CT", Delaware: "DE",
+  Florida: "FL", Georgia: "GA", Hawaii: "HI", Idaho: "ID",
+  Illinois: "IL", Indiana: "IN", Iowa: "IA", Kansas: "KS",
+  Kentucky: "KY", Louisiana: "LA", Maine: "ME", Maryland: "MD",
+  Massachusetts: "MA", Michigan: "MI", Minnesota: "MN", Mississippi: "MS",
+  Missouri: "MO", Montana: "MT", Nebraska: "NE", Nevada: "NV",
+  "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY",
+  "North Carolina": "NC", "North Dakota": "ND", Ohio: "OH", Oklahoma: "OK",
+  Oregon: "OR", Pennsylvania: "PA", "Rhode Island": "RI", "South Carolina": "SC",
+  "South Dakota": "SD", Tennessee: "TN", Texas: "TX", Utah: "UT",
+  Vermont: "VT", Virginia: "VA", Washington: "WA", "West Virginia": "WV",
+  Wisconsin: "WI", Wyoming: "WY", "District of Columbia": "DC",
+};
+
+type Suggestion = {
+  displayName: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+};
+
+function parseNominatim(item: Record<string, any>): Suggestion {
+  const a = item.address ?? {};
+  const houseNum = a.house_number ?? "";
+  const road = a.road ?? "";
+  const street = [houseNum, road].filter(Boolean).join(" ");
+  const city = a.city ?? a.town ?? a.village ?? a.hamlet ?? "";
+  const stateFull = a.state ?? "";
+  const state = US_STATES[stateFull] ?? stateFull.slice(0, 2).toUpperCase();
+  const zip = (a.postcode ?? "").slice(0, 5);
+  return { displayName: item.display_name ?? "", street, city, state, zip };
+}
+
 // ── Step 2: Delivery address ──────────────────────────────────────────────────
 
 function AddressStep({
@@ -195,11 +234,62 @@ function AddressStep({
   const colors = useColors();
   const insets = useSafeAreaInsets();
 
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const ready =
     address.trim().length > 0 &&
     city.trim().length > 0 &&
     stateVal.trim().length === 2 &&
     zip.length === 5;
+
+  const fetchSuggestions = async (query: string) => {
+    try {
+      setLoading(true);
+      const url =
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1` +
+        `&countrycodes=us&limit=5&q=${encodeURIComponent(query)}`;
+      const res = await fetch(url, {
+        headers: { "Accept-Language": "en", "User-Agent": "CareRewardApp/1.0" },
+      });
+      const data: Record<string, any>[] = await res.json();
+      const parsed = data
+        .map(parseNominatim)
+        .filter((s) => s.street.length > 0);
+      setSuggestions(parsed);
+      setShowDropdown(parsed.length > 0);
+    } catch {
+      setSuggestions([]);
+      setShowDropdown(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddressChange = (text: string) => {
+    setAddress(text);
+    setVerified(false);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (text.trim().length < 3) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
+    debounceRef.current = setTimeout(() => fetchSuggestions(text), 300);
+  };
+
+  const handleSelect = (s: Suggestion) => {
+    setAddress(s.street);
+    setCity(s.city);
+    setStateVal(s.state);
+    setZip(s.zip);
+    setVerified(true);
+    setSuggestions([]);
+    setShowDropdown(false);
+  };
 
   const inputStyle = [
     sh.input,
@@ -225,19 +315,70 @@ function AddressStep({
         </View>
 
         <View style={[sh.addrCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {/* Street */}
+
+          {/* ── Street address with autocomplete ── */}
           <View style={sh.fieldGroup}>
             <Text style={[sh.fieldLabel, { color: colors.foreground }]}>Street address</Text>
-            <TextInput
-              style={inputStyle}
-              placeholder="123 Main Street, Apt 4B"
-              placeholderTextColor={colors.mutedForeground}
-              value={address}
-              onChangeText={setAddress}
-              autoCapitalize="words"
-              returnKeyType="next"
-              accessibilityLabel="Street address"
-            />
+            <View style={sh.autocompleteWrap}>
+              <View style={[sh.inputRow, { borderColor: colors.border, backgroundColor: colors.card }]}>
+                <TextInput
+                  style={[sh.inputInner, { color: colors.foreground }]}
+                  placeholder="Start typing your address…"
+                  placeholderTextColor={colors.mutedForeground}
+                  value={address}
+                  onChangeText={handleAddressChange}
+                  autoCapitalize="words"
+                  returnKeyType="next"
+                  accessibilityLabel="Street address"
+                  autoCorrect={false}
+                />
+                {loading && (
+                  <ActivityIndicator size="small" color={TEAL} style={{ marginRight: 10 }} />
+                )}
+                {verified && (
+                  <View style={sh.verifiedBadge}>
+                    <Feather name="check-circle" size={15} color="#15803D" />
+                    <Text style={sh.verifiedText}>Verified</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Dropdown suggestions */}
+              {showDropdown && suggestions.length > 0 && (
+                <View style={[sh.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  {suggestions.map((s, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      style={[
+                        sh.suggestionItem,
+                        i < suggestions.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+                      ]}
+                      onPress={() => handleSelect(s)}
+                      activeOpacity={0.7}
+                    >
+                      <Feather name="map-pin" size={14} color={TEAL} style={{ marginTop: 2 }} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[sh.suggestionMain, { color: colors.foreground }]} numberOfLines={1}>
+                          {s.street}
+                          {s.city ? `, ${s.city}` : ""}
+                        </Text>
+                        <Text style={[sh.suggestionSub, { color: colors.mutedForeground }]} numberOfLines={1}>
+                          {[s.state, s.zip].filter(Boolean).join(" · ")}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {/* Unverified indicator — shown when form is filled but address wasn't picked from dropdown */}
+            {!verified && address.trim().length > 0 && (
+              <View style={sh.unverifiedRow}>
+                <Feather name="alert-circle" size={13} color="#B45309" />
+                <Text style={sh.unverifiedText}>Address not verified — you can still continue</Text>
+              </View>
+            )}
           </View>
 
           {/* City */}
@@ -248,7 +389,7 @@ function AddressStep({
               placeholder="New York"
               placeholderTextColor={colors.mutedForeground}
               value={city}
-              onChangeText={setCity}
+              onChangeText={(v) => { setCity(v); setVerified(false); }}
               autoCapitalize="words"
               returnKeyType="next"
               accessibilityLabel="City"
@@ -264,7 +405,7 @@ function AddressStep({
                 placeholder="NY"
                 placeholderTextColor={colors.mutedForeground}
                 value={stateVal}
-                onChangeText={(v) => setStateVal(v.toUpperCase().slice(0, 2))}
+                onChangeText={(v) => { setStateVal(v.toUpperCase().slice(0, 2)); setVerified(false); }}
                 autoCapitalize="characters"
                 maxLength={2}
                 returnKeyType="next"
@@ -278,7 +419,7 @@ function AddressStep({
                 placeholder="10001"
                 placeholderTextColor={colors.mutedForeground}
                 value={zip}
-                onChangeText={(v) => setZip(v.replace(/\D/g, "").slice(0, 5))}
+                onChangeText={(v) => { setZip(v.replace(/\D/g, "").slice(0, 5)); setVerified(false); }}
                 keyboardType="number-pad"
                 maxLength={5}
                 returnKeyType="done"
@@ -737,6 +878,84 @@ const sh = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Inter_400Regular",
     minHeight: 50,
+  },
+
+  // ── Autocomplete ─────────────────────────────────────────────────────────
+  autocompleteWrap: { position: "relative", zIndex: 10 },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 10,
+    minHeight: 50,
+    paddingLeft: 14,
+    paddingRight: 10,
+  },
+  inputInner: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+    paddingVertical: 13,
+  },
+  verifiedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: "#F0FDF4",
+    borderRadius: 20,
+    marginRight: 4,
+  },
+  verifiedText: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    color: "#15803D",
+  },
+  dropdown: {
+    position: "absolute",
+    top: 54,
+    left: 0,
+    right: 0,
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: "hidden",
+    zIndex: 20,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+  },
+  suggestionItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  suggestionMain: {
+    fontSize: 14,
+    fontFamily: "Inter_500Medium",
+    lineHeight: 20,
+  },
+  suggestionSub: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 17,
+    marginTop: 1,
+  },
+  unverifiedRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 6,
+  },
+  unverifiedText: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: "#B45309",
+    lineHeight: 17,
   },
 
   deliveryNote: {

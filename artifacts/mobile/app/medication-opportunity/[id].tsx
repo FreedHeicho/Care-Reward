@@ -303,7 +303,7 @@ function AcceptStep({
           <View style={[styles.acceptBenefits, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
             <CheckItem text="Clinically identical to Norvasc" />
             <CheckItem text="Lower copay under your plan" />
-            <CheckItem text="Your doctor will be notified" />
+            <CheckItem text="Your prescribing provider will be notified" />
             <CheckItem text="You can switch back at any time" />
           </View>
         </>
@@ -374,14 +374,14 @@ function SubDeliveryStep({
     {
       id: "care-reward",
       icon: "send",
-      title: "Care Reward sends request to doctor",
-      desc: "We'll send a change request directly to your prescribing doctor on your behalf — no action needed.",
+      title: "Care Reward sends request to prescribing provider",
+      desc: "We'll send a change request directly to your prescribing provider on your behalf — no action needed.",
       highlight: true,
     },
     {
       id: "printout",
       icon: "printer",
-      title: "I'll take a printout to my doctor",
+      title: "I'll take a printout to my prescribing provider",
       desc: "We'll generate a ready-to-print document you can bring to your next appointment.",
     },
   ];
@@ -574,14 +574,14 @@ function AcknowledgementStep({
 
   const title = isSub
     ? subDelivery === "care-reward"
-      ? "Request sent to your doctor!"
+      ? "Request sent to your prescribing provider!"
       : "Your printout is ready!"
     : "Mail order set up!";
 
   const desc = isSub
     ? subDelivery === "care-reward"
-      ? "Care Reward has sent a generic substitution request to your prescribing doctor. You'll be notified when they respond."
-      : "Your printout document is ready. Bring it to your next appointment and ask your doctor to switch you to Amlodipine."
+      ? "Care Reward has sent a generic substitution request to your prescribing provider. You'll be notified when they respond."
+      : "Your printout document is ready. Bring it to your next appointment and ask your prescribing provider to switch you to Amlodipine."
     : `Your first 90-day supply of Amlodipine will be delivered to ${address}, ${city}, ${stateVal} ${zip}. Expect arrival in 7–10 business days.`;
 
   return (
@@ -607,7 +607,7 @@ function AcknowledgementStep({
         <Text style={[styles.ackNextLabel, { color: colors.foreground }]}>What happens next</Text>
         {isSub && subDelivery === "care-reward" && (
           <>
-            <CheckItem text="Doctor reviews the substitution request" />
+            <CheckItem text="Prescribing Provider reviews the substitution request" />
             <CheckItem text="You'll be notified of their decision" />
             <CheckItem text="Prescription updated at your pharmacy" />
           </>
@@ -615,8 +615,8 @@ function AcknowledgementStep({
         {isSub && subDelivery === "printout" && (
           <>
             <CheckItem text="Download or print the document" />
-            <CheckItem text="Bring it to your next doctor visit" />
-            <CheckItem text="Doctor approves and updates your prescription" />
+            <CheckItem text="Bring it to your next appointment" />
+            <CheckItem text="Prescribing Provider approves and updates your prescription" />
           </>
         )}
         {!isSub && (

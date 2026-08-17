@@ -194,7 +194,7 @@ export const MOCK_OPPORTUNITIES: Opportunity[] = [
     priority: "high",
     steps: [
       "Review the generic medication details",
-      "Generate a note for your doctor",
+      "Generate a note for your prescribing provider",
       "Send note and get approval",
       "Update your prescription at pharmacy",
     ],
