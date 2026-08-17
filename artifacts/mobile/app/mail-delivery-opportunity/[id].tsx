@@ -209,20 +209,32 @@ function parseNominatim(item: Record<string, any>): Suggestion {
   const houseNum = a.house_number ?? "";
   const road = a.road ?? "";
   const street = [houseNum, road].filter(Boolean).join(" ");
-  const city = a.city ?? a.town ?? a.village ?? a.hamlet ?? "";
+  const city = a.city ?? a.town ?? a.village ?? a.hamlet ?? a.county ?? "";
   const stateFull = a.state ?? "";
   const state = US_STATES[stateFull] ?? stateFull.slice(0, 2).toUpperCase();
   const zip = (a.postcode ?? "").slice(0, 5);
   return { displayName: item.display_name ?? "", street, city, state, zip };
 }
 
+/** Strip unit/floor/suite info so the geocoder only sees the street address */
+function cleanForGeocoder(raw: string): string {
+  return raw
+    .replace(/,?\s*(apt|apartment|suite|ste|floor|fl|unit|#|rm|room|no\.?)\s*[\w\d-]*/gi, "")
+    .replace(/,\s*$/, "")
+    .trim();
+}
+
 // ── Step 2: Delivery address ──────────────────────────────────────────────────
 
 function AddressStep({
-  address, setAddress,
-  city, setCity,
-  stateVal, setStateVal,
-  zip, setZip,
+  address: initAddress,
+  setAddress,
+  city: initCity,
+  setCity,
+  stateVal: initState,
+  setStateVal,
+  zip: initZip,
+  setZip,
   onConfirm,
 }: {
   address: string; setAddress: (v: string) => void;
@@ -234,25 +246,44 @@ function AddressStep({
   const colors = useColors();
   const insets = useSafeAreaInsets();
 
+  // ── Local state — all four fields live here during editing.
+  // This isolates every keystroke re-render to this component only;
+  // the parent is only updated when the user confirms.
+  const [inputValue, setInputValue] = useState(initAddress);
+  const [localCity, setLocalCity] = useState(initCity);
+  const [localState, setLocalState] = useState(initState);
+  const [localZip, setLocalZip] = useState(initZip);
+
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [verified, setVerified] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const ready =
-    address.trim().length > 0 &&
-    city.trim().length > 0 &&
-    stateVal.trim().length === 2 &&
-    zip.length === 5;
+    inputValue.trim().length > 0 &&
+    localCity.trim().length > 0 &&
+    localState.trim().length === 2 &&
+    localZip.length === 5;
 
-  const fetchSuggestions = async (query: string) => {
+  const fetchSuggestions = async (raw: string) => {
+    // Cancel any previous in-flight request
+    if (abortRef.current) abortRef.current.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    const query = cleanForGeocoder(raw);
+    if (query.length < 3) return;
+
     try {
       setLoading(true);
       const url =
         `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1` +
-        `&countrycodes=us&limit=5&q=${encodeURIComponent(query)}`;
+        `&countrycodes=us&limit=6&q=${encodeURIComponent(query)}`;
       const res = await fetch(url, {
+        signal: ctrl.signal,
         headers: { "Accept-Language": "en", "User-Agent": "CareRewardApp/1.0" },
       });
       const data: Record<string, any>[] = await res.json();
@@ -261,16 +292,17 @@ function AddressStep({
         .filter((s) => s.street.length > 0);
       setSuggestions(parsed);
       setShowDropdown(parsed.length > 0);
-    } catch {
+    } catch (e: any) {
+      if (e?.name === "AbortError") return; // ignore cancelled requests
       setSuggestions([]);
       setShowDropdown(false);
     } finally {
-      setLoading(false);
+      if (!ctrl.signal.aborted) setLoading(false);
     }
   };
 
   const handleAddressChange = (text: string) => {
-    setAddress(text);
+    setInputValue(text);
     setVerified(false);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (text.trim().length < 3) {
@@ -282,13 +314,22 @@ function AddressStep({
   };
 
   const handleSelect = (s: Suggestion) => {
-    setAddress(s.street);
-    setCity(s.city);
-    setStateVal(s.state);
-    setZip(s.zip);
+    setInputValue(s.street);
+    setLocalCity(s.city);
+    setLocalState(s.state);
+    setLocalZip(s.zip);
     setVerified(true);
     setSuggestions([]);
     setShowDropdown(false);
+  };
+
+  /** Sync local state to parent, then call the parent's onConfirm */
+  const handleConfirm = () => {
+    setAddress(inputValue);
+    setCity(localCity);
+    setStateVal(localState);
+    setZip(localZip);
+    onConfirm();
   };
 
   const inputStyle = [
@@ -325,7 +366,7 @@ function AddressStep({
                   style={[sh.inputInner, { color: colors.foreground }]}
                   placeholder="Start typing your address…"
                   placeholderTextColor={colors.mutedForeground}
-                  value={address}
+                  value={inputValue}
                   onChangeText={handleAddressChange}
                   autoCapitalize="words"
                   returnKeyType="next"
@@ -335,7 +376,7 @@ function AddressStep({
                 {loading && (
                   <ActivityIndicator size="small" color={TEAL} style={{ marginRight: 10 }} />
                 )}
-                {verified && (
+                {verified && !loading && (
                   <View style={sh.verifiedBadge}>
                     <Feather name="check-circle" size={15} color="#15803D" />
                     <Text style={sh.verifiedText}>Verified</Text>
@@ -351,7 +392,10 @@ function AddressStep({
                       key={i}
                       style={[
                         sh.suggestionItem,
-                        i < suggestions.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+                        i < suggestions.length - 1 && {
+                          borderBottomWidth: StyleSheet.hairlineWidth,
+                          borderBottomColor: colors.border,
+                        },
                       ]}
                       onPress={() => handleSelect(s)}
                       activeOpacity={0.7}
@@ -359,8 +403,7 @@ function AddressStep({
                       <Feather name="map-pin" size={14} color={TEAL} style={{ marginTop: 2 }} />
                       <View style={{ flex: 1 }}>
                         <Text style={[sh.suggestionMain, { color: colors.foreground }]} numberOfLines={1}>
-                          {s.street}
-                          {s.city ? `, ${s.city}` : ""}
+                          {s.street}{s.city ? `, ${s.city}` : ""}
                         </Text>
                         <Text style={[sh.suggestionSub, { color: colors.mutedForeground }]} numberOfLines={1}>
                           {[s.state, s.zip].filter(Boolean).join(" · ")}
@@ -372,8 +415,8 @@ function AddressStep({
               )}
             </View>
 
-            {/* Unverified indicator — shown when form is filled but address wasn't picked from dropdown */}
-            {!verified && address.trim().length > 0 && (
+            {/* Unverified indicator — shown only when user typed manually */}
+            {!verified && inputValue.trim().length > 0 && (
               <View style={sh.unverifiedRow}>
                 <Feather name="alert-circle" size={13} color="#B45309" />
                 <Text style={sh.unverifiedText}>Address not verified — you can still continue</Text>
@@ -388,8 +431,8 @@ function AddressStep({
               style={inputStyle}
               placeholder="New York"
               placeholderTextColor={colors.mutedForeground}
-              value={city}
-              onChangeText={(v) => { setCity(v); setVerified(false); }}
+              value={localCity}
+              onChangeText={(v) => { setLocalCity(v); setVerified(false); }}
               autoCapitalize="words"
               returnKeyType="next"
               accessibilityLabel="City"
@@ -404,8 +447,8 @@ function AddressStep({
                 style={inputStyle}
                 placeholder="NY"
                 placeholderTextColor={colors.mutedForeground}
-                value={stateVal}
-                onChangeText={(v) => { setStateVal(v.toUpperCase().slice(0, 2)); setVerified(false); }}
+                value={localState}
+                onChangeText={(v) => { setLocalState(v.toUpperCase().slice(0, 2)); setVerified(false); }}
                 autoCapitalize="characters"
                 maxLength={2}
                 returnKeyType="next"
@@ -418,8 +461,8 @@ function AddressStep({
                 style={inputStyle}
                 placeholder="10001"
                 placeholderTextColor={colors.mutedForeground}
-                value={zip}
-                onChangeText={(v) => { setZip(v.replace(/\D/g, "").slice(0, 5)); setVerified(false); }}
+                value={localZip}
+                onChangeText={(v) => { setLocalZip(v.replace(/\D/g, "").slice(0, 5)); setVerified(false); }}
                 keyboardType="number-pad"
                 maxLength={5}
                 returnKeyType="done"
@@ -447,7 +490,7 @@ function AddressStep({
         >
           <TouchableOpacity
             style={[sh.primaryBtn, { backgroundColor: TEAL }]}
-            onPress={onConfirm}
+            onPress={handleConfirm}
             activeOpacity={0.85}
             accessibilityRole="button"
             accessibilityLabel="Confirm address"
