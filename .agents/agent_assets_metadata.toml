@@ -1,0 +1,9 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "JcVnXkcqn7ECdA-ekQnlO"
+uri = "file://artifacts/care-reward-story/public/audio/bg_music.mp3"
+type = "audio"
+title = "CareReward background music"
+description = "Generated music: Cinematic uplifting orchestral-electronic instrumental background music scoring a healthcare rewards product story. Warm piano, soft strings, subtle marimba pulses, restrained modern…"

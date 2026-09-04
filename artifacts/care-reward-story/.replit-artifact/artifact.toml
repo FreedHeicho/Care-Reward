@@ -1,0 +1,29 @@
+kind = "video"
+videoAspectRatio = "16:9"
+previewPath = "/care-reward-story/"
+title = "CareReward Project Story"
+description = "A polished animated product story showing how CareReward helps members discover healthcare opportunities, take action, earn points, and reduce healthcare costs."
+version = "1.0.0"
+id = "artifacts/care-reward-story"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/care-reward-story/" ]
+localPort = 21377
+
+[services.development]
+run = "pnpm --filter @workspace/care-reward-story run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/care-reward-story", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/care-reward-story/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21377"
+BASE_PATH = "/care-reward-story/"
