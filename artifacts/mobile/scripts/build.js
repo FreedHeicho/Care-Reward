@@ -54,21 +54,42 @@ function stripProtocol(domain) {
   return new URL(urlString).host;
 }
 
+function isDevelopmentDomain(domain) {
+  const hostname = stripProtocol(domain).split(":")[0].toLowerCase();
+  return (
+    hostname.endsWith(".replit.dev") ||
+    hostname.endsWith(".riker.replit.dev")
+  );
+}
+
 function getDeploymentDomain() {
-  if (process.env.REPLIT_INTERNAL_APP_DOMAIN) {
-    return stripProtocol(process.env.REPLIT_INTERNAL_APP_DOMAIN);
-  }
+  const candidates = [
+    ["REPLIT_INTERNAL_APP_DOMAIN", process.env.REPLIT_INTERNAL_APP_DOMAIN],
+    ["EXPO_PUBLIC_PRODUCTION_DOMAIN", process.env.EXPO_PUBLIC_PRODUCTION_DOMAIN],
+    ["EXPO_PUBLIC_API_URL", process.env.EXPO_PUBLIC_API_URL],
+    ["EXPO_PUBLIC_DOMAIN", process.env.EXPO_PUBLIC_DOMAIN],
+  ];
 
-  if (process.env.REPLIT_DEV_DOMAIN) {
-    return stripProtocol(process.env.REPLIT_DEV_DOMAIN);
-  }
+  for (const [name, value] of candidates) {
+    if (!value) continue;
 
-  if (process.env.EXPO_PUBLIC_DOMAIN) {
-    return stripProtocol(process.env.EXPO_PUBLIC_DOMAIN);
+    const domain = stripProtocol(value);
+    if (isDevelopmentDomain(domain)) {
+      console.error(
+        `ERROR: ${name} points to the temporary development domain ${domain}. ` +
+          "Release builds require a public production domain (normally a replit.app or custom domain).",
+      );
+      process.exit(1);
+    }
+
+    return domain;
   }
 
   console.error(
-    "ERROR: No deployment domain found. Set REPLIT_INTERNAL_APP_DOMAIN, REPLIT_DEV_DOMAIN, or EXPO_PUBLIC_DOMAIN",
+    "ERROR: No production domain found. Publish the API, then set " +
+      "REPLIT_INTERNAL_APP_DOMAIN, EXPO_PUBLIC_PRODUCTION_DOMAIN, " +
+      "EXPO_PUBLIC_API_URL, or EXPO_PUBLIC_DOMAIN to its public HTTPS address. " +
+      "REPLIT_DEV_DOMAIN is intentionally not accepted for release builds.",
   );
   process.exit(1);
 }
@@ -136,9 +157,12 @@ async function startMetro(expoPublicDomain, expoPublicReplId) {
 
   console.log("Starting Metro...");
   console.log(`Setting EXPO_PUBLIC_DOMAIN=${expoPublicDomain}`);
+  const expoPublicApiUrl =
+    process.env.EXPO_PUBLIC_API_URL || `https://${expoPublicDomain}`;
   const env = {
     ...process.env,
     EXPO_PUBLIC_DOMAIN: expoPublicDomain,
+    EXPO_PUBLIC_API_URL: expoPublicApiUrl,
     EXPO_PUBLIC_REPL_ID: expoPublicReplId,
   };
 
@@ -564,10 +588,18 @@ async function main() {
   process.exit(0);
 }
 
-main().catch((error) => {
-  console.error("Build failed:", error.message);
-  if (metroProcess) {
-    metroProcess.kill();
-  }
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error("Build failed:", error.message);
+    if (metroProcess) {
+      metroProcess.kill();
+    }
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  getDeploymentDomain,
+  isDevelopmentDomain,
+  stripProtocol,
+};

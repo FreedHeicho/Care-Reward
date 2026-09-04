@@ -1,7 +1,54 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 
-const DOMAIN = process.env.EXPO_PUBLIC_DOMAIN;
-const BASE_URL = DOMAIN ? `https://${DOMAIN}/api` : "/api";
+const API_REQUEST_TIMEOUT_MS = 15_000;
+const DEV_DOMAIN_PATTERN = /\.(?:riker\.)?replit\.dev$/i;
+
+function normalizeApiBaseUrl(value: string): string {
+  const withProtocol = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  const url = new URL(withProtocol);
+  const path = url.pathname.replace(/\/+$/, "");
+  url.pathname = path.endsWith("/api") ? path : `${path}/api`;
+  url.search = "";
+  url.hash = "";
+  return url.toString().replace(/\/$/, "");
+}
+
+function resolveApiConfiguration(): { baseUrl: string; error: string | null } {
+  const configured = process.env.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_DOMAIN;
+
+  if (!configured) {
+    if (Platform.OS === "web") return { baseUrl: "/api", error: null };
+    return {
+      baseUrl: "",
+      error:
+        "This app build is missing its production API address. Install a release build configured with EXPO_PUBLIC_API_URL.",
+    };
+  }
+
+  try {
+    const baseUrl = normalizeApiBaseUrl(configured);
+    const hostname = new URL(baseUrl).hostname;
+
+    if (!__DEV__ && DEV_DOMAIN_PATTERN.test(hostname)) {
+      return {
+        baseUrl: "",
+        error:
+          "This release was built with a temporary development API address. Install a build connected to the public production service.",
+      };
+    }
+
+    return { baseUrl, error: null };
+  } catch {
+    return {
+      baseUrl: "",
+      error:
+        "This app build contains an invalid API address. Install a correctly configured release build.",
+    };
+  }
+}
+
+const API_CONFIGURATION = resolveApiConfiguration();
 
 const KEYS = {
   token: "@cr_token",
@@ -34,7 +81,11 @@ async function request<T>(
   options: RequestInit = {},
   requiresAuth = true,
 ): Promise<T> {
-  const url = `${BASE_URL}${path}`;
+  if (API_CONFIGURATION.error) {
+    throw new ApiError(0, API_CONFIGURATION.error);
+  }
+
+  const url = `${API_CONFIGURATION.baseUrl}${path}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
@@ -45,9 +96,39 @@ async function request<T>(
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(url, { ...options, headers });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_REQUEST_TIMEOUT_MS);
+  let res: Response;
+
+  try {
+    res = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new ApiError(
+        0,
+        "The CareReward service took too long to respond. Check your connection and try again.",
+      );
+    }
+    throw new ApiError(
+      0,
+      "Unable to reach the CareReward service. Check your connection or install a build configured for the public production service.",
+    );
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!res.ok) {
+    if (res.status === 403) {
+      throw new ApiError(
+        403,
+        "This app is not allowed to access the configured service. The build may be using a private or development API address.",
+      );
+    }
+
     let msg = `HTTP ${res.status}`;
     try {
       const body = await res.json();
