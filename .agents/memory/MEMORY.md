@@ -4,3 +4,4 @@
 - [Session tracking](session-tracking.md) — server-side sessions stored in `sessions` table (jwtTokenHash = SHA-256 of access token); requireAuth checks DB; logout deletes row; existing users must re-login after this change
 - [Security fixes applied](security-fixes.md) — CRIT-001: insurance import role-gated; CRIT-002: PHI audit logs in all health-systems handlers; HIGH-002: FAILURE/BLOCKED outcomes now logged in auth middleware and role checks
 - [CRIT-004 write paths](crit-004-write-paths.md) — all 8 tables now have API write paths; emrRecords GET gotcha: no relational query until schema relations added
+- [Expo bundle dependency audits](expo-bundle-dependency-audits.md) — after dependency cleanup, verify native production bundles; strict pnpm can expose undeclared Babel imports
