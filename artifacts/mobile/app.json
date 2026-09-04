@@ -25,7 +25,7 @@
       }
     },
     "web": {
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       [
@@ -37,7 +37,9 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/Feather.ttf"]
+          "fonts": [
+            "./assets/fonts/Feather.ttf"
+          ]
         }
       ],
       "expo-web-browser"
