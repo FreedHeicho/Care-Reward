@@ -16,14 +16,26 @@ import { useAuth } from "@/context/AuthContext";
 import {
   ActivityEvent,
   CATEGORY_COLORS,
-  CATEGORY_EMOJIS,
   MISSED_OPPORTUNITIES_COUNT,
   MOCK_ACTIVITY,
   MOCK_OPPORTUNITIES,
   NEW_OPPORTUNITIES_COUNT,
   Opportunity,
+  OpportunityCategory,
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
+
+const CATEGORY_ICONS: Record<
+  OpportunityCategory,
+  React.ComponentProps<typeof Feather>["name"]
+> = {
+  medication: "package",
+  preventive: "shield",
+  "mail-delivery": "truck",
+  specialist: "users",
+  upcoming: "calendar",
+  "care-site": "map-pin",
+};
 
 function ActivityRow({ event }: { event: ActivityEvent }) {
   const colors = useColors();
@@ -279,7 +291,11 @@ export default function DashboardScreen() {
                   <View style={styles.hOppContent}>
                     <View style={styles.hOppHeader}>
                       <View style={[styles.hOppIcon, { backgroundColor: barColor + "20" }]}>
-                        <Text style={styles.hOppEmoji}>{CATEGORY_EMOJIS[opp.category]}</Text>
+                        <Feather
+                          name={CATEGORY_ICONS[opp.category]}
+                          size={19}
+                          color={barColor}
+                        />
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.hOppTitle, { color: colors.foreground }]} numberOfLines={1}>
@@ -497,7 +513,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-  hOppEmoji: { fontSize: 18 },
   hOppTitle: { fontSize: 14, fontWeight: "700" },
   hOppDesc: { fontSize: 12, marginTop: 1 },
   hOppPointsBadge: {

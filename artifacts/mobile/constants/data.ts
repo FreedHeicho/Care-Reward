@@ -799,6 +799,7 @@ export const CATEGORY_LABELS: Record<OpportunityCategory, string> = {
   "mail-delivery": "Mail Delivery",
   specialist: "Specialist",
   upcoming: "Upcoming Care",
+  "care-site": "Care Site",
 };
 
 export const CATEGORY_COLORS: Record<OpportunityCategory, string> = {
@@ -807,6 +808,7 @@ export const CATEGORY_COLORS: Record<OpportunityCategory, string> = {
   "mail-delivery": "#F59E0B",
   specialist: "#0EA5E9",
   upcoming: "#0EA5E9",
+  "care-site": "#2D7D6F",
 };
 
 export const CATEGORY_EMOJIS: Record<OpportunityCategory, string> = {
@@ -815,4 +817,5 @@ export const CATEGORY_EMOJIS: Record<OpportunityCategory, string> = {
   "mail-delivery": "📦",
   specialist: "🩺",
   upcoming: "📅",
+  "care-site": "📍",
 };

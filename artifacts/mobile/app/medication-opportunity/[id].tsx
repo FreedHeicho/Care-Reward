@@ -631,8 +631,15 @@ function AcknowledgementStep({
         onPress={onClose}
         activeOpacity={0.85}
         accessibilityRole="button"
+        accessibilityLabel="Done, return to Opportunities"
       >
-        <Text style={[styles.closeOppBtnText, { color: colors.primaryForeground }]}>Close Opportunity</Text>
+        <View style={[styles.closeOppIcon, { borderColor: colors.primaryForeground }]}>
+          <Feather name="check" size={16} color={colors.primaryForeground} />
+        </View>
+        <Text style={[styles.closeOppBtnText, { color: colors.primaryForeground }]}>
+          Done — Back to Opportunities
+        </Text>
+        <Feather name="arrow-right" size={19} color={colors.primaryForeground} />
       </TouchableOpacity>
     </View>
   );
@@ -864,7 +871,7 @@ export default function MedicationOpportunityScreen() {
                   zip={zip}
                   points={flow === "refill" ? 50 : points}
                   pointsMonthly={flow === "refill" ? 0 : pointsMonthly}
-                  onClose={() => router.back()}
+                  onClose={() => router.replace("/(tabs)/opportunities" as never)}
                 />
               </ScrollView>
             )}
@@ -1224,13 +1231,30 @@ const styles = StyleSheet.create({
   },
   ackNextLabel: { fontSize: 15, fontFamily: "Inter_700Bold" },
   closeOppBtn: {
-    borderRadius: 14,
-    paddingVertical: 18,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
     alignSelf: "stretch",
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
     minHeight: 58,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  closeOppBtnText: { color: "#fff", fontSize: 17, fontFamily: "Inter_700Bold" },
+  closeOppIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  closeOppBtnText: { flex: 1, fontSize: 16, fontFamily: "Inter_700Bold", textAlign: "center" },
 
   // ── Shared helpers ───────────────────────────────────────────────────────
   bulletRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
