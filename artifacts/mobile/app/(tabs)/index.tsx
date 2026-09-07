@@ -135,11 +135,11 @@ export default function DashboardScreen() {
         </View>
 
         {/* Welcome Banner */}
-        <View style={[styles.welcomeBanner, { backgroundColor: "#E6F0ED" }]}>
-          <Text style={[styles.welcomeTitle, { color: colors.foreground }]}>
+        <View style={[styles.welcomeBanner, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.welcomeTitle, { color: colors.primaryForeground }]}>
             Welcome to CareReward!
           </Text>
-          <Text style={[styles.welcomeSubtitle, { color: colors.mutedForeground }]}>
+          <Text style={[styles.welcomeSubtitle, { color: colors.primaryForeground }]}>
             We help you navigate your health journey
           </Text>
         </View>
