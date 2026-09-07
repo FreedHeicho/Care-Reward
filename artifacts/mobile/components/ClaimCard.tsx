@@ -13,7 +13,7 @@ interface Props {
 
 const STATUS_CONFIG: Record<ClaimStatus, { label: string; color: string; bg: string }> = {
   processed: { label: "Processed", color: "#10B981", bg: "#D1FAE5" },
-  pending: { label: "Pending", color: "#F59E0B", bg: "#FEF3C7" },
+  pending: { label: "Pending", color: "#8A4B00", bg: "#FEF3C7" },
   "in-review": { label: "In Review", color: "#0EA5E9", bg: "#E0F2FE" },
 };
 

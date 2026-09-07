@@ -30,12 +30,15 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.11.1
+          version: 10.26.1
 
       # 5. Install Monorepo Dependencies
       # This installs packages across both your Express backend and your Expo app simultaneously
       - name: Install Dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Check WCAG AA text contrast
+        run: pnpm --filter @workspace/mobile run contrast-check
 
       #Restore DEBUG Keystore
       # Add Signature

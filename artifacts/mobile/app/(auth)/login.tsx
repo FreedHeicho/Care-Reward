@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   input: { flex: 1, fontSize: 16 },
-  errorText: { color: "#EF4444", fontSize: 13 },
+  errorText: { color: "#B42318", fontSize: 13 },
   signInBtn: {
     borderRadius: 14,
     paddingVertical: 16,

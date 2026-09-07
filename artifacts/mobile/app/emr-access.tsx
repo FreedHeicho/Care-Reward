@@ -150,7 +150,7 @@ export default function EmrAccessScreen() {
                 <Text style={[styles.systemName, { color: colors.foreground }]} numberOfLines={1}>
                   {sys.name}
                 </Text>
-                <Text style={[styles.systemStatus, { color: "#22C55E" }]}>Connected</Text>
+                <Text style={[styles.systemStatus, { color: colors.successText }]}>Connected</Text>
                 <Text style={[styles.systemSync, { color: colors.mutedForeground }]}>
                   Last synced: {sys.lastSynced}
                 </Text>

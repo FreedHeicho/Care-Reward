@@ -21,7 +21,7 @@ const YTD_CATEGORIES = [
   { label: "Prescriptions", amount: 120, color: "#2D7D6F", bg: "#E8F5F2" },
   { label: "Doctor Visits", amount: 98, color: "#0EA5E9", bg: "#DBEAFE" },
   { label: "Specialist", amount: 75, color: "#8B5CF6", bg: "#EDE9FE" },
-  { label: "Labs", amount: 49, color: "#EF4444", bg: "#FEE2E2" },
+  { label: "Labs", amount: 49, color: "#B42318", bg: "#FEE2E2" },
 ];
 
 const YTD_TOTAL = YTD_CATEGORIES.reduce((s, c) => s + c.amount, 0);
@@ -29,8 +29,8 @@ const YTD_TOTAL = YTD_CATEGORIES.reduce((s, c) => s + c.amount, 0);
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   processed: { bg: "#DCFCE7", color: "#16A34A" },
   paid: { bg: "#DCFCE7", color: "#16A34A" },
-  pending: { bg: "#FEF3C7", color: "#F59E0B" },
-  "in-review": { bg: "#FEE2E2", color: "#EF4444" },
+  pending: { bg: "#FEF3C7", color: "#8A4B00" },
+  "in-review": { bg: "#FEE2E2", color: "#B42318" },
 };
 
 export default function CareScreen() {

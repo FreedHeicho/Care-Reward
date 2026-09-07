@@ -293,7 +293,7 @@ function ScoreRing({ score, color }: { score: number; color: string }) {
         }}
       />
       <Text style={{ fontSize: 36, fontWeight: "900", color }}>{score}</Text>
-      <Text style={{ fontSize: 13, color: "#7A8699", fontWeight: "600" }}>/ 100</Text>
+      <Text style={{ fontSize: 13, color: "#586474", fontWeight: "600" }}>/ 100</Text>
     </View>
   );
 }

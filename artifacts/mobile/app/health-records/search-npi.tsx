@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   npiInput: { letterSpacing: 2 },
   hint: { fontSize: 12, lineHeight: 16 },
-  errorInline: { fontSize: 12, color: "#EF4444" },
+  errorInline: { fontSize: 12, color: "#B42318" },
 
   alertCard: {
     borderRadius: 12,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   alertBody: { flex: 1, gap: 6 },
-  alertText: { flex: 1, fontSize: 13, color: "#EF4444", lineHeight: 18 },
+  alertText: { flex: 1, fontSize: 13, color: "#B42318", lineHeight: 18 },
   retryBtn: { alignSelf: "flex-start" },
   retryText: { fontSize: 13, fontWeight: "700" },
 

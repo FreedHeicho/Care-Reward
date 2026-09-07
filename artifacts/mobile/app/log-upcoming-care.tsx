@@ -48,7 +48,7 @@ function TextField({
     <View style={styles.field}>
       <Text style={[styles.label, { color: colors.foreground }]}>
         {label}
-        {required && <Text style={{ color: "#EF4444" }}> *</Text>}
+        {required && <Text style={{ color: "#B42318" }}> *</Text>}
       </Text>
       <View style={[styles.inputWrapper, { borderColor: colors.border, backgroundColor: colors.card }]}>
         <TextInput

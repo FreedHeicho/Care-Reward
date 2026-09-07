@@ -332,7 +332,7 @@ export default function OpportunitiesScreen() {
             <Text style={[styles.missedTitle, { color: "#B91C1C" }]}>
               {MISSED_OPPORTUNITIES_COUNT} Missed Opportunities
             </Text>
-            <Text style={[styles.missedSub, { color: "#7A8699" }]}>
+            <Text style={[styles.missedSub, { color: colors.mutedForeground }]}>
               Review them to improve your health journey
             </Text>
           </View>

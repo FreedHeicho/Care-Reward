@@ -277,7 +277,7 @@ export default function PointsScreen() {
               </View>
             </View>
             <View style={styles.windowBannerRight}>
-              <Text style={[styles.windowDaysValue, { color: "#F59E0B" }]}>
+              <Text style={[styles.windowDaysValue, { color: colors.rewardsText }]}>
                 {daysUntil}
               </Text>
               <Text style={[styles.windowDaysLabel, { color: "#92400E" }]}>days</Text>
@@ -361,7 +361,7 @@ export default function PointsScreen() {
                   )}
                   {isOpen && balance < opt.minPoints && (
                     <View style={[styles.optionLocked, { backgroundColor: "#F0F2F5" }]}>
-                      <Text style={[styles.optionLockedText, { color: "#7A8699" }]}>
+                      <Text style={[styles.optionLockedText, { color: colors.mutedForeground }]}>
                         Need {opt.minPoints} pts
                       </Text>
                     </View>
@@ -546,8 +546,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderStyle: "dashed",
   },
-  testResetBtnText: { color: "#6B7280", fontSize: 13, fontWeight: "600" },
-  testResetNote: { color: "#9CA3AF", fontSize: 11, textAlign: "center", lineHeight: 15 },
+  testResetBtnText: { color: "#4B5563", fontSize: 13, fontWeight: "600" },
+  testResetNote: { color: "#4B5563", fontSize: 11, textAlign: "center", lineHeight: 15 },
 
   txRow: {
     flexDirection: "row",

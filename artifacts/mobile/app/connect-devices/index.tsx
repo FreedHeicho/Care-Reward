@@ -72,7 +72,7 @@ function ConnectedDeviceRow({
 }) {
   const colors = useColors();
   const icon = DEVICE_TYPE_ICON[device.deviceType] ?? "bluetooth";
-  const conn = CONN_BADGE[device.connectionType] ?? { bg: "#F3F4F6", color: "#6B7280" };
+  const conn = CONN_BADGE[device.connectionType] ?? { bg: "#F3F4F6", color: "#4B5563" };
 
   return (
     <View style={[styles.connectedRow, { borderBottomColor: colors.border }]}>

@@ -40,7 +40,7 @@ const TYPE_COLORS: Record<string, { color: string; bg: string }> = {
   Hospital: { color: "#3B82F6", bg: "#DBEAFE" },
   "Health System": { color: "#8B5CF6", bg: "#EDE9FE" },
   Pharmacy: { color: "#10B981", bg: "#D1FAE5" },
-  Clinic: { color: "#F59E0B", bg: "#FEF3C7" },
+  Clinic: { color: "#8A4B00", bg: "#FEF3C7" },
 };
 
 export default function SearchInstitutionScreen() {

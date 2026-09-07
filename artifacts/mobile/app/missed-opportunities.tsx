@@ -141,7 +141,7 @@ export default function MissedOpportunitiesScreen() {
               </Text>
             </View>
             <View style={styles.summaryStat}>
-              <Text style={[styles.summaryStatValue, { color: "#F59E0B" }]}>
+              <Text style={[styles.summaryStatValue, { color: colors.rewardsText }]}>
                 {TOTAL_POINTS.toLocaleString()}
               </Text>
               <Text style={[styles.summaryStatLabel, { color: colors.mutedForeground }]}>

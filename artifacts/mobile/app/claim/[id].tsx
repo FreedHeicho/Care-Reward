@@ -14,7 +14,7 @@ import { useColors } from "@/hooks/useColors";
 
 const STATUS_CONFIG = {
   processed: { label: "Processed", color: "#10B981", icon: "check-circle" as const },
-  pending: { label: "Pending Review", color: "#F59E0B", icon: "clock" as const },
+  pending: { label: "Pending Review", color: "#8A4B00", icon: "clock" as const },
   "in-review": { label: "In Review", color: "#0EA5E9", icon: "search" as const },
 };
 

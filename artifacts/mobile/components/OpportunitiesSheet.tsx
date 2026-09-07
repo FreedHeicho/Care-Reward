@@ -91,7 +91,7 @@ function OppRow({ opp, onPress }: { opp: Opportunity; onPress: () => void }) {
             </View>
             <View style={[styles.savingsBadge, { backgroundColor: "#F0FDF4" }]}>
               <Feather name="dollar-sign" size={12} color="#22C55E" />
-              <Text style={[styles.savingsBadgeText, { color: "#22C55E" }]}>
+              <Text style={[styles.savingsBadgeText, { color: colors.successText }]}>
                 Save ${opp.savings}
               </Text>
             </View>

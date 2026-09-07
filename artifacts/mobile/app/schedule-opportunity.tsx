@@ -172,7 +172,7 @@ export default function ScheduleOpportunityScreen() {
             <Feather name="star" size={18} color="#05C5B6" />
             <Text style={[styles.pointsReminderText, { color: colors.foreground }]}>
               Complete this appointment to earn{" "}
-              <Text style={{ fontWeight: "800", color: "#05C5B6" }}>+{opp.points} points</Text>
+              <Text style={{ fontWeight: "800", color: "#067A70" }}>+{opp.points} points</Text>
             </Text>
           </View>
         )}

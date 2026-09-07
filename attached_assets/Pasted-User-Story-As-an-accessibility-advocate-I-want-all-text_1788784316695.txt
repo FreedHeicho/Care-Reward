@@ -1,0 +1,29 @@
+User Story
+As an accessibility advocate, I want all text on screen to meet minimum contrast standards against its background — regardless of theme, backdrop complexity, or lighting conditions — so that users with low vision, color blindness, or non-ideal viewing conditions can read all content without strain.
+
+Acceptance Criteria
+1. Contrast Standard Applied Application-Wide
+Given any screen in the application, across all themes (light/dark) and all pages
+When text is rendered against a solid or near-solid background
+Then the text/background pair meets a minimum contrast ratio of 4.5:1 for body text and 3:1 for large text (≥18pt or 14pt bold), per WCAG 2.1 AA
+Then this standard is defined once in the design system's color tokens (not per-page/per-component overrides), so compliance is inherited by default rather than manually re-applied
+2. Automated Enforcement in CI/CD
+Given a pull request or build in development/staging
+When code containing text/background color pairs is added or changed
+Then an automated contrast-checking step (e.g. axe-core, Pa11y, or equivalent) runs against rendered UI
+Then any text/background pair failing the minimum ratio fails the build or is flagged as a blocking issue in the PR, with the specific component, colors, and measured ratio reported
+Then this check runs on every build, not only on-demand or manually triggered runs
+3. Text Over Images and Complex/Gradient Backgrounds
+Given text is placed directly over a photo, video, or multi-color gradient where background color can't be guaranteed
+When the screen renders
+Then the component enforces a readability treatment by default — a scrim/overlay, solid text-safe zone, or text shadow — sized and positioned so the effective contrast behind the text still meets 4.5:1
+Then this treatment is part of the reusable component (e.g. a "Text-on-Image" pattern), not a one-off fix per screen, so it can't be skipped by new usage
+4. Low-Contrast Adjacent Color Pairs (e.g. light gray on white, white on light gray)
+Given a design token combination that technically differs in color but falls under 4.5:1 (e.g. white text on light gray)
+When that pairing is used anywhere in the app
+Then the design system either blocks that token pairing from being selectable in design/dev tooling, or auto-substitutes it with the nearest compliant pair (e.g. white → dark gray text)
+Then this is caught by the same automated check in Criterion 2, not left to manual visual QA
+5. Non-Regression Across Future Changes
+Given new features, themes, or components added after this story ships
+When they introduce new text/background pairs
+Then they inherit the same enforcement (Criteria 2–4) automatically, with no separate accessibility sign-off required for standard components

@@ -17,15 +17,19 @@ const colors = {
     secondaryForeground: "#05503C",
 
     muted: "#F0F2F5",
-    mutedForeground: "#7A8699",
+    mutedForeground: "#586474",
 
     accent: "#05503C",
     accentForeground: "#FFFFFF",
 
     rewards: "#F59E0B",
-    rewardsForeground: "#FFFFFF",
+    rewardsForeground: "#1A1A2E",
+    rewardsText: "#8A4B00",
 
-    destructive: "#EF4444",
+    successText: "#16703B",
+    warningText: "#8A4B00",
+
+    destructive: "#B42318",
     destructiveForeground: "#FFFFFF",
 
     border: "#E4E9F0",
@@ -63,6 +67,10 @@ const colors = {
 
     rewards: "#FCD34D",
     rewardsForeground: "#0A1F18",
+    rewardsText: "#FCD34D",
+
+    successText: "#6EE7A0",
+    warningText: "#FCD34D",
 
     destructive: "#F87171",
     destructiveForeground: "#0A1F18",

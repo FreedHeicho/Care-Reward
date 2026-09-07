@@ -16,9 +16,9 @@ import { MOCK_LAB_RESULTS } from "./lab-results";
 
 const STATUS_CONFIG = {
   normal: { label: "Normal", color: "#10B981", bg: "#D1FAE5", icon: "check-circle" as const },
-  high: { label: "High", color: "#EF4444", bg: "#FEE2E2", icon: "arrow-up" as const },
+  high: { label: "High", color: "#B42318", bg: "#FEE2E2", icon: "arrow-up" as const },
   low: { label: "Low", color: "#3B82F6", bg: "#DBEAFE", icon: "arrow-down" as const },
-  unknown: { label: "Unknown", color: "#9CA3AF", bg: "#F3F4F6", icon: "help-circle" as const },
+  unknown: { label: "Unknown", color: "#4B5563", bg: "#F3F4F6", icon: "help-circle" as const },
 };
 
 function DetailRow({ label, value, colors }: { label: string; value: string; colors: ReturnType<typeof useColors> }) {
