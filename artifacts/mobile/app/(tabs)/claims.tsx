@@ -26,13 +26,6 @@ const YTD_CATEGORIES = [
 
 const YTD_TOTAL = YTD_CATEGORIES.reduce((s, c) => s + c.amount, 0);
 
-const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
-  processed: { bg: "#DCFCE7", color: "#16703B" },
-  paid: { bg: "#DCFCE7", color: "#16703B" },
-  pending: { bg: "#FEF3C7", color: "#8A4B00" },
-  "in-review": { bg: "#FEE2E2", color: "#B42318" },
-};
-
 export default function CareScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -111,9 +104,9 @@ export default function CareScreen() {
 
         {/* Your Benefits Card */}
         <View style={[styles.benefitsCard, { backgroundColor: colors.primary }]}>
-          <Text style={styles.benefitsCardLabel}>Your Benefits</Text>
+          <Text style={[styles.benefitsCardLabel, { color: colors.primaryForeground }]}>Your Benefits</Text>
 
-          <Text style={styles.benefitsCardTitle}>
+          <Text style={[styles.benefitsCardTitle, { color: colors.primaryForeground }]}>
             {activeTab === "individual" ? "Individual" : "Family"} Deductible
           </Text>
 
@@ -121,27 +114,27 @@ export default function CareScreen() {
           <View style={styles.ringWrap}>
             <View style={[styles.ringOuter, { borderColor: "#ffffff30" }]}>
               <View style={[styles.ringInner, { borderColor: "#ffffff60" }]}>
-                <Text style={styles.ringPercent}>{deductiblePct}%</Text>
+                <Text style={[styles.ringPercent, { color: colors.primaryForeground }]}>{deductiblePct}%</Text>
               </View>
             </View>
           </View>
 
-          <Text style={styles.benefitsMet}>
+          <Text style={[styles.benefitsMet, { color: colors.primaryForeground }]}>
             ${plan.deductibleMet.toLocaleString()} met of ${plan.deductible.toLocaleString()}
           </Text>
-          <Text style={styles.benefitsRemaining}>
+          <Text style={[styles.benefitsRemaining, { color: colors.primaryForeground }]}>
             ${remaining.toLocaleString()} remaining
           </Text>
 
           {/* OOP */}
           <View style={styles.oopRow}>
-            <Text style={styles.oopLabel}>Out-of-Pocket Maximum</Text>
-            <Text style={styles.oopMet}>{oopPct}% met</Text>
+            <Text style={[styles.oopLabel, { color: colors.primaryForeground }]}>Out-of-Pocket Maximum</Text>
+            <Text style={[styles.oopMet, { color: colors.primaryForeground }]}>{oopPct}% met</Text>
           </View>
           <View style={[styles.oopTrack, { backgroundColor: "#ffffff20" }]}>
             <View style={[styles.oopFill, { width: `${oopPct}%`, backgroundColor: "#ffffff70" }]} />
           </View>
-          <Text style={styles.oopSub}>
+          <Text style={[styles.oopSub, { color: colors.primaryForeground }]}>
             ${plan.oopMet.toLocaleString()} met of ${plan.oopMax.toLocaleString()}
           </Text>
         </View>
@@ -249,7 +242,11 @@ export default function CareScreen() {
               const statusLabel =
                 claim.status === "processed" ? "PAID" :
                 claim.status === "pending" ? "PENDING" : "PENDING";
-              const ss = STATUS_STYLES[claim.status] ?? STATUS_STYLES.processed;
+              const ss = claim.status === "pending"
+                ? { bg: colors.warningBg, color: colors.warningText }
+                : claim.status === "in-review"
+                  ? { bg: colors.dangerBg, color: colors.dangerText }
+                  : { bg: colors.successBg, color: colors.successText };
               return (
                 <TouchableOpacity
                   key={claim.id}
@@ -437,7 +434,6 @@ const styles = StyleSheet.create({
   quickActionSub: {
     fontSize: 11,
     lineHeight: 15,
-    opacity: 0.7,
   },
 
   // YTD Spending
@@ -460,7 +456,6 @@ const styles = StyleSheet.create({
   },
   ytdSub: {
     fontSize: 14,
-    opacity: 0.6,
     marginBottom: 8,
   },
   ytdBreakdown: {
@@ -493,7 +488,6 @@ const styles = StyleSheet.create({
   },
   ytdValue: {
     fontSize: 12,
-    opacity: 0.6,
   },
   ytdBarTrack: {
     width: 100,
@@ -530,11 +524,9 @@ const styles = StyleSheet.create({
   },
   claimType: {
     fontSize: 13,
-    opacity: 0.6,
   },
   claimDate: {
     fontSize: 12,
-    opacity: 0.5,
     marginTop: 2,
   },
   claimRight: {

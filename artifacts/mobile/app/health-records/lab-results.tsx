@@ -78,7 +78,7 @@ export default function LabResultsScreen() {
             onPress={() => router.push("/health-records/add-method" as never)}
             activeOpacity={0.85}
           >
-            <Text style={styles.connectBtnText}>Connect Health System</Text>
+            <Text style={[styles.connectBtnText, { color: colors.primaryForeground }]}>Connect Health System</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginTop: 4,
   },
-  connectBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  connectBtnText: { fontSize: 15, fontWeight: "700" },
 
   scroll: { gap: 0 },
   sortBar: {

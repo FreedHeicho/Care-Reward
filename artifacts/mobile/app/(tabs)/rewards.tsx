@@ -153,7 +153,7 @@ export default function PointsScreen() {
               onPress={() => setShowCopayModal(false)}
               activeOpacity={0.85}
             >
-              <Text style={styles.modalOkText}>OK</Text>
+              <Text style={[styles.modalOkText, { color: colors.primaryForeground }]}>OK</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -178,13 +178,13 @@ export default function PointsScreen() {
       >
         {/* ─── Hero Card ─── */}
         <View style={[styles.heroCard, { backgroundColor: colors.primaryDark }]}>
-          <Text style={styles.heroLabel}>Points Balance</Text>
-          <Text style={styles.heroValue}>{balance.toLocaleString()}</Text>
-          <Text style={styles.heroUnit}>Points</Text>
-          <Text style={styles.heroDollar}>${balance.toLocaleString()}</Text>
+          <Text style={[styles.heroLabel, { color: colors.primaryDarkForeground }]}>Points Balance</Text>
+          <Text style={[styles.heroValue, { color: colors.primaryDarkForeground }]}>{balance.toLocaleString()}</Text>
+          <Text style={[styles.heroUnit, { color: colors.primaryDarkForeground }]}>Points</Text>
+          <Text style={[styles.heroDollar, { color: colors.primaryDarkForeground }]}>${balance.toLocaleString()}</Text>
           <View style={[styles.heroDivider, { backgroundColor: "#ffffff30" }]} />
-          <Text style={styles.heroSecondaryLabel}>Earned This Year</Text>
-          <Text style={styles.heroSecondaryValue}>
+          <Text style={[styles.heroSecondaryLabel, { color: colors.primaryDarkForeground }]}>Earned This Year</Text>
+          <Text style={[styles.heroSecondaryValue, { color: colors.primaryDarkForeground }]}>
             {earnedThisYear.toLocaleString()} Points
           </Text>
         </View>
@@ -237,20 +237,20 @@ export default function PointsScreen() {
           <View
             style={[
               styles.windowBanner,
-              { backgroundColor: "#DCFCE7", borderColor: "#86EFAC" },
+              { backgroundColor: colors.successBg, borderColor: colors.successText },
             ]}
           >
             <View style={styles.windowBannerLeft}>
               <View
-                style={[styles.windowBannerIcon, { backgroundColor: "#16A34A20" }]}
+                style={[styles.windowBannerIcon, { backgroundColor: colors.successText + "20" }]}
               >
-                <Feather name="unlock" size={18} color="#16A34A" />
+                <Feather name="unlock" size={18} color={colors.successText} />
               </View>
               <View style={styles.windowBannerText}>
-                <Text style={[styles.windowBannerTitle, { color: "#166534" }]}>
+                <Text style={[styles.windowBannerTitle, { color: colors.successText }]}>
                   Redemption Window Open
                 </Text>
-                <Text style={[styles.windowBannerSub, { color: "#15803D" }]}>
+                <Text style={[styles.windowBannerSub, { color: colors.successText }]}>
                   Redeem your points before the window closes
                 </Text>
               </View>
@@ -260,18 +260,18 @@ export default function PointsScreen() {
           <View
             style={[
               styles.windowBanner,
-              { backgroundColor: "#FEF3C7", borderColor: "#FDE68A" },
+              { backgroundColor: colors.warningBg, borderColor: colors.warningText },
             ]}
           >
             <View style={styles.windowBannerLeft}>
-              <View style={[styles.windowBannerIcon, { backgroundColor: "#FFFBEB" }]}>
-                <Feather name="clock" size={18} color="#F59E0B" />
+              <View style={[styles.windowBannerIcon, { backgroundColor: colors.warningBg }]}>
+                <Feather name="clock" size={18} color={colors.warningText} />
               </View>
               <View style={styles.windowBannerText}>
-                <Text style={[styles.windowBannerTitle, { color: "#92400E" }]}>
+                <Text style={[styles.windowBannerTitle, { color: colors.warningText }]}>
                   Redemption Window Closed
                 </Text>
-                <Text style={[styles.windowBannerSub, { color: "#78350F" }]}>
+                <Text style={[styles.windowBannerSub, { color: colors.warningText }]}>
                   Your next window opens on {nextOpenStr}.
                 </Text>
               </View>
@@ -280,7 +280,7 @@ export default function PointsScreen() {
               <Text style={[styles.windowDaysValue, { color: colors.rewardsText }]}>
                 {daysUntil}
               </Text>
-              <Text style={[styles.windowDaysLabel, { color: "#92400E" }]}>days</Text>
+              <Text style={[styles.windowDaysLabel, { color: colors.warningText }]}>days</Text>
             </View>
           </View>
         )}
@@ -299,9 +299,8 @@ export default function PointsScreen() {
                   style={[
                     styles.optionCard,
                     {
-                      backgroundColor: colors.card,
+                      backgroundColor: canRedeem ? colors.card : colors.muted,
                       borderColor: canRedeem ? colors.primary : colors.border,
-                      opacity: canRedeem ? 1 : 0.55,
                     },
                   ]}
                   activeOpacity={canRedeem ? 0.85 : 1}
@@ -334,13 +333,13 @@ export default function PointsScreen() {
                   <View
                     style={[
                       styles.optionIcon,
-                      { backgroundColor: canRedeem ? colors.secondary : "#F0F2F5" },
+                      { backgroundColor: canRedeem ? colors.secondary : colors.muted },
                     ]}
                   >
                     <Feather
                       name={opt.icon}
                       size={20}
-                      color={canRedeem ? colors.primary : "#7A8699"}
+                      color={canRedeem ? colors.primary : colors.mutedForeground}
                     />
                   </View>
                   <Text style={[styles.optionTitle, { color: colors.foreground }]}>
@@ -353,14 +352,14 @@ export default function PointsScreen() {
                     {opt.value}
                   </Text>
                   {!isOpen && (
-                    <View style={[styles.optionLocked, { backgroundColor: "#FEF3C7" }]}>
-                      <Text style={[styles.optionLockedText, { color: "#92400E" }]}>
+                    <View style={[styles.optionLocked, { backgroundColor: colors.warningBg }]}>
+                      <Text style={[styles.optionLockedText, { color: colors.warningText }]}>
                         Window Closed
                       </Text>
                     </View>
                   )}
                   {isOpen && balance < opt.minPoints && (
-                    <View style={[styles.optionLocked, { backgroundColor: "#F0F2F5" }]}>
+                    <View style={[styles.optionLocked, { backgroundColor: colors.muted }]}>
                       <Text style={[styles.optionLockedText, { color: colors.mutedForeground }]}>
                         Need {opt.minPoints} pts
                       </Text>
@@ -376,14 +375,14 @@ export default function PointsScreen() {
         {ENABLE_TEST_RESET && (
           <View style={styles.testResetSection}>
             <TouchableOpacity
-              style={[styles.testResetBtn, { borderColor: "#9CA3AF" }]}
+              style={[styles.testResetBtn, { borderColor: colors.mutedForeground }]}
               onPress={resetPoints}
               activeOpacity={0.75}
             >
-              <Feather name="refresh-cw" size={14} color="#6B7280" />
-              <Text style={styles.testResetBtnText}>Refresh points (testing only)</Text>
+              <Feather name="refresh-cw" size={14} color={colors.mutedForeground} />
+              <Text style={[styles.testResetBtnText, { color: colors.mutedForeground }]}>Refresh points (testing only)</Text>
             </TouchableOpacity>
-            <Text style={styles.testResetNote}>
+            <Text style={[styles.testResetNote, { color: colors.mutedForeground }]}>
               Reloads your live balance from the server.
             </Text>
           </View>
@@ -452,25 +451,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
   },
-  heroLabel: { color: "#fff", fontSize: 15, opacity: 0.85, fontWeight: "600" },
+  heroLabel: { fontSize: 15, fontWeight: "600" },
   heroValue: {
-    color: "#fff",
     fontSize: 60,
     fontWeight: "900",
     lineHeight: 64,
     marginTop: 2,
   },
-  heroUnit: { color: "#fff", fontSize: 16, opacity: 0.85, fontWeight: "600" },
-  heroDollar: { color: "#fff", fontSize: 18, fontWeight: "700", opacity: 0.9, marginTop: 2 },
+  heroUnit: { fontSize: 16, fontWeight: "600" },
+  heroDollar: { fontSize: 18, fontWeight: "700", marginTop: 2 },
   heroDivider: { width: "100%", height: 1, marginVertical: 10 },
   heroSecondaryLabel: {
-    color: "#fff",
     fontSize: 12,
-    opacity: 0.65,
     fontWeight: "600",
     letterSpacing: 0.3,
   },
-  heroSecondaryValue: { color: "#fff", fontSize: 18, fontWeight: "700", opacity: 0.8 },
+  heroSecondaryValue: { fontSize: 18, fontWeight: "700" },
 
   windowBanner: {
     flexDirection: "row",
@@ -546,8 +542,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderStyle: "dashed",
   },
-  testResetBtnText: { color: "#4B5563", fontSize: 13, fontWeight: "600" },
-  testResetNote: { color: "#4B5563", fontSize: 11, textAlign: "center", lineHeight: 15 },
+  testResetBtnText: { fontSize: 13, fontWeight: "600" },
+  testResetNote: { fontSize: 11, textAlign: "center", lineHeight: 15 },
 
   txRow: {
     flexDirection: "row",
@@ -596,5 +592,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 60,
     alignItems: "center",
   },
-  modalOkText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  modalOkText: { fontSize: 16, fontWeight: "700" },
 });

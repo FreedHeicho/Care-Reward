@@ -997,7 +997,7 @@ const sh = StyleSheet.create({
   unverifiedText: {
     fontSize: 12,
     fontFamily: "Inter_400Regular",
-    color: "#B45309",
+    color: "#8A4B00",
     lineHeight: 17,
   },
 

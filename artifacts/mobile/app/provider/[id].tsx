@@ -162,8 +162,7 @@ export default function ProviderDetailScreen() {
     );
   }
 
-  const avatarColors = ["#05503C", "#2563EB", "#7C3AED", "#D97706", "#0891B2", "#DC2626"];
-  const avatarBg = avatarColors[parseInt(provider.id.split("-")[1]) % avatarColors.length];
+  const avatarBg = colors.primary;
 
   const initials = provider.name
     .replace("Dr. ", "")
@@ -207,7 +206,7 @@ export default function ProviderDetailScreen() {
         {/* Hero */}
         <View style={[styles.hero, { backgroundColor: avatarBg + "12" }]}>
           <View style={[styles.heroAvatar, { backgroundColor: avatarBg }]}>
-            <Text style={styles.heroAvatarText}>{initials}</Text>
+          <Text style={[styles.heroAvatarText, { color: colors.primaryForeground }]}>{initials}</Text>
           </View>
           <Text style={[styles.heroName, { color: colors.foreground }]}>{provider.name}</Text>
           <Text style={[styles.heroSpecialty, { color: colors.mutedForeground }]}>
@@ -223,20 +222,20 @@ export default function ProviderDetailScreen() {
             </Text>
           </View>
           <View style={styles.heroBadges}>
-            <View style={[styles.heroBadge, { backgroundColor: "#DCFCE7" }]}>
-              <Feather name="check-circle" size={12} color="#16A34A" />
+            <View style={[styles.heroBadge, { backgroundColor: colors.successBg }]}>
+              <Feather name="check-circle" size={12} color={colors.successText} />
               <Text style={[styles.heroBadgeText, { color: colors.successText }]}>In-Network</Text>
             </View>
             <View
               style={[
                 styles.heroBadge,
-                { backgroundColor: provider.acceptingNew ? "#DBEAFE" : "#FEE2E2" },
+                { backgroundColor: provider.acceptingNew ? colors.infoBg : colors.dangerBg },
               ]}
             >
               <Text
                 style={[
                   styles.heroBadgeText,
-                  { color: provider.acceptingNew ? "#2563EB" : "#DC2626" },
+                  { color: provider.acceptingNew ? colors.infoText : colors.dangerText },
                 ]}
               >
                 {provider.acceptingNew ? "Accepting New Patients" : "Waitlist Only"}
@@ -256,11 +255,11 @@ export default function ProviderDetailScreen() {
               <Text style={[styles.costValue, { color: colors.primary }]}>${provider.copay}</Text>
               <Text style={[styles.costLabel, { color: colors.mutedForeground }]}>Copay per visit</Text>
             </View>
-            <View style={[styles.costItem, { backgroundColor: "#DBEAFE" }]}>
+            <View style={[styles.costItem, { backgroundColor: colors.infoBg }]}>
               <Text style={[styles.costValue, { color: colors.infoText }]}>$0</Text>
               <Text style={[styles.costLabel, { color: colors.mutedForeground }]}>After deductible</Text>
             </View>
-            <View style={[styles.costItem, { backgroundColor: "#F0FDF4" }]}>
+            <View style={[styles.costItem, { backgroundColor: colors.successBg }]}>
               <Text style={[styles.costValue, { color: colors.successText }]}>+50 pts</Text>
               <Text style={[styles.costLabel, { color: colors.mutedForeground }]}>For this visit</Text>
             </View>
@@ -339,18 +338,18 @@ export default function ProviderDetailScreen() {
           style={[
             styles.preferredBtn,
             {
-              borderColor: preferred ? "#DC2626" : colors.border,
-              backgroundColor: preferred ? "#FEE2E2" : colors.card,
+              borderColor: preferred ? colors.dangerText : colors.border,
+              backgroundColor: preferred ? colors.dangerBg : colors.card,
             },
           ]}
           onPress={handlePreferred}
           activeOpacity={0.8}
         >
-          <Feather name="heart" size={18} color={preferred ? "#DC2626" : colors.mutedForeground} />
+          <Feather name="heart" size={18} color={preferred ? colors.dangerText : colors.mutedForeground} />
           <Text style={[styles.preferredText, { color: preferred ? colors.dangerText : colors.foreground }]}>
             {preferred ? "Saved as Preferred Provider" : "Save as Preferred Provider"}
           </Text>
-          {preferred && <Feather name="check" size={16} color="#DC2626" />}
+          {preferred && <Feather name="check" size={16} color={colors.dangerText} />}
         </TouchableOpacity>
       </ScrollView>
 
@@ -398,7 +397,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12, shadowRadius: 8, elevation: 4,
   },
-  heroAvatarText: { color: "#fff", fontSize: 28, fontWeight: "800" },
+  heroAvatarText: { fontSize: 28, fontWeight: "800" },
   heroName: { fontSize: 22, fontWeight: "800", textAlign: "center" },
   heroSpecialty: { fontSize: 14, textAlign: "center" },
   heroMeta: { flexDirection: "row", alignItems: "center", gap: 6 },
@@ -464,5 +463,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
   },
-  bookBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  bookBtnText: { fontSize: 15, fontWeight: "700" },
 });

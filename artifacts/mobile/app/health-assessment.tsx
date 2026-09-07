@@ -15,6 +15,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 
+type ColorScheme = ReturnType<typeof useColors>;
+
 /* ─── Types ─────────────────────────────────────────────── */
 type StepId =
   | "activity"
@@ -129,7 +131,7 @@ const STEPS: Step[] = [
 ];
 
 /* ─── Score computation ─────────────────────────────────── */
-function computeScore(answers: Partial<Answers>): {
+function computeScore(answers: Partial<Answers>, colors: ColorScheme): {
   total: number;
   breakdown: { label: string; score: number; max: number; color: string }[];
 } {
@@ -168,24 +170,25 @@ function computeScore(answers: Partial<Answers>): {
   return {
     total,
     breakdown: [
-      { label: "Physical Activity", score: physicalScore, max: 100, color: "#16A34A" },
-      { label: "Preventive Care", score: preventiveScore, max: 100, color: "#2563EB" },
-      { label: "Lifestyle & Diet", score: lifestyleScore, max: 100, color: "#D97706" },
-      { label: "Health Conditions", score: conditionsScore, max: 100, color: "#7C3AED" },
+      { label: "Physical Activity", score: physicalScore, max: 100, color: colors.successText },
+      { label: "Preventive Care", score: preventiveScore, max: 100, color: colors.infoText },
+      { label: "Lifestyle & Diet", score: lifestyleScore, max: 100, color: colors.warningText },
+      { label: "Health Conditions", score: conditionsScore, max: 100, color: colors.primary },
     ],
   };
 }
 
-function scoreLabel(score: number): { label: string; color: string; emoji: string } {
-  if (score >= 85) return { label: "Excellent", color: "#16A34A", emoji: "🏆" };
-  if (score >= 70) return { label: "Good", color: "#2563EB", emoji: "💪" };
-  if (score >= 55) return { label: "Fair", color: "#D97706", emoji: "📈" };
-  return { label: "Needs Attention", color: "#DC2626", emoji: "🎯" };
+function scoreLabel(score: number, colors: ColorScheme): { label: string; color: string; emoji: string } {
+  if (score >= 85) return { label: "Excellent", color: colors.successText, emoji: "🏆" };
+  if (score >= 70) return { label: "Good", color: colors.infoText, emoji: "💪" };
+  if (score >= 55) return { label: "Fair", color: colors.warningText, emoji: "📈" };
+  return { label: "Needs Attention", color: colors.dangerText, emoji: "🎯" };
 }
 
 function getRecommendations(
   answers: Partial<Answers>,
-  score: number
+  score: number,
+  colors: ColorScheme,
 ): { title: string; body: string; savings: number; points: number; icon: string; color: string }[] {
   const recs: { title: string; body: string; savings: number; points: number; icon: string; color: string }[] = [];
 
@@ -196,7 +199,7 @@ function getRecommendations(
       savings: 40,
       points: 150,
       icon: "activity",
-      color: "#16A34A",
+      color: colors.successText,
     });
   }
   if (answers.smoking === "current" || answers.smoking === "occasional") {
@@ -206,7 +209,7 @@ function getRecommendations(
       savings: 85,
       points: 500,
       icon: "wind",
-      color: "#DC2626",
+      color: colors.dangerText,
     });
   }
   if (answers.preventive === "2yr_plus" || answers.preventive === "unknown") {
@@ -216,7 +219,7 @@ function getRecommendations(
       savings: 120,
       points: 200,
       icon: "calendar",
-      color: "#2563EB",
+      color: colors.infoText,
     });
   }
   if (answers.diet === "fair" || answers.diet === "poor") {
@@ -226,7 +229,7 @@ function getRecommendations(
       savings: 90,
       points: 120,
       icon: "coffee",
-      color: "#D97706",
+      color: colors.warningText,
     });
   }
   if (answers.stress === "daily" || answers.stress === "weekly") {
@@ -236,7 +239,7 @@ function getRecommendations(
       savings: 200,
       points: 100,
       icon: "heart",
-      color: "#7C3AED",
+      color: colors.primary,
     });
   }
 
@@ -248,7 +251,7 @@ function getRecommendations(
       savings: 45,
       points: 75,
       icon: "mail",
-      color: "#0891B2",
+      color: colors.infoText,
     });
   }
 
@@ -256,7 +259,7 @@ function getRecommendations(
 }
 
 /* ─── Ring progress component ───────────────────────────── */
-function ScoreRing({ score, color }: { score: number; color: string }) {
+function ScoreRing({ score, color, mutedColor }: { score: number; color: string; mutedColor: string }) {
   const size = 160;
   const stroke = 14;
   const r = (size - stroke) / 2;
@@ -293,7 +296,7 @@ function ScoreRing({ score, color }: { score: number; color: string }) {
         }}
       />
       <Text style={{ fontSize: 36, fontWeight: "900", color }}>{score}</Text>
-      <Text style={{ fontSize: 13, color: "#586474", fontWeight: "600" }}>/ 100</Text>
+      <Text style={{ fontSize: 13, color: mutedColor, fontWeight: "600" }}>/ 100</Text>
     </View>
   );
 }
@@ -374,9 +377,9 @@ export default function HealthAssessmentScreen() {
 
   /* ── Results view ───────────────────────────────────── */
   if (showResults) {
-    const { total, breakdown } = computeScore(answers);
-    const { label, color, emoji } = scoreLabel(total);
-    const recs = getRecommendations(answers, total);
+    const { total, breakdown } = computeScore(answers, colors);
+    const { label, color, emoji } = scoreLabel(total, colors);
+    const recs = getRecommendations(answers, total, colors);
     const totalSavings = recs.reduce((s, r) => s + r.savings, 0);
     const totalPoints = recs.reduce((s, r) => s + r.points, 0);
 
@@ -395,8 +398,8 @@ export default function HealthAssessmentScreen() {
             <Text style={[styles.resultTitle, { color: colors.foreground }]}>
               Your Health Score
             </Text>
-            <ScoreRing score={total} color={color} />
-            <View style={[styles.scoreLabelBadge, { backgroundColor: color + "20" }]}>
+            <ScoreRing score={total} color={color} mutedColor={colors.mutedForeground} />
+            <View style={[styles.scoreLabelBadge, { backgroundColor: color + "12" }]}>
               <Text style={[styles.scoreLabelText, { color }]}>{label}</Text>
             </View>
           </View>
@@ -449,10 +452,10 @@ export default function HealthAssessmentScreen() {
                 <Text style={[styles.recTitle, { color: colors.foreground }]}>{rec.title}</Text>
                 <Text style={[styles.recDesc, { color: colors.mutedForeground }]}>{rec.body}</Text>
                 <View style={styles.recMetrics}>
-                  <View style={[styles.recBadge, { backgroundColor: "#16A34A15" }]}>
+                  <View style={[styles.recBadge, { backgroundColor: colors.successText + "15" }]}>
                     <Text style={[styles.recBadgeText, { color: colors.successText }]}>Save ${rec.savings}/mo</Text>
                   </View>
-                  <View style={[styles.recBadge, { backgroundColor: "#D9770615" }]}>
+                  <View style={[styles.recBadge, { backgroundColor: colors.warningText + "15" }]}>
                     <Text style={[styles.recBadgeText, { color: colors.warningText }]}>+{rec.points} pts</Text>
                   </View>
                 </View>
@@ -466,8 +469,8 @@ export default function HealthAssessmentScreen() {
             onPress={() => router.push("/(tabs)/opportunities" as never)}
             activeOpacity={0.85}
           >
-            <Feather name="zap" size={18} color="#fff" />
-            <Text style={styles.ctaBtnText}>View All Opportunities</Text>
+            <Feather name="zap" size={18} color={colors.primaryForeground} />
+            <Text style={[styles.ctaBtnText, { color: colors.primaryForeground }]}>View All Opportunities</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -616,12 +619,12 @@ export default function HealthAssessmentScreen() {
             <Text
               style={[
                 styles.continueBtnText,
-                { color: canContinue ? "#fff" : colors.mutedForeground },
+                { color: canContinue ? colors.primaryForeground : colors.mutedForeground },
               ]}
             >
               Continue
             </Text>
-            <Feather name="arrow-right" size={18} color={canContinue ? "#fff" : colors.mutedForeground} />
+            <Feather name="arrow-right" size={18} color={canContinue ? colors.primaryForeground : colors.mutedForeground} />
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -753,7 +756,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 17,
   },
-  ctaBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  ctaBtnText: { fontSize: 16, fontWeight: "700" },
 
   retakeRow: {
     flexDirection: "row",

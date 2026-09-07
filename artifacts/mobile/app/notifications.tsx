@@ -123,7 +123,7 @@ const CATEGORIES: {
   },
   {
     title: "Points & Rewards",
-    color: "#D97706",
+    color: "#8A4B00",
     iconBg: "#FEF3C7",
     items: [
       {

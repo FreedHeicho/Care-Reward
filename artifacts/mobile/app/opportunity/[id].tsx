@@ -133,8 +133,8 @@ export default function OpportunityDetailScreen() {
 
         {completed ? (
           <View style={[styles.completedBadge, { backgroundColor: colors.accent }]}>
-            <Feather name="check-circle" size={20} color="#fff" />
-            <Text style={styles.completedText}>Completed! Points pending verification</Text>
+            <Feather name="check-circle" size={20} color={colors.accentForeground} />
+            <Text style={[styles.completedText, { color: colors.accentForeground }]}>Completed! Points pending verification</Text>
           </View>
         ) : (
           <TouchableOpacity
@@ -142,8 +142,8 @@ export default function OpportunityDetailScreen() {
             onPress={handleComplete}
             activeOpacity={0.85}
           >
-            <Feather name="check" size={20} color="#fff" />
-            <Text style={styles.completeBtnText}>Mark as Completed</Text>
+            <Feather name="check" size={20} color={colors.primaryForeground} />
+            <Text style={[styles.completeBtnText, { color: colors.primaryForeground }]}>Mark as Completed</Text>
           </TouchableOpacity>
         )}
       </ScrollView>

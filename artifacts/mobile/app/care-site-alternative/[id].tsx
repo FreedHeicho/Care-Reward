@@ -35,7 +35,6 @@ import {
 import { useColors } from "@/hooks/useColors";
 
 const NATIVE_DRIVER = Platform.OS !== "web";
-const PRIMARY = "#1A6B5A";
 
 const URGENCY_OPTIONS = ["Immediately", "2 weeks", "4 weeks"] as const;
 type Urgency = (typeof URGENCY_OPTIONS)[number];
@@ -58,8 +57,8 @@ function ProviderRow({
       style={[
         styles.providerRow,
         {
-          backgroundColor: isSelected ? PRIMARY + "0F" : colors.card,
-          borderColor: isSelected ? PRIMARY : colors.border,
+          backgroundColor: isSelected ? colors.primary + "0F" : colors.card,
+          borderColor: isSelected ? colors.primary : colors.border,
         },
       ]}
       onPress={onPress}
@@ -73,7 +72,7 @@ function ProviderRow({
         <Text
           style={[
             styles.providerName,
-            { color: isSelected ? PRIMARY : colors.foreground },
+            { color: isSelected ? colors.primary : colors.foreground },
           ]}
         >
           {provider.name}
@@ -92,13 +91,13 @@ function ProviderRow({
             0 points
           </Text>
         ) : (
-          <Text style={[styles.providerPts, { color: PRIMARY }]}>
+          <Text style={[styles.providerPts, { color: colors.primary }]}>
             +{provider.points.toLocaleString()} points
           </Text>
         )}
         {isSelected && (
-          <View style={[styles.checkCircle, { backgroundColor: PRIMARY }]}>
-            <Feather name="check" size={12} color="#fff" />
+          <View style={[styles.checkCircle, { backgroundColor: colors.primary }]}>
+            <Feather name="check" size={12} color={colors.primaryForeground} />
           </View>
         )}
       </View>
@@ -243,26 +242,26 @@ function SchedulingModal({
               <View
                 style={[
                   styles.urgencyChip,
-                  { backgroundColor: PRIMARY + "15", borderColor: PRIMARY + "40" },
+                  { backgroundColor: colors.primary + "15", borderColor: colors.primary + "40" },
                 ]}
               >
-                <Feather name="clock" size={13} color={PRIMARY} />
-                <Text style={[styles.urgencyChipText, { color: PRIMARY }]}>
+                <Feather name="clock" size={13} color={colors.primary} />
+                <Text style={[styles.urgencyChipText, { color: colors.primary }]}>
                   {urgency}
                 </Text>
               </View>
             )}
 
             <TouchableOpacity
-              style={[styles.bookForMeBtn, { backgroundColor: PRIMARY }]}
+              style={[styles.bookForMeBtn, { backgroundColor: colors.primary }]}
               onPress={handleBookForMe}
               activeOpacity={0.82}
               accessibilityRole="button"
             >
-              <Feather name="calendar" size={18} color="#fff" style={{ marginRight: 10 }} />
-              <Text style={styles.bookForMeText}>
+              <Feather name="calendar" size={18} color={colors.primaryForeground} style={{ marginRight: 10 }} />
+              <Text style={[styles.bookForMeText, { color: colors.primaryForeground }]}>
                 Book an Appointment for Me{"\n"}
-                <Text style={styles.bookForMeSubText}>(Care Reward)</Text>
+                <Text style={[styles.bookForMeSubText, { color: colors.primaryForeground }]}>(Care Reward)</Text>
               </Text>
             </TouchableOpacity>
 
@@ -290,8 +289,8 @@ function SchedulingModal({
           /* ── Step 3: Appointment Scheduled ── */
           <>
             <View style={styles.successIconWrap}>
-              <View style={[styles.successIconCircle, { backgroundColor: PRIMARY + "22" }]}>
-                <Feather name="check" size={38} color={PRIMARY} />
+              <View style={[styles.successIconCircle, { backgroundColor: colors.primary + "22" }]}>
+                <Feather name="check" size={38} color={colors.primary} />
               </View>
             </View>
 
@@ -304,13 +303,13 @@ function SchedulingModal({
 
             {/* Done */}
             <TouchableOpacity
-              style={[styles.backToOppsBtn, { backgroundColor: PRIMARY }]}
+              style={[styles.backToOppsBtn, { backgroundColor: colors.primary }]}
               onPress={onDone}
               activeOpacity={0.82}
               accessibilityRole="button"
               accessibilityLabel="Done"
             >
-              <Text style={styles.backToOppsText}>Done</Text>
+              <Text style={[styles.backToOppsText, { color: colors.primaryForeground }]}>Done</Text>
             </TouchableOpacity>
           </>
         )}
@@ -424,8 +423,8 @@ export default function CareSiteAlternativeScreen() {
             style={[
               styles.scheduleBtn,
               hasSelection
-                ? { backgroundColor: PRIMARY, borderColor: PRIMARY }
-                : { backgroundColor: "transparent", borderColor: PRIMARY },
+                ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                : { backgroundColor: "transparent", borderColor: colors.primary },
             ]}
             onPress={() => {
               if (hasSelection) {
@@ -440,13 +439,13 @@ export default function CareSiteAlternativeScreen() {
             <Feather
               name="calendar"
               size={17}
-              color={hasSelection ? "#fff" : PRIMARY}
+              color={hasSelection ? colors.primaryForeground : colors.primary}
               style={{ marginRight: 8 }}
             />
             <Text
               style={[
                 styles.scheduleBtnText,
-                { color: hasSelection ? "#fff" : PRIMARY },
+                { color: hasSelection ? colors.primaryForeground : colors.primary },
               ]}
             >
               Schedule an appointment
@@ -633,7 +632,6 @@ const styles = StyleSheet.create({
     minHeight: 64,
   },
   bookForMeText: {
-    color: "#fff",
     fontSize: 16,
     fontFamily: "Inter_700Bold",
     textAlign: "center",
@@ -641,7 +639,6 @@ const styles = StyleSheet.create({
   bookForMeSubText: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
-    color: "rgba(255,255,255,0.85)",
   },
   scheduleMyselfBtn: {
     borderRadius: 14,
@@ -732,7 +729,6 @@ const styles = StyleSheet.create({
     minHeight: 60,
   },
   backToOppsText: {
-    color: "#fff",
     fontSize: 16,
     fontFamily: "Inter_700Bold",
   },

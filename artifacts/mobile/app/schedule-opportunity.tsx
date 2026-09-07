@@ -59,7 +59,7 @@ export default function ScheduleOpportunityScreen() {
             style={[styles.doneBtn, { backgroundColor: colors.primary }]}
             onPress={() => router.push("/(tabs)" as never)}
           >
-            <Text style={styles.doneBtnText}>Back to Dashboard</Text>
+            <Text style={[styles.doneBtnText, { color: colors.primaryForeground }]}>Back to Dashboard</Text>
           </TouchableOpacity>
         </View>
       </View>

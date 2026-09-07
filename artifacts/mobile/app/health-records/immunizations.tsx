@@ -57,7 +57,7 @@ export default function ImmunizationsScreen() {
             onPress={() => router.push("/health-records/add-method" as never)}
             activeOpacity={0.85}
           >
-            <Text style={styles.connectBtnText}>Connect Health System</Text>
+            <Text style={[styles.connectBtnText, { color: colors.primaryForeground }]}>Connect Health System</Text>
           </TouchableOpacity>
         </View>
       ) : (

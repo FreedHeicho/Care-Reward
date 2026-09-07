@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { CATEGORY_COLORS, MOCK_OPPORTUNITIES } from "@/constants/data";
+import { MOCK_OPPORTUNITIES } from "@/constants/data";
 import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
 import { useColors } from "@/hooks/useColors";
 
@@ -117,7 +117,7 @@ export default function OpportunityVariantsScreen() {
     );
   }
 
-  const catColor = CATEGORY_COLORS[opp.category] ?? colors.primary;
+  const catColor = colors.primary;
   const variants = getVariants(opp.category, opp.points);
 
   const handleContinue = () => {
@@ -135,12 +135,12 @@ export default function OpportunityVariantsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Hero */}
-        <View style={[styles.hero, { backgroundColor: catColor + "18" }]}>
+        <View style={[styles.hero, { backgroundColor: colors.secondary }]}>
           <Text style={[styles.heroTitle, { color: colors.foreground }]}>{opp.title}</Text>
           <Text style={[styles.heroSub, { color: colors.mutedForeground }]}>{opp.description}</Text>
-          <View style={[styles.totalPointsPill, { backgroundColor: catColor }]}>
-            <Feather name="star" size={14} color="#fff" />
-            <Text style={styles.totalPointsText}>Up to {opp.points} points</Text>
+          <View style={[styles.totalPointsPill, { backgroundColor: colors.primary }]}>
+            <Feather name="star" size={14} color={colors.primaryForeground} />
+            <Text style={[styles.totalPointsText, { color: colors.primaryForeground }]}>Up to {opp.points} points</Text>
           </View>
         </View>
 
@@ -188,8 +188,8 @@ export default function OpportunityVariantsScreen() {
                           {v.title}
                         </Text>
                         {v.tag && (
-                          <View style={[styles.variantTag, { backgroundColor: catColor + "20" }]}>
-                            <Text style={[styles.variantTagText, { color: catColor }]}>{v.tag}</Text>
+                          <View style={[styles.variantTag, { backgroundColor: colors.secondary }]}>
+                            <Text style={[styles.variantTagText, { color: colors.secondaryForeground }]}>{v.tag}</Text>
                           </View>
                         )}
                       </View>
@@ -198,9 +198,9 @@ export default function OpportunityVariantsScreen() {
                       </Text>
                     </View>
                   </View>
-                  <View style={[styles.variantPoints, { backgroundColor: colors.primary + "12" }]}>
-                    <Feather name="star" size={13} color={colors.primary} />
-                    <Text style={[styles.variantPointsText, { color: colors.primary }]}>
+                  <View style={[styles.variantPoints, { backgroundColor: colors.secondary }]}>
+                    <Feather name="star" size={13} color={colors.secondaryForeground} />
+                    <Text style={[styles.variantPointsText, { color: colors.secondaryForeground }]}>
                       +{v.points} points
                     </Text>
                   </View>
@@ -243,7 +243,7 @@ export default function OpportunityVariantsScreen() {
           <Text
             style={[
               styles.continueBtnText,
-              { color: selectedVariant ? "#fff" : colors.mutedForeground },
+              { color: selectedVariant ? colors.primaryForeground : colors.mutedForeground },
             ]}
           >
             Continue to Schedule
@@ -251,7 +251,7 @@ export default function OpportunityVariantsScreen() {
           <Feather
             name="arrow-right"
             size={18}
-            color={selectedVariant ? "#fff" : colors.mutedForeground}
+            color={selectedVariant ? colors.primaryForeground : colors.mutedForeground}
           />
         </TouchableOpacity>
         <TouchableOpacity

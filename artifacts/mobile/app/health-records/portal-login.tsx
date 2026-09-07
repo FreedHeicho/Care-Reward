@@ -143,9 +143,9 @@ export default function PortalLoginScreen() {
               activeOpacity={0.85}
             >
               {loading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={canSubmit ? colors.primaryForeground : colors.foreground} />
               ) : (
-                <Text style={[styles.loginBtnText, { color: canSubmit ? "#fff" : colors.mutedForeground }]}>
+                <Text style={[styles.loginBtnText, { color: canSubmit ? colors.primaryForeground : colors.foreground }]}>
                   Sign In
                 </Text>
               )}

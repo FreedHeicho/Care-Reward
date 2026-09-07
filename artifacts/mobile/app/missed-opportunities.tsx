@@ -78,17 +78,16 @@ const STATUS_LABELS: Record<MissedStatus, string> = {
   "doctor-declined": "DR. DECLINED",
 };
 
-const STATUS_COLORS: Record<MissedStatus, { bg: string; text: string }> = {
-  expired: { bg: "#FED7AA", text: "#C2410C" },
-  dismissed: { bg: "#E5E7EB", text: "#6B7280" },
-  "doctor-declined": { bg: "#DBEAFE", text: "#1D4ED8" },
-};
-
 export default function MissedOpportunitiesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+  const statusColors: Record<MissedStatus, { bg: string; text: string }> = {
+    expired: { bg: colors.warningBg, text: colors.warningText },
+    dismissed: { bg: colors.muted, text: colors.mutedForeground },
+    "doctor-declined": { bg: colors.infoBg, text: colors.infoText },
+  };
 
   const filtered =
     activeFilter === "all"
@@ -112,15 +111,15 @@ export default function MissedOpportunitiesScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Empathy Banner */}
-        <View style={[styles.empathyCard, { backgroundColor: "#EFF6FF" }]}>
-          <View style={[styles.empathyIconWrap, { backgroundColor: "#DBEAFE" }]}>
-            <Feather name="heart" size={22} color="#3B82F6" />
+        <View style={[styles.empathyCard, { backgroundColor: colors.infoBg }]}>
+          <View style={[styles.empathyIconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="heart" size={22} color={colors.infoText} />
           </View>
           <View style={styles.empathyText}>
-            <Text style={[styles.empathyTitle, { color: "#1E40AF" }]}>
+            <Text style={[styles.empathyTitle, { color: colors.infoText }]}>
               We Know Life Gets Busy
             </Text>
-            <Text style={[styles.empathySub, { color: "#374151" }]}>
+            <Text style={[styles.empathySub, { color: colors.infoText }]}>
               It's okay to miss opportunities sometimes. What matters is that you're taking steps to improve your health.
             </Text>
           </View>
@@ -157,9 +156,9 @@ export default function MissedOpportunitiesScreen() {
               </Text>
             </View>
           </View>
-          <View style={[styles.summaryNote, { backgroundColor: "#DCFCE7" }]}>
-            <Feather name="trending-up" size={14} color="#16A34A" />
-            <Text style={[styles.summaryNoteText, { color: "#166534" }]}>
+          <View style={[styles.summaryNote, { backgroundColor: colors.successBg }]}>
+            <Feather name="trending-up" size={14} color={colors.successText} />
+            <Text style={[styles.summaryNoteText, { color: colors.successText }]}>
               New opportunities come regularly. You're doing great!
             </Text>
           </View>
@@ -189,7 +188,7 @@ export default function MissedOpportunitiesScreen() {
                 <Text
                   style={[
                     styles.tabText,
-                    { color: isActive ? "#fff" : colors.foreground },
+                    { color: isActive ? colors.primaryForeground : colors.foreground },
                   ]}
                 >
                   {tab.label}
@@ -213,15 +212,15 @@ export default function MissedOpportunitiesScreen() {
           </View>
         ) : (
           filtered.map((opp) => {
-            const badge = STATUS_COLORS[opp.status];
+            const badge = statusColors[opp.status];
             return (
               <View
                 key={opp.id}
                 style={[styles.oppCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               >
                 <View style={styles.oppTop}>
-                  <View style={[styles.oppIconWrap, { backgroundColor: "#F3F4F6" }]}>
-                    <Feather name={opp.icon as never} size={20} color="#9CA3AF" />
+                  <View style={[styles.oppIconWrap, { backgroundColor: colors.muted }]}>
+                    <Feather name={opp.icon as never} size={20} color={colors.mutedForeground} />
                   </View>
                   <View style={styles.oppTitleWrap}>
                     <Text style={[styles.oppTitle, { color: colors.mutedForeground }]}>

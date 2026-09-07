@@ -166,9 +166,9 @@ function OppCard({ opp }: { opp: Opportunity }) {
           <View />
         )}
 
-        <View style={styles.pointsPill}>
+        <View style={[styles.pointsPill, { backgroundColor: colors.warningBg, borderColor: colors.warningText }]}>
           <Text style={styles.pointsStar}>⭐</Text>
-          <Text style={styles.pointsText}>{pointsLabel}</Text>
+          <Text style={[styles.pointsText, { color: colors.warningText }]}>{pointsLabel}</Text>
         </View>
       </View>
 
@@ -195,13 +195,13 @@ function OppCard({ opp }: { opp: Opportunity }) {
 
       {/* Row 3: CTA */}
       <TouchableOpacity
-        style={[styles.actionBtn, { backgroundColor: barColor }]}
+        style={[styles.actionBtn, { backgroundColor: colors.primary }]}
         onPress={handleAction}
         activeOpacity={0.85}
         hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
       >
-        <Text style={styles.actionBtnText}>{opp.actionLabel ?? "How To Earn"}</Text>
-        <Feather name="arrow-right" size={15} color="#fff" />
+        <Text style={[styles.actionBtnText, { color: colors.primaryForeground }]}>{opp.actionLabel ?? "How To Earn"}</Text>
+        <Feather name="arrow-right" size={15} color={colors.primaryForeground} />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -272,11 +272,11 @@ export default function OpportunitiesScreen() {
           style={{ marginRight: 16 }}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Feather name="share-2" size={22} color="#FFFFFF" />
+          <Feather name="share-2" size={22} color={colors.primaryForeground} />
         </TouchableOpacity>
       ),
     });
-  }, [navigation]);
+  }, [colors.primaryForeground, navigation]);
 
   // Apply filter
   const filtered = useMemo(() => {
@@ -320,23 +320,23 @@ export default function OpportunitiesScreen() {
         <TouchableOpacity
           style={[
             styles.missedBanner,
-            { backgroundColor: "#FFF5F5", borderLeftColor: "#DC2626" },
+            { backgroundColor: colors.dangerBg, borderLeftColor: colors.dangerText },
           ]}
           onPress={() => router.push("/missed-opportunities" as never)}
           activeOpacity={0.8}
         >
-          <View style={styles.missedIconWrap}>
-            <Feather name="bell" size={16} color="#DC2626" />
+          <View style={[styles.missedIconWrap, { backgroundColor: colors.dangerBg }]}>
+            <Feather name="bell" size={16} color={colors.dangerText} />
           </View>
           <View style={styles.missedBody}>
-            <Text style={[styles.missedTitle, { color: "#B91C1C" }]}>
+            <Text style={[styles.missedTitle, { color: colors.dangerText }]}>
               {MISSED_OPPORTUNITIES_COUNT} Missed Opportunities
             </Text>
-            <Text style={[styles.missedSub, { color: colors.mutedForeground }]}>
+            <Text style={[styles.missedSub, { color: colors.dangerText }]}>
               Review them to improve your health journey
             </Text>
           </View>
-          <Feather name="chevron-right" size={18} color="#DC2626" />
+          <Feather name="chevron-right" size={18} color={colors.dangerText} />
         </TouchableOpacity>
 
         {/* ── Stats bar ───────────────────────────────────────────────── */}
@@ -358,7 +358,7 @@ export default function OpportunitiesScreen() {
             style={[styles.statDivider, { backgroundColor: colors.border }]}
           />
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: "#92400E" }]}>
+            <Text style={[styles.statValue, { color: colors.rewardsText }]}>
               ⭐ {totalPoints}
             </Text>
             <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>
@@ -369,7 +369,7 @@ export default function OpportunitiesScreen() {
             style={[styles.statDivider, { backgroundColor: colors.border }]}
           />
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: "#B91C1C" }]}>
+            <Text style={[styles.statValue, { color: colors.dangerText }]}>
               {MISSED_OPPORTUNITIES_COUNT}
             </Text>
             <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>

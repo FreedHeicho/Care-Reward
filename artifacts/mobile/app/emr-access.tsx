@@ -16,15 +16,15 @@ import { useColors } from "@/hooks/useColors";
 import { useHealthRecords } from "@/context/HealthRecordsContext";
 
 const RECORD_CATEGORIES = [
-  { id: "all",          label: "All records",  icon: "folder" as const,     color: "#22C55E", bg: "#DCFCE7", lastUpdated: "Jun 19",       route: null },
-  { id: "allergies",   label: "Allergies",    icon: "alert-circle" as const, color: "#EAB308", bg: "#FEF9C3", lastUpdated: "Oct 29, 2025", route: null },
-  { id: "conditions",  label: "Conditions",   icon: "user" as const,        color: "#EC4899", bg: "#FCE7F3", lastUpdated: "Jun 12",        route: null },
-  { id: "immunizations",label: "Immunizations",icon: "shield" as const,     color: "#14B8A6", bg: "#CCFBF1", lastUpdated: "Nov 5, 2025",  route: "/health-records/immunizations" },
-  { id: "labs",        label: "Lab results",  icon: "thermometer" as const, color: "#8B5CF6", bg: "#EDE9FE", lastUpdated: "Oct 29, 2025", route: "/health-records/lab-results" },
-  { id: "medications", label: "Medications",  icon: "package" as const,     color: "#3B82F6", bg: "#DBEAFE", lastUpdated: "Jun 2",         route: null },
-  { id: "procedures",  label: "Procedures",   icon: "file-text" as const,   color: "#10B981", bg: "#D1FAE5", lastUpdated: "Oct 29, 2025", route: null },
-  { id: "visits",      label: "Visits",       icon: "map-pin" as const,     color: "#6366F1", bg: "#E0E7FF", lastUpdated: "Jun 19",       route: "/health-records/visits" },
-  { id: "vitals",      label: "Vitals",       icon: "activity" as const,    color: "#EF4444", bg: "#FEE2E2", lastUpdated: "Jun 19",       route: null },
+  { id: "all",          label: "All records",  icon: "folder" as const,     color: "#16703B", bg: "#DCFCE7", lastUpdated: "Jun 19",       route: null },
+  { id: "allergies",   label: "Allergies",    icon: "alert-circle" as const, color: "#8A4B00", bg: "#FEF3C7", lastUpdated: "Oct 29, 2025", route: null },
+  { id: "conditions",  label: "Conditions",   icon: "user" as const,        color: "#9D174D", bg: "#FCE7F3", lastUpdated: "Jun 12",        route: null },
+  { id: "immunizations",label: "Immunizations",icon: "shield" as const,     color: "#115E59", bg: "#CCFBF1", lastUpdated: "Nov 5, 2025",  route: "/health-records/immunizations" },
+  { id: "labs",        label: "Lab results",  icon: "thermometer" as const, color: "#5B21B6", bg: "#EDE9FE", lastUpdated: "Oct 29, 2025", route: "/health-records/lab-results" },
+  { id: "medications", label: "Medications",  icon: "package" as const,     color: "#1D4F91", bg: "#DBEAFE", lastUpdated: "Jun 2",         route: null },
+  { id: "procedures",  label: "Procedures",   icon: "file-text" as const,   color: "#16703B", bg: "#D1FAE5", lastUpdated: "Oct 29, 2025", route: null },
+  { id: "visits",      label: "Visits",       icon: "map-pin" as const,     color: "#4338CA", bg: "#E0E7FF", lastUpdated: "Jun 19",       route: "/health-records/visits" },
+  { id: "vitals",      label: "Vitals",       icon: "activity" as const,    color: "#B42318", bg: "#FEE2E2", lastUpdated: "Jun 19",       route: null },
 ];
 
 export default function EmrAccessScreen() {
@@ -64,8 +64,8 @@ export default function EmrAccessScreen() {
             onPress={() => router.push("/health-records/add-method" as never)}
             activeOpacity={0.85}
           >
-            <Feather name="plus" size={18} color="#fff" />
-            <Text style={styles.addBtnText}>Add Your Health Care Provider</Text>
+            <Feather name="plus" size={18} color={colors.primaryForeground} />
+            <Text style={[styles.addBtnText, { color: colors.primaryForeground }]}>Add Your Health Care Provider</Text>
           </TouchableOpacity>
         </View>
       </View>

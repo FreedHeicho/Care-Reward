@@ -131,8 +131,8 @@ export default function PremiumAllocationScreen() {
           </View>
           {error && (
             <View style={styles.errorRow}>
-              <Feather name="alert-circle" size={14} color="#DC2626" />
-              <Text style={styles.errorText}>{error}</Text>
+              <Feather name="alert-circle" size={14} color={colors.dangerText} />
+              <Text style={[styles.errorText, { color: colors.dangerText }]}>{error}</Text>
             </View>
           )}
         </View>
@@ -153,7 +153,7 @@ export default function PremiumAllocationScreen() {
           onPress={handleOk}
           activeOpacity={0.85}
         >
-          <Text style={styles.okBtnText}>OK</Text>
+          <Text style={[styles.okBtnText, { color: colors.primaryForeground }]}>OK</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  errorText: { color: "#DC2626", fontSize: 13, flex: 1 },
+  errorText: { fontSize: 13, flex: 1 },
   previewCard: {
     borderRadius: 12,
     borderWidth: 1,
@@ -241,5 +241,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 4,
   },
-  okBtnText: { color: "#fff", fontSize: 17, fontWeight: "700" },
+  okBtnText: { fontSize: 17, fontWeight: "700" },
 });

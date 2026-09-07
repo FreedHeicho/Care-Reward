@@ -33,9 +33,6 @@ import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleto
 import { MOCK_OPPORTUNITIES } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
-const DARK_TEAL = "#05503C";
-const LIGHT_TEAL_BG = "#E8F5F2";
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Flow = "substitution" | "refill" | null;
@@ -59,7 +56,7 @@ function CheckItem({ text }: { text: string }) {
   return (
     <View style={styles.checkRow}>
       <View style={[styles.checkCircle, { backgroundColor: colors.primary }]}>
-        <Feather name="check" size={13} color="#fff" />
+        <Feather name="check" size={13} color={colors.primaryForeground} />
       </View>
       <Text style={[styles.checkText, { color: colors.foreground }]}>{text}</Text>
     </View>
@@ -85,13 +82,13 @@ function DrugComparisonCards() {
       <View
         style={[
           styles.compCard,
-          { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "40" },
+          { backgroundColor: colors.secondary, borderColor: colors.border },
         ]}
       >
         <Text style={[styles.compTag, { color: colors.mutedForeground }]}>Branded</Text>
         <Text style={[styles.compDrug, { color: colors.foreground }]}>Norvasc</Text>
         <Text style={[styles.compSub, { color: colors.mutedForeground }]}>Amlodipine besylate</Text>
-        <View style={[styles.compCostBadge, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
+        <View style={[styles.compCostBadge, { backgroundColor: colors.dangerBg, borderColor: colors.dangerText }]}>
           <Text style={[styles.compCostText, { color: colors.dangerText }]}>Higher cost</Text>
         </View>
         <BulletItem text="Brand-name pricing" />
@@ -100,7 +97,7 @@ function DrugComparisonCards() {
 
       {/* Arrow */}
       <View style={styles.compArrow}>
-        <Feather name="arrow-right" size={20} color={DARK_TEAL} />
+        <Feather name="arrow-right" size={20} color={colors.primary} />
       </View>
 
       {/* Generic */}
@@ -112,13 +109,13 @@ function DrugComparisonCards() {
       >
         <View style={styles.compRecommendedRow}>
           <Text style={[styles.compTag, { color: colors.mutedForeground }]}>Generic</Text>
-          <View style={[styles.recBadge, { backgroundColor: DARK_TEAL }]}>
-            <Text style={styles.recBadgeText}>Recommended</Text>
+          <View style={[styles.recBadge, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.recBadgeText, { color: colors.primaryForeground }]}>Recommended</Text>
           </View>
         </View>
         <Text style={[styles.compDrug, { color: colors.foreground }]}>Amlodipine</Text>
         <Text style={[styles.compSub, { color: colors.mutedForeground }]}>Amlodipine generic</Text>
-        <View style={[styles.compCostBadge, { backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }]}>
+        <View style={[styles.compCostBadge, { backgroundColor: colors.successBg, borderColor: colors.successText }]}>
           <Text style={[styles.compCostText, { color: colors.successText }]}>Lower cost ✓</Text>
         </View>
         <BulletItem text="FDA-approved equivalent" />
@@ -138,7 +135,7 @@ function RefillComparisonCards() {
       <View
         style={[
           styles.locationCard,
-          { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" },
+          { backgroundColor: colors.secondary, borderColor: colors.border },
         ]}
       >
         <View style={styles.locationLeft}>
@@ -157,14 +154,14 @@ function RefillComparisonCards() {
             </Text>
           </View>
         </View>
-        <View style={[styles.costPill, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
+        <View style={[styles.costPill, { backgroundColor: colors.dangerBg, borderColor: colors.dangerText }]}>
           <Text style={[styles.costPillText, { color: colors.dangerText }]}>Higher cost</Text>
         </View>
       </View>
 
       {/* Arrow */}
       <View style={styles.locationArrow}>
-        <Feather name="arrow-down" size={18} color={DARK_TEAL} />
+        <Feather name="arrow-down" size={18} color={colors.primary} />
       </View>
 
       {/* Proposed */}
@@ -175,8 +172,8 @@ function RefillComparisonCards() {
         ]}
       >
         <View style={styles.locationLeft}>
-          <View style={[styles.locationIconWrap, { backgroundColor: DARK_TEAL + "18" }]}>
-            <Feather name="package" size={18} color={DARK_TEAL} />
+          <View style={[styles.locationIconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="package" size={18} color={colors.primary} />
           </View>
           <View style={styles.locationText}>
             <Text style={[styles.locationLabel, { color: colors.mutedForeground }]}>
@@ -190,7 +187,7 @@ function RefillComparisonCards() {
             </Text>
           </View>
         </View>
-        <View style={[styles.costPill, { backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }]}>
+        <View style={[styles.costPill, { backgroundColor: colors.successBg, borderColor: colors.successText }]}>
           <Text style={[styles.costPillText, { color: colors.successText }]}>Save more ✓</Text>
         </View>
       </View>
@@ -227,16 +224,16 @@ function OpportunityCard({
       {/* Header */}
       <View style={styles.oppCardHeader}>
         <View style={[styles.oppCardIcon, { backgroundColor: iconBg }]}>
-          <Feather name={icon} size={22} color={DARK_TEAL} />
+          <Feather name={icon} size={22} color={colors.primary} />
         </View>
         <View style={styles.oppCardTitles}>
           <Text style={[styles.oppCardTitle, { color: colors.foreground }]}>{title}</Text>
           <Text style={[styles.oppCardSub, { color: colors.mutedForeground }]}>{subtitle}</Text>
         </View>
         {/* Points pill */}
-        <View style={[styles.oppPtsPill, { backgroundColor: DARK_TEAL + "15" }]}>
-          <Feather name="star" size={12} color={DARK_TEAL} />
-          <Text style={[styles.oppPtsText, { color: DARK_TEAL }]}>
+        <View style={[styles.oppPtsPill, { backgroundColor: colors.secondary }]}>
+          <Feather name="star" size={12} color={colors.secondaryForeground} />
+          <Text style={[styles.oppPtsText, { color: colors.secondaryForeground }]}>
             {points}{pointsMonthly > 0 ? ` + ${pointsMonthly}/mo` : ""} pts
           </Text>
         </View>
@@ -247,13 +244,13 @@ function OpportunityCard({
 
       {/* CTA */}
       <TouchableOpacity
-        style={[styles.oppCta, { backgroundColor: DARK_TEAL }]}
+        style={[styles.oppCta, { backgroundColor: colors.primary }]}
         onPress={onCta}
         activeOpacity={0.85}
         accessibilityRole="button"
       >
-        <Text style={styles.oppCtaText}>{ctaLabel}</Text>
-        <Feather name="arrow-right" size={16} color="#fff" />
+        <Text style={[styles.oppCtaText, { color: colors.primaryForeground }]}>{ctaLabel}</Text>
+        <Feather name="arrow-right" size={16} color={colors.primaryForeground} />
       </TouchableOpacity>
     </View>
   );
@@ -283,16 +280,16 @@ function AcceptStep({
           </Text>
 
           {/* Drug highlight */}
-          <View style={[styles.drugHighlight, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "40" }]}>
+          <View style={[styles.drugHighlight, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
             <View style={styles.drugRow}>
               <View style={styles.drugItem}>
                 <Text style={[styles.drugLabel, { color: colors.mutedForeground }]}>Branded</Text>
                 <Text style={[styles.drugName, { color: colors.foreground }]}>Norvasc</Text>
               </View>
-              <Feather name="arrow-right" size={20} color={DARK_TEAL} style={{ marginTop: 16 }} />
+              <Feather name="arrow-right" size={20} color={colors.primary} style={{ marginTop: 16 }} />
               <View style={styles.drugItem}>
                 <Text style={[styles.drugLabel, { color: colors.mutedForeground }]}>Generic</Text>
-                <Text style={[styles.drugName, { color: DARK_TEAL }]}>Amlodipine</Text>
+                <Text style={[styles.drugName, { color: colors.secondaryForeground }]}>Amlodipine</Text>
               </View>
             </View>
             <Text style={[styles.drugFda, { color: colors.mutedForeground }]}>
@@ -313,7 +310,7 @@ function AcceptStep({
             Switch your refill location to CR Mail Order for lower cost and home delivery?
           </Text>
 
-          <View style={[styles.drugHighlight, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "40" }]}>
+          <View style={[styles.drugHighlight, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
             <View style={styles.switchRow}>
               <View style={styles.switchItem}>
                 <Feather name="map-pin" size={18} color={colors.mutedForeground} />
@@ -321,11 +318,11 @@ function AcceptStep({
                 <Text style={[styles.switchName, { color: colors.foreground }]}>CVS Pharmacy Midtown</Text>
                 <Text style={[styles.switchDetail, { color: colors.mutedForeground }]}>ZIP 10006</Text>
               </View>
-              <Feather name="arrow-right" size={20} color={DARK_TEAL} style={{ marginTop: 8 }} />
+              <Feather name="arrow-right" size={20} color={colors.primary} style={{ marginTop: 8 }} />
               <View style={styles.switchItem}>
-                <Feather name="package" size={18} color={DARK_TEAL} />
+                <Feather name="package" size={18} color={colors.primary} />
                 <Text style={[styles.switchLabel, { color: colors.mutedForeground }]}>Proposed</Text>
-                <Text style={[styles.switchName, { color: DARK_TEAL }]}>CR Mail Order</Text>
+                <Text style={[styles.switchName, { color: colors.secondaryForeground }]}>CR Mail Order</Text>
                 <Text style={[styles.switchDetail, { color: colors.mutedForeground }]}>Home delivery</Text>
               </View>
             </View>
@@ -341,13 +338,13 @@ function AcceptStep({
       )}
 
       <TouchableOpacity
-        style={[styles.acceptBtn, { backgroundColor: DARK_TEAL }]}
+        style={[styles.acceptBtn, { backgroundColor: colors.primary }]}
         onPress={onAccept}
         activeOpacity={0.85}
         accessibilityRole="button"
       >
-        <Feather name="check-circle" size={20} color="#fff" style={{ marginRight: 10 }} />
-        <Text style={styles.acceptBtnText}>Accept Recommendation</Text>
+        <Feather name="check-circle" size={20} color={colors.primaryForeground} style={{ marginRight: 10 }} />
+        <Text style={[styles.acceptBtnText, { color: colors.primaryForeground }]}>Accept Recommendation</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -400,8 +397,8 @@ function SubDeliveryStep({
             style={[
               styles.methodCard,
               {
-                backgroundColor: sel ? DARK_TEAL + "0D" : colors.card,
-                borderColor: sel ? DARK_TEAL : colors.border,
+                backgroundColor: sel ? colors.secondary : colors.card,
+                borderColor: sel ? colors.primary : colors.border,
                 borderWidth: sel ? 2 : 1,
               },
             ]}
@@ -410,15 +407,15 @@ function SubDeliveryStep({
             accessibilityRole="radio"
             accessibilityState={{ selected: sel }}
           >
-            <View style={[styles.methodIconWrap, { backgroundColor: sel ? DARK_TEAL + "18" : colors.secondary }]}>
-              <Feather name={opt.icon} size={22} color={sel ? DARK_TEAL : colors.mutedForeground} />
+            <View style={[styles.methodIconWrap, { backgroundColor: colors.secondary }]}>
+              <Feather name={opt.icon} size={22} color={sel ? colors.primary : colors.mutedForeground} />
             </View>
             <View style={styles.methodText}>
               <View style={styles.methodTitleRow}>
                 <Text style={[styles.methodTitle, { color: colors.foreground }]}>{opt.title}</Text>
                 {opt.highlight && (
-                  <View style={[styles.recommendedPill, { backgroundColor: DARK_TEAL }]}>
-                    <Text style={styles.recommendedPillText}>Recommended</Text>
+                  <View style={[styles.recommendedPill, { backgroundColor: colors.primary }]}>
+                    <Text style={[styles.recommendedPillText, { color: colors.primaryForeground }]}>Recommended</Text>
                   </View>
                 )}
               </View>
@@ -427,10 +424,10 @@ function SubDeliveryStep({
             <View
               style={[
                 styles.radioOuter,
-                { borderColor: sel ? DARK_TEAL : colors.border },
+                { borderColor: sel ? colors.primary : colors.border },
               ]}
             >
-              {sel && <View style={[styles.radioDot, { backgroundColor: DARK_TEAL }]} />}
+              {sel && <View style={[styles.radioDot, { backgroundColor: colors.primary }]} />}
             </View>
           </TouchableOpacity>
         );
@@ -535,9 +532,9 @@ function RefillAddressStep({
           </View>
         </View>
 
-        <View style={[styles.deliveryNote, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" }]}>
-          <Feather name="info" size={15} color={DARK_TEAL} />
-          <Text style={[styles.deliveryNoteText, { color: DARK_TEAL }]}>
+        <View style={[styles.deliveryNote, { backgroundColor: colors.infoBg, borderColor: colors.infoText }]}>
+          <Feather name="info" size={15} color={colors.infoText} />
+          <Text style={[styles.deliveryNoteText, { color: colors.infoText }]}>
             Your first 90-day supply will arrive within 7–10 business days of confirmation.
           </Text>
         </View>
@@ -587,17 +584,17 @@ function AcknowledgementStep({
   return (
     <View style={styles.ackContainer}>
       {/* Success icon */}
-      <View style={[styles.ackIconCircle, { backgroundColor: "#22C55E" }]}>
-        <Feather name="check" size={40} color="#fff" />
+      <View style={[styles.ackIconCircle, { backgroundColor: colors.successBg }]}>
+        <Feather name="check" size={40} color={colors.successText} />
       </View>
 
       <Text style={[styles.ackTitle, { color: colors.foreground }]}>{title}</Text>
       <Text style={[styles.ackDesc, { color: colors.mutedForeground }]}>{desc}</Text>
 
       {/* Points earned */}
-      <View style={[styles.ackPointsBadge, { backgroundColor: DARK_TEAL + "15", borderColor: DARK_TEAL + "30" }]}>
-        <Feather name="star" size={18} color={DARK_TEAL} />
-        <Text style={[styles.ackPointsText, { color: DARK_TEAL }]}>
+      <View style={[styles.ackPointsBadge, { backgroundColor: colors.secondary, borderColor: colors.primary }]}>
+        <Feather name="star" size={18} color={colors.secondaryForeground} />
+        <Text style={[styles.ackPointsText, { color: colors.secondaryForeground }]}>
           +{points} points earned{pointsMonthly > 0 ? ` · +${pointsMonthly}/mo ongoing` : ""}
         </Text>
       </View>
@@ -630,12 +627,12 @@ function AcknowledgementStep({
 
       {/* Close button */}
       <TouchableOpacity
-        style={[styles.closeOppBtn, { backgroundColor: DARK_TEAL }]}
+        style={[styles.closeOppBtn, { backgroundColor: colors.primary }]}
         onPress={onClose}
         activeOpacity={0.85}
         accessibilityRole="button"
       >
-        <Text style={styles.closeOppBtnText}>Close Opportunity</Text>
+        <Text style={[styles.closeOppBtnText, { color: colors.primaryForeground }]}>Close Opportunity</Text>
       </TouchableOpacity>
     </View>
   );
@@ -735,12 +732,12 @@ export default function MedicationOpportunityScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* Page header */}
-            <View style={[styles.pageHeader, { backgroundColor: LIGHT_TEAL_BG, borderColor: colors.primary + "30" }]}>
-              <View style={[styles.pageHeaderIcon, { backgroundColor: DARK_TEAL + "18" }]}>
-                <Feather name="activity" size={24} color={DARK_TEAL} />
+            <View style={[styles.pageHeader, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+              <View style={[styles.pageHeaderIcon, { backgroundColor: colors.secondary }]}>
+                <Feather name="activity" size={24} color={colors.primary} />
               </View>
               <View style={styles.pageHeaderText}>
-                <Text style={[styles.pageHeaderDrug, { color: DARK_TEAL }]}>Blood Pressure Medication</Text>
+                <Text style={[styles.pageHeaderDrug, { color: colors.secondaryForeground }]}>Blood Pressure Medication</Text>
                 <Text style={[styles.pageHeaderSub, { color: colors.mutedForeground }]}>
                   2 savings opportunities found
                 </Text>
@@ -751,7 +748,7 @@ export default function MedicationOpportunityScreen() {
             <SectionHeading label="Opportunity 1 · Generic Substitution" />
             <OpportunityCard
               icon="refresh-cw"
-              iconBg={LIGHT_TEAL_BG}
+              iconBg={colors.secondary}
               title="Switch to Generic"
               subtitle="Norvasc → Amlodipine"
               points={points}
@@ -761,7 +758,7 @@ export default function MedicationOpportunityScreen() {
             >
               <DrugComparisonCards />
               <View style={[styles.savingsRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-                <Feather name="trending-down" size={15} color="#16A34A" />
+                <Feather name="trending-down" size={15} color={colors.successText} />
                 <Text style={[styles.savingsText, { color: colors.successText }]}>
                   Save up to $127/month on your medication costs
                 </Text>
@@ -772,7 +769,7 @@ export default function MedicationOpportunityScreen() {
             <SectionHeading label="Opportunity 2 · Refill Location" />
             <OpportunityCard
               icon="package"
-              iconBg={LIGHT_TEAL_BG}
+              iconBg={colors.secondary}
               title="Switch to Mail Order"
               subtitle="CVS Pharmacy → CR Mail Order"
               points={50}
@@ -782,7 +779,7 @@ export default function MedicationOpportunityScreen() {
             >
               <RefillComparisonCards />
               <View style={[styles.savingsRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-                <Feather name="trending-down" size={15} color="#16A34A" />
+                <Feather name="trending-down" size={15} color={colors.successText} />
                 <Text style={[styles.savingsText, { color: colors.successText }]}>
                   90-day supply delivered free — lower per-fill cost
                 </Text>
@@ -833,7 +830,7 @@ export default function MedicationOpportunityScreen() {
                 <View
                   style={[
                     styles.progressFill,
-                    { backgroundColor: DARK_TEAL, width: `${(step / 2) * 100}%` },
+                    { backgroundColor: colors.primary, width: `${(step / 2) * 100}%` },
                   ]}
                 />
               </View>
@@ -877,12 +874,12 @@ export default function MedicationOpportunityScreen() {
           {footerLabel && step < 3 && (
             <View style={[styles.sheetFooter, { borderTopColor: colors.border }]}>
               <TouchableOpacity
-                style={[styles.footerBtn, { backgroundColor: DARK_TEAL }]}
+                style={[styles.footerBtn, { backgroundColor: colors.primary }]}
                 onPress={handleNext}
                 activeOpacity={0.85}
                 accessibilityRole="button"
               >
-                <Text style={styles.footerBtnText}>{footerLabel}</Text>
+                <Text style={[styles.footerBtnText, { color: colors.primaryForeground }]}>{footerLabel}</Text>
               </TouchableOpacity>
             </View>
           )}

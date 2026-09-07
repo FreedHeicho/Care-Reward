@@ -14,13 +14,6 @@ import { useColors } from "@/hooks/useColors";
 import { useHealthRecords } from "@/context/HealthRecordsContext";
 import { MOCK_LAB_RESULTS } from "./lab-results";
 
-const STATUS_CONFIG = {
-  normal: { label: "Normal", color: "#16703B", bg: "#DCFCE7", icon: "check-circle" as const },
-  high: { label: "High", color: "#B42318", bg: "#FEE2E2", icon: "arrow-up" as const },
-  low: { label: "Low", color: "#3B82F6", bg: "#DBEAFE", icon: "arrow-down" as const },
-  unknown: { label: "Unknown", color: "#4B5563", bg: "#F3F4F6", icon: "help-circle" as const },
-};
-
 function DetailRow({ label, value, colors }: { label: string; value: string; colors: ReturnType<typeof useColors> }) {
   return (
     <View style={styles.detailRow}>
@@ -35,6 +28,12 @@ export default function LabResultDetailScreen() {
   const insets = useSafeAreaInsets();
   const { labId } = useLocalSearchParams<{ labId: string }>();
   const { connectedSystems } = useHealthRecords();
+  const statusConfig = {
+    normal: { label: "Normal", color: colors.successText, bg: colors.successBg, icon: "check-circle" as const },
+    high: { label: "High", color: colors.dangerText, bg: colors.dangerBg, icon: "arrow-up" as const },
+    low: { label: "Low", color: colors.infoText, bg: colors.infoBg, icon: "arrow-down" as const },
+    unknown: { label: "Unknown", color: colors.mutedForeground, bg: colors.muted, icon: "help-circle" as const },
+  };
 
   const lab = MOCK_LAB_RESULTS.find((l) => l.id === labId);
   const institutionName =
@@ -53,7 +52,7 @@ export default function LabResultDetailScreen() {
     );
   }
 
-  const statusCfg = STATUS_CONFIG[lab.status];
+  const statusCfg = statusConfig[lab.status];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

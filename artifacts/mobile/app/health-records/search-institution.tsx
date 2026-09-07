@@ -36,18 +36,17 @@ const MOCK_INSTITUTIONS = [
   { id: "inst-18", name: "Optum Clinics", type: "Clinic", location: "Various Locations" },
 ];
 
-const TYPE_COLORS: Record<string, { color: string; bg: string }> = {
-  Hospital: { color: "#3B82F6", bg: "#DBEAFE" },
-  "Health System": { color: "#8B5CF6", bg: "#EDE9FE" },
-  Pharmacy: { color: "#16703B", bg: "#D1FAE5" },
-  Clinic: { color: "#8A4B00", bg: "#FEF3C7" },
-};
-
 export default function SearchInstitutionScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const typeColors: Record<string, { color: string; bg: string }> = {
+    Hospital: { color: colors.infoText, bg: colors.infoBg },
+    "Health System": { color: colors.primary, bg: colors.secondary },
+    Pharmacy: { color: colors.successText, bg: colors.successBg },
+    Clinic: { color: colors.warningText, bg: colors.warningBg },
+  };
 
   const results = useMemo(() => {
     if (!query.trim()) return [];
@@ -121,7 +120,7 @@ export default function SearchInstitutionScreen() {
             {results.length} result{results.length !== 1 ? "s" : ""}
           </Text>
           {results.map((inst) => {
-            const tc = TYPE_COLORS[inst.type] ?? TYPE_COLORS.Hospital;
+            const tc = typeColors[inst.type] ?? typeColors.Hospital;
             return (
               <TouchableOpacity
                 key={inst.id}

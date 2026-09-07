@@ -190,7 +190,7 @@ export default function ConnectDevicesScreen() {
                     }
                     activeOpacity={0.85}
                   >
-                    <Text style={styles.connectBtnText}>Connect</Text>
+                    <Text style={[styles.connectBtnText, { color: colors.primaryForeground }]}>Connect</Text>
                   </TouchableOpacity>
                 </View>
               </View>

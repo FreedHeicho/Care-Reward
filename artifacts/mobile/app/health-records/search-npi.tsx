@@ -156,7 +156,7 @@ export default function SearchNpiScreen() {
             maxLength={10}
           />
           {npiInvalid ? (
-            <Text style={styles.errorInline}>NPI number must be exactly 10 digits.</Text>
+            <Text style={[styles.errorInline, { color: colors.dangerText }]}>NPI number must be exactly 10 digits.</Text>
           ) : (
             <Text style={[styles.hint, { color: colors.mutedForeground }]}>
               The NPI is a unique 10-digit ID assigned to every licensed provider.
@@ -166,9 +166,9 @@ export default function SearchNpiScreen() {
 
         {/* Form validation error */}
         {formError && (
-          <View style={[styles.alertCard, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
-            <Feather name="alert-circle" size={15} color="#EF4444" />
-            <Text style={styles.alertText}>{formError}</Text>
+          <View style={[styles.alertCard, { backgroundColor: colors.dangerBg, borderColor: colors.destructive }]}>
+            <Feather name="alert-circle" size={15} color={colors.dangerText} />
+            <Text style={[styles.alertText, { color: colors.dangerText }]}>{formError}</Text>
           </View>
         )}
 
@@ -180,11 +180,11 @@ export default function SearchNpiScreen() {
           activeOpacity={0.85}
         >
           {searching ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.primaryForeground} />
           ) : (
             <>
-              <Feather name="search" size={18} color={canSearch ? "#fff" : colors.mutedForeground} />
-              <Text style={[styles.searchBtnText, { color: canSearch ? "#fff" : colors.mutedForeground }]}>
+              <Feather name="search" size={18} color={canSearch ? colors.primaryForeground : colors.mutedForeground} />
+              <Text style={[styles.searchBtnText, { color: canSearch ? colors.primaryForeground : colors.mutedForeground }]}>
                 Search
               </Text>
             </>
@@ -193,10 +193,10 @@ export default function SearchNpiScreen() {
 
         {/* API error */}
         {apiError && (
-          <View style={[styles.alertCard, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
-            <Feather name="wifi-off" size={15} color="#EF4444" />
+          <View style={[styles.alertCard, { backgroundColor: colors.dangerBg, borderColor: colors.destructive }]}>
+            <Feather name="wifi-off" size={15} color={colors.dangerText} />
             <View style={styles.alertBody}>
-              <Text style={styles.alertText}>{apiError}</Text>
+              <Text style={[styles.alertText, { color: colors.dangerText }]}>{apiError}</Text>
               <TouchableOpacity onPress={handleSearch} activeOpacity={0.75} style={styles.retryBtn}>
                 <Text style={[styles.retryText, { color: colors.primary }]}>Retry</Text>
               </TouchableOpacity>
@@ -206,9 +206,9 @@ export default function SearchNpiScreen() {
 
         {/* No results */}
         {submitted && results !== null && results.length === 0 && (
-          <View style={[styles.alertCard, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
-            <Feather name="alert-circle" size={15} color="#EF4444" />
-            <Text style={styles.alertText}>
+          <View style={[styles.alertCard, { backgroundColor: colors.dangerBg, borderColor: colors.destructive }]}>
+            <Feather name="alert-circle" size={15} color={colors.dangerText} />
+            <Text style={[styles.alertText, { color: colors.dangerText }]}>
               No providers found. Check the details and try again.
             </Text>
           </View>
@@ -251,8 +251,8 @@ export default function SearchNpiScreen() {
                   </Text>
                 </View>
                 <View style={[styles.connectBtn, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.connectBtnText}>Connect</Text>
-                  <Feather name="chevron-right" size={14} color="#fff" />
+                  <Text style={[styles.connectBtnText, { color: colors.primaryForeground }]}>Connect</Text>
+                  <Feather name="chevron-right" size={14} color={colors.primaryForeground} />
                 </View>
               </TouchableOpacity>
             ))}
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   npiInput: { letterSpacing: 2 },
   hint: { fontSize: 12, lineHeight: 16 },
-  errorInline: { fontSize: 12, color: "#B42318" },
+  errorInline: { fontSize: 12 },
 
   alertCard: {
     borderRadius: 12,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   alertBody: { flex: 1, gap: 6 },
-  alertText: { flex: 1, fontSize: 13, color: "#B42318", lineHeight: 18 },
+  alertText: { flex: 1, fontSize: 13, lineHeight: 18 },
   retryBtn: { alignSelf: "flex-start" },
   retryText: { fontSize: 13, fontWeight: "700" },
 
@@ -339,5 +339,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 2,
   },
-  connectBtnText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+  connectBtnText: { fontSize: 13, fontWeight: "700" },
 });

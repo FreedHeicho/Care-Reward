@@ -168,7 +168,7 @@ function ProviderCard({
     .toUpperCase();
 
   const avatarColors = [
-    "#05503C", "#2563EB", "#7C3AED", "#D97706", "#0891B2", "#DC2626",
+    "#05503C", "#1D4ED8", "#6D28D9", "#A16207", "#0E7490", "#B91C1C",
   ];
   const avatarBg = avatarColors[parseInt(provider.id.split("-")[1]) % avatarColors.length];
 
@@ -331,7 +331,7 @@ export default function FindProviderScreen() {
                 }}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.chipText, { color: active ? "#fff" : colors.foreground }]}>
+                <Text style={[styles.chipText, { color: active ? colors.primaryForeground : colors.foreground }]}>
                   {s.label}
                 </Text>
               </TouchableOpacity>
@@ -354,8 +354,8 @@ export default function FindProviderScreen() {
             {filtered.length} in-network provider{filtered.length !== 1 ? "s" : ""} near you
           </Text>
           {favorites.size > 0 && (
-            <View style={[styles.favChip, { backgroundColor: "#FEE2E2" }]}>
-              <Feather name="heart" size={11} color="#DC2626" />
+            <View style={[styles.favChip, { backgroundColor: colors.dangerBg }]}>
+              <Feather name="heart" size={11} color={colors.dangerText} />
               <Text style={[styles.favChipText, { color: colors.dangerText }]}>
                 {favorites.size} saved
               </Text>

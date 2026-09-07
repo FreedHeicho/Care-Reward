@@ -12,6 +12,7 @@ const colors = {
     primary: "#05503C",
     primaryDark: "#03382A",
     primaryForeground: "#FFFFFF",
+    primaryDarkForeground: "#FFFFFF",
 
     secondary: "#E6F0ED",
     secondaryForeground: "#05503C",
@@ -61,6 +62,7 @@ const colors = {
     primary: "#4CAF8F",
     primaryDark: "#05503C",
     primaryForeground: "#0A1F18",
+    primaryDarkForeground: "#F8FAFC",
 
     secondary: "#0A2E20",
     secondaryForeground: "#4CAF8F",

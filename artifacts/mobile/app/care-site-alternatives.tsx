@@ -125,15 +125,13 @@ function ProviderRow({
   onPress: () => void;
 }) {
   const colors = useColors();
-  const PRIMARY = "#1A6B5A";
-
   return (
     <TouchableOpacity
       style={[
         styles.providerRow,
         {
-          backgroundColor: isSelected ? PRIMARY + "0F" : colors.card,
-          borderColor: isSelected ? PRIMARY : colors.border,
+          backgroundColor: isSelected ? colors.secondary : colors.card,
+          borderColor: isSelected ? colors.primary : colors.border,
         },
       ]}
       onPress={onPress}
@@ -147,7 +145,7 @@ function ProviderRow({
         <Text
           style={[
             styles.providerName,
-            { color: isSelected ? PRIMARY : colors.foreground },
+            { color: isSelected ? colors.secondaryForeground : colors.foreground },
           ]}
         >
           {provider.name}
@@ -167,13 +165,13 @@ function ProviderRow({
             0 points
           </Text>
         ) : (
-          <Text style={[styles.providerPts, { color: PRIMARY }]}>
+          <Text style={[styles.providerPts, { color: colors.primary }]}>
             +{provider.points.toLocaleString()} points
           </Text>
         )}
         {isSelected && (
-          <View style={[styles.checkCircle, { backgroundColor: PRIMARY }]}>
-            <Feather name="check" size={12} color="#fff" />
+          <View style={[styles.checkCircle, { backgroundColor: colors.primary }]}>
+            <Feather name="check" size={12} color={colors.primaryForeground} />
           </View>
         )}
       </View>
@@ -195,7 +193,6 @@ function CareSiteCard({
   onSchedule: () => void;
 }) {
   const colors = useColors();
-  const PRIMARY = "#1A6B5A";
   const hasSelection = selectedProviderId !== null;
 
   return (
@@ -227,8 +224,8 @@ function CareSiteCard({
         style={[
           styles.scheduleBtn,
           hasSelection
-            ? { backgroundColor: PRIMARY, borderColor: PRIMARY }
-            : { backgroundColor: "transparent", borderColor: PRIMARY },
+            ? { backgroundColor: colors.primary, borderColor: colors.primary }
+            : { backgroundColor: "transparent", borderColor: colors.primary },
         ]}
         onPress={onSchedule}
         activeOpacity={0.82}
@@ -238,13 +235,13 @@ function CareSiteCard({
         <Feather
           name="calendar"
           size={17}
-          color={hasSelection ? "#fff" : PRIMARY}
+          color={hasSelection ? colors.primaryForeground : colors.primary}
           style={{ marginRight: 8 }}
         />
         <Text
           style={[
             styles.scheduleBtnText,
-            { color: hasSelection ? "#fff" : PRIMARY },
+            { color: hasSelection ? colors.primaryForeground : colors.primary },
           ]}
         >
           Schedule an appointment
@@ -281,8 +278,6 @@ function SchedulingModal({
 }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const PRIMARY = "#1A6B5A";
-
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [urgency, setUrgency] = useState<Urgency | null>(null);
 
@@ -398,11 +393,11 @@ function SchedulingModal({
               <View
                 style={[
                   styles.urgencyChip,
-                  { backgroundColor: PRIMARY + "15", borderColor: PRIMARY + "40" },
+                  { backgroundColor: colors.secondary, borderColor: colors.primary },
                 ]}
               >
-                <Feather name="clock" size={13} color={PRIMARY} />
-                <Text style={[styles.urgencyChipText, { color: PRIMARY }]}>
+                <Feather name="clock" size={13} color={colors.secondaryForeground} />
+                <Text style={[styles.urgencyChipText, { color: colors.secondaryForeground }]}>
                   {urgency}
                 </Text>
               </View>
@@ -410,13 +405,13 @@ function SchedulingModal({
 
             {/* Primary: Book for me */}
             <TouchableOpacity
-              style={[styles.bookForMeBtn, { backgroundColor: PRIMARY }]}
+              style={[styles.bookForMeBtn, { backgroundColor: colors.primary }]}
               onPress={handleBookForMe}
               activeOpacity={0.82}
               accessibilityRole="button"
             >
-              <Feather name="calendar" size={18} color="#fff" style={{ marginRight: 10 }} />
-              <Text style={styles.bookForMeText}>
+              <Feather name="calendar" size={18} color={colors.primaryForeground} style={{ marginRight: 10 }} />
+              <Text style={[styles.bookForMeText, { color: colors.primaryForeground }]}>
                 Book an Appointment for Me{"\n"}
                 <Text style={styles.bookForMeSubText}>(Care Reward)</Text>
               </Text>
@@ -448,8 +443,8 @@ function SchedulingModal({
           <>
             {/* Success icon */}
             <View style={styles.successIconWrap}>
-              <View style={[styles.successIconCircle, { backgroundColor: PRIMARY + "22" }]}>
-                <Feather name="check" size={38} color={PRIMARY} />
+              <View style={[styles.successIconCircle, { backgroundColor: colors.secondary }]}>
+                <Feather name="check" size={38} color={colors.secondaryForeground} />
               </View>
             </View>
 
@@ -462,7 +457,7 @@ function SchedulingModal({
 
             {/* Done */}
             <TouchableOpacity
-              style={[styles.backToOppsBtn, { backgroundColor: PRIMARY }]}
+              style={[styles.backToOppsBtn, { backgroundColor: colors.primary }]}
               onPress={onDone}
               activeOpacity={0.82}
               accessibilityRole="button"
