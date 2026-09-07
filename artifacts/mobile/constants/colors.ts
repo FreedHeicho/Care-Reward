@@ -27,7 +27,13 @@ const colors = {
     rewardsText: "#8A4B00",
 
     successText: "#16703B",
+    successBg: "#DCFCE7",
     warningText: "#8A4B00",
+    warningBg: "#FEF3C7",
+    infoText: "#075985",
+    infoBg: "#E0F2FE",
+    dangerText: "#B42318",
+    dangerBg: "#FEE2E2",
 
     destructive: "#B42318",
     destructiveForeground: "#FFFFFF",
@@ -70,7 +76,13 @@ const colors = {
     rewardsText: "#FCD34D",
 
     successText: "#6EE7A0",
+    successBg: "#123D2A",
     warningText: "#FCD34D",
+    warningBg: "#3B2A0A",
+    infoText: "#7DD3FC",
+    infoBg: "#0C3448",
+    dangerText: "#FCA5A5",
+    dangerBg: "#451A1A",
 
     destructive: "#F87171",
     destructiveForeground: "#0A1F18",

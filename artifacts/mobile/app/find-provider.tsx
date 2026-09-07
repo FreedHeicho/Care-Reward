@@ -236,19 +236,19 @@ function ProviderCard({
         </View>
 
         {/* In-network badge */}
-        <View style={[styles.networkBadge, { backgroundColor: "#DCFCE7" }]}>
-          <Feather name="check-circle" size={12} color="#16A34A" />
-          <Text style={[styles.networkText, { color: "#16A34A" }]}>In-Network</Text>
+        <View style={[styles.networkBadge, { backgroundColor: colors.successBg }]}>
+          <Feather name="check-circle" size={12} color={colors.successText} />
+          <Text style={[styles.networkText, { color: colors.successText }]}>In-Network</Text>
         </View>
 
         {/* Accepting badge */}
         {provider.acceptingNew ? (
-          <View style={[styles.acceptBadge, { backgroundColor: "#DBEAFE" }]}>
-            <Text style={[styles.acceptText, { color: "#2563EB" }]}>Accepting</Text>
+          <View style={[styles.acceptBadge, { backgroundColor: colors.infoBg }]}>
+            <Text style={[styles.acceptText, { color: colors.infoText }]}>Accepting</Text>
           </View>
         ) : (
-          <View style={[styles.acceptBadge, { backgroundColor: "#FEE2E2" }]}>
-            <Text style={[styles.acceptText, { color: "#DC2626" }]}>Waitlist</Text>
+          <View style={[styles.acceptBadge, { backgroundColor: colors.dangerBg }]}>
+            <Text style={[styles.acceptText, { color: colors.dangerText }]}>Waitlist</Text>
           </View>
         )}
 
@@ -356,7 +356,7 @@ export default function FindProviderScreen() {
           {favorites.size > 0 && (
             <View style={[styles.favChip, { backgroundColor: "#FEE2E2" }]}>
               <Feather name="heart" size={11} color="#DC2626" />
-              <Text style={[styles.favChipText, { color: "#DC2626" }]}>
+              <Text style={[styles.favChipText, { color: colors.dangerText }]}>
                 {favorites.size} saved
               </Text>
             </View>

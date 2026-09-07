@@ -130,7 +130,7 @@ export default function DashboardScreen() {
             onPress={() => router.push("/(tabs)/rewards" as never)}
             activeOpacity={0.85}
           >
-            <Text style={styles.redeemBtnText}>Redeem My Points</Text>
+            <Text style={[styles.redeemBtnText, { color: colors.primaryForeground }]}>Redeem My Points</Text>
           </TouchableOpacity>
         </View>
 
@@ -146,21 +146,21 @@ export default function DashboardScreen() {
 
         {/* Notification Alerts */}
         <TouchableOpacity
-          style={[styles.alertBanner, { backgroundColor: "#DCFCE7", borderLeftColor: "#16A34A" }]}
+          style={[styles.alertBanner, { backgroundColor: colors.successBg, borderLeftColor: colors.successText }]}
           onPress={() => router.push("/(tabs)/opportunities" as never)}
         >
-          <Feather name="bell" size={18} color="#16A34A" />
-          <Text style={[styles.alertText, { color: colors.foreground }]}>
+          <Feather name="bell" size={18} color={colors.successText} />
+          <Text style={[styles.alertText, { color: colors.successText }]}>
             You have {NEW_OPPORTUNITIES_COUNT} new opportunities
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.alertBanner, { backgroundColor: "#FEE2E2", borderLeftColor: "#DC2626" }]}
+          style={[styles.alertBanner, { backgroundColor: colors.dangerBg, borderLeftColor: colors.dangerText }]}
           onPress={() => router.push("/missed-opportunities" as never)}
         >
-          <Feather name="bell" size={18} color="#DC2626" />
-          <Text style={[styles.alertText, { color: colors.foreground }]}>
+          <Feather name="bell" size={18} color={colors.dangerText} />
+          <Text style={[styles.alertText, { color: colors.dangerText }]}>
             You have {MISSED_OPPORTUNITIES_COUNT} missed opportunities
           </Text>
         </TouchableOpacity>

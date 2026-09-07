@@ -403,14 +403,14 @@ export default function HealthAssessmentScreen() {
 
           {/* Potential unlocked */}
           <View style={styles.unlockedRow}>
-            <View style={[styles.unlockedCard, { backgroundColor: "#16A34A15", borderColor: "#16A34A30" }]}>
-              <Feather name="dollar-sign" size={18} color="#16A34A" />
-              <Text style={[styles.unlockedVal, { color: "#16A34A" }]}>${totalSavings}</Text>
+            <View style={[styles.unlockedCard, { backgroundColor: colors.successBg, borderColor: colors.successText }]}>
+              <Feather name="dollar-sign" size={18} color={colors.successText} />
+              <Text style={[styles.unlockedVal, { color: colors.successText }]}>${totalSavings}</Text>
               <Text style={[styles.unlockedLabel, { color: colors.mutedForeground }]}>potential savings/mo</Text>
             </View>
-            <View style={[styles.unlockedCard, { backgroundColor: "#D9770615", borderColor: "#D9770630" }]}>
-              <Feather name="star" size={18} color="#D97706" />
-              <Text style={[styles.unlockedVal, { color: "#D97706" }]}>+{totalPoints}</Text>
+            <View style={[styles.unlockedCard, { backgroundColor: colors.warningBg, borderColor: colors.warningText }]}>
+              <Feather name="star" size={18} color={colors.warningText} />
+              <Text style={[styles.unlockedVal, { color: colors.warningText }]}>+{totalPoints}</Text>
               <Text style={[styles.unlockedLabel, { color: colors.mutedForeground }]}>points available</Text>
             </View>
           </View>
@@ -450,10 +450,10 @@ export default function HealthAssessmentScreen() {
                 <Text style={[styles.recDesc, { color: colors.mutedForeground }]}>{rec.body}</Text>
                 <View style={styles.recMetrics}>
                   <View style={[styles.recBadge, { backgroundColor: "#16A34A15" }]}>
-                    <Text style={[styles.recBadgeText, { color: "#16A34A" }]}>Save ${rec.savings}/mo</Text>
+                    <Text style={[styles.recBadgeText, { color: colors.successText }]}>Save ${rec.savings}/mo</Text>
                   </View>
                   <View style={[styles.recBadge, { backgroundColor: "#D9770615" }]}>
-                    <Text style={[styles.recBadgeText, { color: "#D97706" }]}>+{rec.points} pts</Text>
+                    <Text style={[styles.recBadgeText, { color: colors.warningText }]}>+{rec.points} pts</Text>
                   </View>
                 </View>
               </View>

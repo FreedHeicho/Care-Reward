@@ -92,7 +92,7 @@ function DrugComparisonCards() {
         <Text style={[styles.compDrug, { color: colors.foreground }]}>Norvasc</Text>
         <Text style={[styles.compSub, { color: colors.mutedForeground }]}>Amlodipine besylate</Text>
         <View style={[styles.compCostBadge, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
-          <Text style={[styles.compCostText, { color: "#DC2626" }]}>Higher cost</Text>
+          <Text style={[styles.compCostText, { color: colors.dangerText }]}>Higher cost</Text>
         </View>
         <BulletItem text="Brand-name pricing" />
         <BulletItem text="Same active ingredient" />
@@ -119,7 +119,7 @@ function DrugComparisonCards() {
         <Text style={[styles.compDrug, { color: colors.foreground }]}>Amlodipine</Text>
         <Text style={[styles.compSub, { color: colors.mutedForeground }]}>Amlodipine generic</Text>
         <View style={[styles.compCostBadge, { backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }]}>
-          <Text style={[styles.compCostText, { color: "#16A34A" }]}>Lower cost ✓</Text>
+          <Text style={[styles.compCostText, { color: colors.successText }]}>Lower cost ✓</Text>
         </View>
         <BulletItem text="FDA-approved equivalent" />
         <BulletItem text="Same effectiveness" />
@@ -158,7 +158,7 @@ function RefillComparisonCards() {
           </View>
         </View>
         <View style={[styles.costPill, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
-          <Text style={[styles.costPillText, { color: "#DC2626" }]}>Higher cost</Text>
+          <Text style={[styles.costPillText, { color: colors.dangerText }]}>Higher cost</Text>
         </View>
       </View>
 
@@ -191,7 +191,7 @@ function RefillComparisonCards() {
           </View>
         </View>
         <View style={[styles.costPill, { backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }]}>
-          <Text style={[styles.costPillText, { color: "#16A34A" }]}>Save more ✓</Text>
+          <Text style={[styles.costPillText, { color: colors.successText }]}>Save more ✓</Text>
         </View>
       </View>
     </View>
@@ -762,7 +762,7 @@ export default function MedicationOpportunityScreen() {
               <DrugComparisonCards />
               <View style={[styles.savingsRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
                 <Feather name="trending-down" size={15} color="#16A34A" />
-                <Text style={[styles.savingsText, { color: "#16A34A" }]}>
+                <Text style={[styles.savingsText, { color: colors.successText }]}>
                   Save up to $127/month on your medication costs
                 </Text>
               </View>
@@ -783,7 +783,7 @@ export default function MedicationOpportunityScreen() {
               <RefillComparisonCards />
               <View style={[styles.savingsRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
                 <Feather name="trending-down" size={15} color="#16A34A" />
-                <Text style={[styles.savingsText, { color: "#16A34A" }]}>
+                <Text style={[styles.savingsText, { color: colors.successText }]}>
                   90-day supply delivered free — lower per-fill cost
                 </Text>
               </View>

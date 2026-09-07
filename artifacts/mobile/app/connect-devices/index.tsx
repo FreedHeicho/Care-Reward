@@ -58,8 +58,8 @@ const DEVICE_TYPE_ICON: Record<string, React.ComponentProps<typeof Feather>["nam
 };
 
 const CONN_BADGE: Record<string, { bg: string; color: string }> = {
-  BLUETOOTH: { bg: "#EFF6FF", color: "#2563EB" },
-  WIFI: { bg: "#DCFCE7", color: "#16A34A" },
+  BLUETOOTH: { bg: "#EFF6FF", color: "#1D4F91" },
+  WIFI: { bg: "#DCFCE7", color: "#16703B" },
   NFC: { bg: "#F5F3FF", color: "#7C3AED" },
 };
 

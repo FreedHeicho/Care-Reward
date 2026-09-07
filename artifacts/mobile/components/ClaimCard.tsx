@@ -12,9 +12,9 @@ interface Props {
 }
 
 const STATUS_CONFIG: Record<ClaimStatus, { label: string; color: string; bg: string }> = {
-  processed: { label: "Processed", color: "#10B981", bg: "#D1FAE5" },
+  processed: { label: "Processed", color: "#16703B", bg: "#DCFCE7" },
   pending: { label: "Pending", color: "#8A4B00", bg: "#FEF3C7" },
-  "in-review": { label: "In Review", color: "#0EA5E9", bg: "#E0F2FE" },
+  "in-review": { label: "In Review", color: "#075985", bg: "#E0F2FE" },
 };
 
 export function ClaimCard({ claim, compact }: Props) {
@@ -68,7 +68,7 @@ export function ClaimCard({ claim, compact }: Props) {
             <Text
               style={[
                 styles.amountValue,
-                { color: claim.patientResponsibility > 0 ? "#EF4444" : colors.accent },
+                { color: claim.patientResponsibility > 0 ? colors.destructive : colors.accent },
               ]}
             >
               ${claim.patientResponsibility.toLocaleString()}

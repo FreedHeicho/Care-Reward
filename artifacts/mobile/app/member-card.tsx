@@ -193,8 +193,8 @@ export default function MemberCardScreen() {
         <View style={styles.cardWrapper}>
           <Text style={[styles.cardSide, { color: colors.mutedForeground }]}>BACK</Text>
           <View style={styles.card}>
-            <View style={[styles.cardHeader, { backgroundColor: "#03382A" }]}>
-              <Text style={styles.cardBackTitle}>Pharmacy & Additional Benefits</Text>
+            <View style={[styles.cardHeader, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.cardBackTitle, { color: colors.primaryForeground }]}>Pharmacy & Additional Benefits</Text>
             </View>
             <View style={[styles.cardBody, { backgroundColor: "#fff" }]}>
               <View style={styles.cardBackGrid}>

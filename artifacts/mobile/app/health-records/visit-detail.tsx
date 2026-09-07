@@ -61,10 +61,10 @@ export default function VisitDetailScreen() {
         {/* Header card */}
         <View style={[styles.headerCard, { backgroundColor: colors.primary }]}>
           <View style={styles.headerIcon}>
-            <Feather name="calendar" size={28} color="#fff" />
+            <Feather name="calendar" size={28} color={colors.primaryForeground} />
           </View>
-          <Text style={styles.headerType}>{visit.type}</Text>
-          <Text style={styles.headerDate}>{visit.dateLabel}</Text>
+          <Text style={[styles.headerType, { color: colors.primaryForeground }]}>{visit.type}</Text>
+          <Text style={[styles.headerDate, { color: colors.primaryForeground }]}>{visit.dateLabel}</Text>
         </View>
 
         {/* Details */}
@@ -122,8 +122,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 4,
   },
-  headerType: { color: "#fff", fontSize: 18, fontWeight: "800", textAlign: "center" },
-  headerDate: { color: "rgba(255,255,255,0.8)", fontSize: 14 },
+  headerType: { fontSize: 18, fontWeight: "800", textAlign: "center" },
+  headerDate: { fontSize: 14 },
   section: {
     borderRadius: 16,
     borderWidth: 1,

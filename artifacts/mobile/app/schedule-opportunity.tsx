@@ -168,11 +168,11 @@ export default function ScheduleOpportunityScreen() {
 
         {/* Points reminder */}
         {opp && (
-          <View style={[styles.pointsReminder, { backgroundColor: "#05C5B6" + "18", borderColor: "#05C5B6" }]}>
-            <Feather name="star" size={18} color="#05C5B6" />
+          <View style={[styles.pointsReminder, { backgroundColor: colors.successBg, borderColor: colors.successText }]}>
+            <Feather name="star" size={18} color={colors.successText} />
             <Text style={[styles.pointsReminderText, { color: colors.foreground }]}>
               Complete this appointment to earn{" "}
-              <Text style={{ fontWeight: "800", color: "#067A70" }}>+{opp.points} points</Text>
+              <Text style={{ fontWeight: "800", color: colors.successText }}>+{opp.points} points</Text>
             </Text>
           </View>
         )}

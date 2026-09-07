@@ -225,7 +225,7 @@ export default function ProviderDetailScreen() {
           <View style={styles.heroBadges}>
             <View style={[styles.heroBadge, { backgroundColor: "#DCFCE7" }]}>
               <Feather name="check-circle" size={12} color="#16A34A" />
-              <Text style={[styles.heroBadgeText, { color: "#16A34A" }]}>In-Network</Text>
+              <Text style={[styles.heroBadgeText, { color: colors.successText }]}>In-Network</Text>
             </View>
             <View
               style={[
@@ -257,11 +257,11 @@ export default function ProviderDetailScreen() {
               <Text style={[styles.costLabel, { color: colors.mutedForeground }]}>Copay per visit</Text>
             </View>
             <View style={[styles.costItem, { backgroundColor: "#DBEAFE" }]}>
-              <Text style={[styles.costValue, { color: "#2563EB" }]}>$0</Text>
+              <Text style={[styles.costValue, { color: colors.infoText }]}>$0</Text>
               <Text style={[styles.costLabel, { color: colors.mutedForeground }]}>After deductible</Text>
             </View>
             <View style={[styles.costItem, { backgroundColor: "#F0FDF4" }]}>
-              <Text style={[styles.costValue, { color: "#16A34A" }]}>+50 pts</Text>
+              <Text style={[styles.costValue, { color: colors.successText }]}>+50 pts</Text>
               <Text style={[styles.costLabel, { color: colors.mutedForeground }]}>For this visit</Text>
             </View>
           </View>
@@ -347,7 +347,7 @@ export default function ProviderDetailScreen() {
           activeOpacity={0.8}
         >
           <Feather name="heart" size={18} color={preferred ? "#DC2626" : colors.mutedForeground} />
-          <Text style={[styles.preferredText, { color: preferred ? "#DC2626" : colors.foreground }]}>
+          <Text style={[styles.preferredText, { color: preferred ? colors.dangerText : colors.foreground }]}>
             {preferred ? "Saved as Preferred Provider" : "Save as Preferred Provider"}
           </Text>
           {preferred && <Feather name="check" size={16} color="#DC2626" />}
@@ -378,8 +378,8 @@ export default function ProviderDetailScreen() {
           onPress={handleBook}
           activeOpacity={0.85}
         >
-          <Feather name="calendar" size={18} color="#fff" />
-          <Text style={styles.bookBtnText}>Request Appointment</Text>
+          <Feather name="calendar" size={18} color={colors.primaryForeground} />
+          <Text style={[styles.bookBtnText, { color: colors.primaryForeground }]}>Request Appointment</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -57,11 +57,11 @@ function ClassicTabLayout() {
         headerStyle: {
           backgroundColor: colors.primary,
         },
-        headerTintColor: "#FFFFFF",
+        headerTintColor: colors.primaryForeground,
         headerTitleStyle: {
           fontWeight: "700",
           fontSize: 18,
-          color: "#FFFFFF",
+          color: colors.primaryForeground,
         },
         tabBarStyle: {
           position: "absolute",
@@ -88,7 +88,7 @@ function ClassicTabLayout() {
         },
         tabBarBadgeStyle: {
           backgroundColor: "#F59E0B",
-          color: "#FFFFFF",
+          color: colors.rewardsForeground,
           fontSize: 10,
           fontWeight: "700",
           minWidth: 18,
@@ -142,7 +142,7 @@ function ClassicTabLayout() {
           tabBarBadge: pointsBalance,
           tabBarBadgeStyle: {
             backgroundColor: colors.primary,
-            color: "#FFFFFF",
+            color: colors.primaryForeground,
             fontSize: 9,
             fontWeight: "700",
             minWidth: 20,

@@ -149,7 +149,7 @@ export default function MissedOpportunitiesScreen() {
               </Text>
             </View>
             <View style={styles.summaryStat}>
-              <Text style={[styles.summaryStatValue, { color: "#16A34A" }]}>
+              <Text style={[styles.summaryStatValue, { color: colors.successText }]}>
                 {ENGAGEMENT_RATE}%
               </Text>
               <Text style={[styles.summaryStatLabel, { color: colors.mutedForeground }]}>

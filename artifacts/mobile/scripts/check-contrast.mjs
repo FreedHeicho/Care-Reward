@@ -33,6 +33,9 @@ const pairs = [
   ["rewardsForeground", "rewards"], ["destructiveForeground", "destructive"],
   ["mutedForeground", "card"], ["rewardsText", "background"],
   ["successText", "background"], ["warningText", "background"],
+  ["successText", "successBg"], ["warningText", "warningBg"],
+  ["infoText", "infoBg"], ["dangerText", "dangerBg"],
+  ["foreground", "alertBg"],
 ];
 
 let failures = 0;
