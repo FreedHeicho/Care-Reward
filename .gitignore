@@ -48,5 +48,8 @@ Thumbs.db
 .cache/
 .local/
 
+# GitHub Actions are intentionally disabled for this project.
+/.github/workflows/
+
 # Local-only Project Story video artifact
 /artifacts/care-reward-story/

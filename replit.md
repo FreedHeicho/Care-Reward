@@ -62,6 +62,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 - Do NOT run `npx expo start` directly — use `restart_workflow` tool instead
 - Do NOT create `app.config.ts` — must use static `app.json`
+- Do NOT generate or add GitHub Actions workflows; `.github/workflows/` is intentionally disabled and ignored
 - Mock data in `constants/data.ts` must be replaced with real API calls before launch
 - Auth in `context/AuthContext.tsx` is mocked — needs real auth integration (Auth0, Cognito, etc.)
 
