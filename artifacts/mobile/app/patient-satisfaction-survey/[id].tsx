@@ -2,7 +2,6 @@ import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MOCK_OPPORTUNITIES } from "@/constants/data";
 import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
+import { WorkflowCompletionButton } from "@/components/WorkflowCompletionButton";
 import { useColors } from "@/hooks/useColors";
 
 // ─── Survey definition ─────────────────────────────────────────────────────
@@ -289,6 +289,7 @@ export default function PatientSatisfactionSurveyScreen() {
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 380);
@@ -309,17 +310,27 @@ export default function PatientSatisfactionSurveyScreen() {
   };
 
   const handleSubmit = () => {
-    Alert.alert(
-      "Survey Submitted!",
-      `Thank you for your feedback. You've earned ${points} points.`,
-      [
-        {
-          text: "Done",
-          onPress: () => router.back(),
-        },
-      ]
-    );
+    setSubmitted(true);
   };
+
+  if (submitted) {
+    return (
+      <View style={[styles.container, styles.submittedWrap, { backgroundColor: colors.background }]}>
+        <View style={[styles.submittedIcon, { backgroundColor: colors.secondary }]}>
+          <Feather name="check" size={34} color={colors.secondaryForeground} />
+        </View>
+        <Text style={[styles.submittedTitle, { color: colors.foreground }]}>Survey submitted!</Text>
+        <Text style={[styles.submittedText, { color: colors.mutedForeground }]}>
+          Thank you for your feedback. You&apos;ve earned {points} points.
+        </Text>
+        <WorkflowCompletionButton
+          label="Done — Back to Opportunities"
+          accessibilityLabel="Done, return to Opportunities"
+          onPress={() => router.back()}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -425,6 +436,10 @@ export default function PatientSatisfactionSurveyScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  submittedWrap: { justifyContent: "center", padding: 24, gap: 16 },
+  submittedIcon: { width: 72, height: 72, borderRadius: 36, alignItems: "center", justifyContent: "center", alignSelf: "center" },
+  submittedTitle: { fontSize: 25, fontWeight: "800", textAlign: "center" },
+  submittedText: { fontSize: 16, lineHeight: 23, textAlign: "center" },
 
   scroll: {
     paddingHorizontal: 16,

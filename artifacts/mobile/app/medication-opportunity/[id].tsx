@@ -30,6 +30,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
+import { WorkflowCompletionButton } from "@/components/WorkflowCompletionButton";
 import { MOCK_OPPORTUNITIES } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
@@ -626,21 +627,11 @@ function AcknowledgementStep({
       </View>
 
       {/* Close button */}
-      <TouchableOpacity
-        style={[styles.closeOppBtn, { backgroundColor: colors.primary }]}
-        onPress={onClose}
-        activeOpacity={0.85}
-        accessibilityRole="button"
+      <WorkflowCompletionButton
+        label="Done — Back to Opportunities"
         accessibilityLabel="Done, return to Opportunities"
-      >
-        <View style={[styles.closeOppIcon, { borderColor: colors.primaryForeground }]}>
-          <Feather name="check" size={16} color={colors.primaryForeground} />
-        </View>
-        <Text style={[styles.closeOppBtnText, { color: colors.primaryForeground }]}>
-          Done — Back to Opportunities
-        </Text>
-        <Feather name="arrow-right" size={19} color={colors.primaryForeground} />
-      </TouchableOpacity>
+        onPress={onClose}
+      />
     </View>
   );
 }

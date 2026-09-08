@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { WorkflowCompletionButton } from "@/components/WorkflowCompletionButton";
 
 type ColorScheme = ReturnType<typeof useColors>;
 
@@ -464,14 +465,11 @@ export default function HealthAssessmentScreen() {
           ))}
 
           {/* CTA */}
-          <TouchableOpacity
-            style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
+          <WorkflowCompletionButton
+            label="View all opportunities"
+            accessibilityLabel="View all opportunities"
             onPress={() => router.push("/(tabs)/opportunities" as never)}
-            activeOpacity={0.85}
-          >
-            <Feather name="zap" size={18} color={colors.primaryForeground} />
-            <Text style={[styles.ctaBtnText, { color: colors.primaryForeground }]}>View All Opportunities</Text>
-          </TouchableOpacity>
+          />
 
           <TouchableOpacity
             style={styles.retakeRow}

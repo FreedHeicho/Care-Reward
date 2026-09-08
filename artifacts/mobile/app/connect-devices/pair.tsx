@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 import { useConnectedDevices } from "@/context/ConnectedDevicesContext";
+import { WorkflowCompletionButton } from "@/components/WorkflowCompletionButton";
 
 /* ─── State machine type ─────────────────────────────────── */
 type PairState =
@@ -271,13 +272,11 @@ export default function PairScreen() {
         ))}
       </View>
 
-      <TouchableOpacity
-        style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+      <WorkflowCompletionButton
+        label="Done — View connected devices"
+        accessibilityLabel="Done, view connected devices"
         onPress={handleDone}
-        activeOpacity={0.85}
-      >
-        <Text style={styles.primaryBtnText}>Done</Text>
-      </TouchableOpacity>
+      />
     </ScrollView>
   );
 
@@ -346,13 +345,11 @@ export default function PairScreen() {
       <Text style={[styles.errorBody, { color: colors.mutedForeground }]}>
         This device is already linked to your account.
       </Text>
-      <TouchableOpacity
-        style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+      <WorkflowCompletionButton
+        label="View connected devices"
+        accessibilityLabel="View connected devices"
         onPress={handleDone}
-        activeOpacity={0.85}
-      >
-        <Text style={styles.primaryBtnText}>View connected devices</Text>
-      </TouchableOpacity>
+      />
     </View>
   );
 

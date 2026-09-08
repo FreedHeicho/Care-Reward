@@ -2,7 +2,6 @@ import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MOCK_OPPORTUNITIES } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
+import { WorkflowCompletionButton } from "@/components/WorkflowCompletionButton";
 
 export default function ScheduleOpportunityScreen() {
   const { id } = useLocalSearchParams<{ id: string; variant: string }>();
@@ -33,17 +33,10 @@ export default function ScheduleOpportunityScreen() {
       router.push("/find-provider" as never);
     } else {
       setConfirmed(true);
-      if (Platform.OS !== "web") {
-        Alert.alert(
-          "Appointment Logged!",
-          "Your appointment details have been saved. We'll send you a reminder before the visit.",
-          [{ text: "Done", onPress: () => router.push("/(tabs)" as never) }]
-        );
-      }
     }
   };
 
-  if (confirmed && Platform.OS === "web") {
+  if (confirmed) {
     return (
       <View style={[styles.confirmedContainer, { backgroundColor: colors.background }]}>
         <View style={[styles.confirmedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -55,12 +48,11 @@ export default function ScheduleOpportunityScreen() {
             Our team will reach out within 24 hours to confirm your appointment for:
           </Text>
           <Text style={[styles.confirmedOpp, { color: colors.primary }]}>{title}</Text>
-          <TouchableOpacity
-            style={[styles.doneBtn, { backgroundColor: colors.primary }]}
+          <WorkflowCompletionButton
+            label="Back to Dashboard"
+            accessibilityLabel="Back to Dashboard"
             onPress={() => router.push("/(tabs)" as never)}
-          >
-            <Text style={[styles.doneBtnText, { color: colors.primaryForeground }]}>Back to Dashboard</Text>
-          </TouchableOpacity>
+          />
         </View>
       </View>
     );
@@ -189,29 +181,13 @@ export default function ScheduleOpportunityScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          style={[
-            styles.confirmBtn,
-            { backgroundColor: selected ? colors.primary : colors.muted },
-          ]}
+        <WorkflowCompletionButton
+          label={selected === "myself" ? "Find a Provider" : "Confirm appointment request"}
+          accessibilityLabel={selected === "myself" ? "Find a provider" : "Confirm appointment request"}
           onPress={handleConfirm}
-          activeOpacity={0.85}
           disabled={!selected}
-        >
-          <Text
-            style={[
-              styles.confirmBtnText,
-              { color: selected ? "#fff" : colors.mutedForeground },
-            ]}
-          >
-            {selected === "myself" ? "Find a Provider" : "Confirm Request"}
-          </Text>
-          <Feather
-            name={selected === "myself" ? "search" : "check"}
-            size={18}
-            color={selected ? "#fff" : colors.mutedForeground}
-          />
-        </TouchableOpacity>
+          variant="confirmation"
+        />
       </View>
     </View>
   );

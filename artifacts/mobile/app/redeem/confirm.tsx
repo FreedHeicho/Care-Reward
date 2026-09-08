@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { WorkflowCompletionButton } from "@/components/WorkflowCompletionButton";
 
 export default function RedeemConfirmScreen() {
   const colors = useColors();
@@ -87,13 +88,12 @@ export default function RedeemConfirmScreen() {
           />
         </View>
 
-        <TouchableOpacity
-          style={[styles.confirmBtn, { backgroundColor: colors.primary }]}
+        <WorkflowCompletionButton
+          label="Confirm redemption"
+          accessibilityLabel="Confirm redemption details"
           onPress={handleConfirm}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.confirmBtnText}>Confirm redemption</Text>
-        </TouchableOpacity>
+          variant="confirmation"
+        />
 
         <TouchableOpacity
           style={[styles.cancelBtn, { borderColor: colors.border }]}

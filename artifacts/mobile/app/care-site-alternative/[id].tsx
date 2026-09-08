@@ -26,6 +26,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
+import { WorkflowCompletionButton } from "@/components/WorkflowCompletionButton";
 import {
   CARE_SITE_GROUPS,
   CareSiteGroup,
@@ -302,15 +303,11 @@ function SchedulingModal({
             </Text>
 
             {/* Done */}
-            <TouchableOpacity
-              style={[styles.backToOppsBtn, { backgroundColor: colors.primary }]}
+            <WorkflowCompletionButton
+              label="Done — Back to Opportunities"
+              accessibilityLabel="Done, return to Opportunities"
               onPress={onDone}
-              activeOpacity={0.82}
-              accessibilityRole="button"
-              accessibilityLabel="Done"
-            >
-              <Text style={[styles.backToOppsText, { color: colors.primaryForeground }]}>Done</Text>
-            </TouchableOpacity>
+            />
           </>
         )}
       </Animated.View>

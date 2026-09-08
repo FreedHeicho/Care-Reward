@@ -3,8 +3,6 @@ import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,6 +17,7 @@ import {
   MOCK_OPPORTUNITIES,
 } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
+import { WorkflowCompletionButton } from "@/components/WorkflowCompletionButton";
 
 export default function OpportunityDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -42,13 +41,6 @@ export default function OpportunityDetailScreen() {
   const handleComplete = async () => {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setCompleted(true);
-    if (Platform.OS !== "web") {
-      Alert.alert(
-        "Opportunity Completed!",
-        `You've earned ${opp.points} points and will save $${opp.savings}/month. Keep it up!`,
-        [{ text: "Done", onPress: () => router.back() }]
-      );
-    }
   };
 
   return (
@@ -132,19 +124,25 @@ export default function OpportunityDetailScreen() {
         )}
 
         {completed ? (
-          <View style={[styles.completedBadge, { backgroundColor: colors.accent }]}>
-            <Feather name="check-circle" size={20} color={colors.accentForeground} />
-            <Text style={[styles.completedText, { color: colors.accentForeground }]}>Completed! Points pending verification</Text>
-          </View>
+          <>
+            <View style={[styles.completedBadge, { backgroundColor: colors.accent }]}>
+              <Feather name="check-circle" size={20} color={colors.accentForeground} />
+              <Text style={[styles.completedText, { color: colors.accentForeground }]}>Completed! Points pending verification</Text>
+            </View>
+            <WorkflowCompletionButton
+              label="Done — Back to Opportunities"
+              accessibilityLabel="Done, return to Opportunities"
+              onPress={() => router.back()}
+              style={{ marginHorizontal: 16 }}
+            />
+          </>
         ) : (
-          <TouchableOpacity
-            style={[styles.completeBtn, { backgroundColor: colors.primary }]}
+          <WorkflowCompletionButton
+            label="Mark opportunity as completed"
+            accessibilityLabel="Mark opportunity as completed"
             onPress={handleComplete}
-            activeOpacity={0.85}
-          >
-            <Feather name="check" size={20} color={colors.primaryForeground} />
-            <Text style={[styles.completeBtnText, { color: colors.primaryForeground }]}>Mark as Completed</Text>
-          </TouchableOpacity>
+            style={{ marginHorizontal: 16 }}
+          />
         )}
       </ScrollView>
     </View>

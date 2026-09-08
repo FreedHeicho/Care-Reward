@@ -25,6 +25,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { OpportunityDetailSkeleton } from "@/components/OpportunityDetailSkeleton";
+import { WorkflowCompletionButton } from "@/components/WorkflowCompletionButton";
 import { MOCK_OPPORTUNITIES } from "@/constants/data";
 import { useColors } from "@/hooks/useColors";
 
@@ -488,16 +489,12 @@ function AddressStep({
             { backgroundColor: colors.background, paddingBottom: insets.bottom + 12 },
           ]}
         >
-          <TouchableOpacity
-            style={[sh.primaryBtn, { backgroundColor: TEAL }]}
+          <WorkflowCompletionButton
+            label="Confirm delivery address"
+            accessibilityLabel="Confirm delivery address"
             onPress={handleConfirm}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityLabel="Confirm address"
-          >
-            <Text style={sh.primaryBtnText}>Confirm Address</Text>
-            <Feather name="arrow-right" size={18} color="#fff" style={{ marginLeft: 10 }} />
-          </TouchableOpacity>
+            variant="confirmation"
+          />
         </View>
       )}
     </KeyboardAvoidingView>
@@ -581,15 +578,11 @@ function AcknowledgementStep({
         <CheckRow text="Your first delivery will arrive in 7–10 business days" />
       </View>
 
-      <TouchableOpacity
-        style={[sh.primaryBtn, { backgroundColor: TEAL }]}
+      <WorkflowCompletionButton
+        label="Done — Back to Opportunities"
+        accessibilityLabel="Done, return to Opportunities"
         onPress={onDone}
-        activeOpacity={0.85}
-        accessibilityRole="button"
-        accessibilityLabel="Done"
-      >
-        <Text style={sh.primaryBtnText}>Done</Text>
-      </TouchableOpacity>
+      />
     </ScrollView>
   );
 }
